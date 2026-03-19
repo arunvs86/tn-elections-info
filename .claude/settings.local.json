@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s \"https://ljbewpsksaetftwuaqaz.supabase.co/rest/v1/constituencies?select=id&limit=1\" -H \"apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqYmV3cHNrc2FldGZ0d3VhcWF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MTkzMTAsImV4cCI6MjA4OTQ5NTMxMH0.uX-cnXxHFXXBUed-B9j-02qQriYRuYihiOgiU9E_-CM\" -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqYmV3cHNrc2FldGZ0d3VhcWF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MTkzMTAsImV4cCI6MjA4OTQ5NTMxMH0.uX-cnXxHFXXBUed-B9j-02qQriYRuYihiOgiU9E_-CM\")",
+      "WebSearch"
+    ]
+  }
+}

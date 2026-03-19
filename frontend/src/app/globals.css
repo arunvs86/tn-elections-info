@@ -1,0 +1,108 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Noto+Serif+Tamil:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #faf9f6;
+  --accent: #c84b11;
+  --forest: #2d7a4f;
+  --crimson: #c0392b;
+  --gold: #b8860b;
+  --navy: #1a5276;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg);
+  color: #1a1a1a;
+  font-family: 'Outfit', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* ── Card component ──────────────────────────────── */
+.card {
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  padding: 1.25rem;
+}
+
+.card-sm {
+  background: #ffffff;
+  border-radius: 9px;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  padding: 0.875rem;
+}
+
+/* ── Badge ──────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 9px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* ── Party badges ────────────────────────────────── */
+.badge-dmk    { background: #fde8e8; color: #c0392b; }
+.badge-aiadmk { background: #e8f5ee; color: #2d7a4f; }
+.badge-tvk    { background: #e8f0f8; color: #1a5276; }
+.badge-bjp    { background: #fef0e6; color: #d35400; }
+.badge-ntk    { background: #f3eafa; color: #6c3483; }
+.badge-inc    { background: #e3f0fd; color: #1565c0; }
+
+/* ── Verdict badges ──────────────────────────────── */
+.verdict-true         { background: #e8f5ee; color: #2d7a4f; }
+.verdict-misleading   { background: #fef9e7; color: #b8860b; }
+.verdict-false        { background: #fde8e8; color: #c0392b; }
+.verdict-unverifiable { background: #f5f5f5; color: #555; }
+
+/* ── Tamil text ──────────────────────────────────── */
+.font-tamil {
+  font-family: 'Noto Serif Tamil', serif;
+}
+
+/* ── Agent feed message animation ───────────────── */
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.agent-msg {
+  animation: slideIn 0.25s ease forwards;
+}
+
+/* ── Pulse dot for live indicator ───────────────── */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.pulse-dot {
+  animation: pulse-dot 1.4s ease infinite;
+}
+
+/* ── Scrollbar thin ──────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1c4b4; border-radius: 9px; }
+
+/* ── Mobile-first input ──────────────────────────── */
+input, textarea, select {
+  font-size: 16px; /* Prevents iOS zoom */
+}
