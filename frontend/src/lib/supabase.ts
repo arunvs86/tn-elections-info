@@ -1,15 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 
-// These env vars are set in .env.local
-// NEXT_PUBLIC_ prefix means they are safely exposed to the browser
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  console.warn(
-    "[supabase.ts] Missing env vars. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to .env.local"
-  );
-}
+// These env vars are set in .env.local / Vercel environment
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-key";
 
 // Single shared client instance — reused across all components
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
