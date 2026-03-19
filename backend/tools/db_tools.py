@@ -1,123 +1,79 @@
 """
-db_tools.py — Supabase database utility functions.
-
-WHAT THIS FILE DOES:
-    Helper functions that agents use to read/write Supabase.
-    Most importantly: save_agent_message() which is called by every
-    agent to push live messages to Supabase Realtime → browser.
-
-WHY THIS WAY:
-    We centralise DB logic here so agents don't repeat connection code.
-    Also, save_agent_message() is the bridge between LangGraph and
-    Supabase Realtime. Every time it inserts a row, Supabase pushes
-    it to all subscribers — that's the live feed.
-
-WHAT BREAKS WITHOUT IT:
-    Agent messages won't appear live in the browser.
-    The live agent feed (Feature 3.6) goes dark.
+Supabase REST helpers using httpx directly.
+No supabase-py — avoids the Realtime WebSocket hang on init.
 """
-
 import os
-from typing import Optional
-from supabase import create_client, Client
+import httpx
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
-def get_db() -> Client:
-    """Get Supabase client with service role key (bypasses Row Level Security)."""
-    url = os.getenv("SUPABASE_URL")
+def _base() -> str:
+    return f"{os.getenv('SUPABASE_URL')}/rest/v1"
+
+
+def _headers() -> dict:
     key = os.getenv("SUPABASE_SERVICE_KEY")
-    if not url or not key:
-        raise RuntimeError("Missing SUPABASE_URL or SUPABASE_SERVICE_KEY")
-    return create_client(url, key)
+    return {
+        "apikey": key,
+        "Authorization": f"Bearer {key}",
+        "Content-Type": "application/json",
+        "Prefer": "return=representation",
+    }
 
 
-def save_agent_message(
-    session_id: str,
-    from_agent: str,
-    message: str,
-    to_agent: Optional[str] = None,
-    message_type: str = "info",
-) -> None:
+def rest_get(table: str, params: dict) -> list:
     """
-    Insert one agent message into Supabase.
-    Supabase Realtime detects the INSERT and pushes it to all
-    browser clients subscribed to this session_id channel.
-
-    This is called by each agent after appending to state["agent_messages"].
+    GET rows from a Supabase table.
+    params follow PostgREST filter syntax, e.g.:
+      {"name": "ilike.*Saidapet*", "select": "id,name,party"}
     """
-    try:
-        db = get_db()
-        db.table("agent_messages").insert({
-            "session_id": session_id,
-            "from_agent": from_agent,
-            "to_agent": to_agent,
-            "message": message,
-            "message_type": message_type,
-        }).execute()
-    except Exception as e:
-        # Don't crash the agent if DB write fails — just log it
-        print(f"[db_tools] Failed to save agent message: {e}")
+    r = httpx.get(
+        f"{_base()}/{table}",
+        params=params,
+        headers=_headers(),
+        timeout=10.0,
+    )
+    r.raise_for_status()
+    return r.json()
 
 
-def save_all_messages(messages: list) -> None:
+def rest_post(table: str, payload: dict) -> dict:
+    """INSERT a single row into a Supabase table."""
+    r = httpx.post(
+        f"{_base()}/{table}",
+        json=payload,
+        headers=_headers(),
+        timeout=10.0,
+    )
+    r.raise_for_status()
+    result = r.json()
+    return result[0] if isinstance(result, list) else result
+
+
+def save_messages(messages: list) -> None:
     """
-    Bulk-save all agent messages at the end of an investigation run.
-    Used as a fallback if real-time saves fail.
+    Bulk-insert agent messages into agent_messages table.
+    Silently ignores errors so a DB blip never crashes the graph.
     """
     if not messages:
         return
     try:
-        db = get_db()
         rows = [
             {
                 "session_id": m.get("session_id", ""),
-                "from_agent": m.get("from_agent", "unknown"),
-                "to_agent": m.get("to_agent"),
-                "message": m.get("message", ""),
-                "message_type": m.get("message_type", "info"),
+                "agent_name": m.get("agent", ""),
+                "message_text": m.get("text", ""),
+                "message_type": m.get("type", "info"),
             }
             for m in messages
         ]
-        db.table("agent_messages").insert(rows).execute()
-    except Exception as e:
-        print(f"[db_tools] Failed to bulk-save messages: {e}")
-
-
-def get_constituency(name: str) -> Optional[dict]:
-    """Fetch a constituency by name (case-insensitive partial match)."""
-    db = get_db()
-    result = (
-        db.table("constituencies")
-        .select("*")
-        .ilike("name", f"%{name}%")
-        .limit(1)
-        .execute()
-    )
-    return result.data[0] if result.data else None
-
-
-def get_candidates(constituency_id: int, election_year: Optional[int] = None) -> list:
-    """Fetch all candidates for a constituency, optionally filtered by year."""
-    db = get_db()
-    query = (
-        db.table("candidates")
-        .select("*")
-        .eq("constituency_id", constituency_id)
-    )
-    if election_year:
-        query = query.eq("election_year", election_year)
-    result = query.order("election_year", desc=True).execute()
-    return result.data or []
-
-
-def get_election_history(constituency_id: int) -> list:
-    """Fetch full election history for a constituency."""
-    db = get_db()
-    result = (
-        db.table("election_results")
-        .select("*")
-        .eq("constituency_id", constituency_id)
-        .order("election_year", desc=True)
-        .execute()
-    )
-    return result.data or []
+        httpx.post(
+            f"{_base()}/agent_messages",
+            json=rows,
+            headers=_headers(),
+            timeout=10.0,
+        )
+    except Exception:
+        pass

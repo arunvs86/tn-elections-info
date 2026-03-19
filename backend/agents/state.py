@@ -1,67 +1,30 @@
 """
-state.py — The shared memory of the entire LangGraph system.
-
-WHAT THIS FILE DOES:
-    Defines TNElectionState — a Python TypedDict (typed dictionary) that acts
-    as the single source of truth shared between ALL agents.
-
-WHY THIS WAY:
-    In LangGraph, agents don't talk to each other directly.
-    Instead, they all read from and write to this one shared state object.
-    The Supervisor reads the state to decide who to route to next.
-    Each specialist agent reads what it needs and writes its results back.
-
-WHAT BREAKS WITHOUT IT:
-    Nothing would work. This is the backbone. Without a shared state,
-    agents can't coordinate, and the supervisor can't route.
+Shared state for the LangGraph election intelligence graph.
+Every node reads from and writes to this TypedDict.
 """
-
 from typing import TypedDict, Optional
 
 
 class TNElectionState(TypedDict):
-    # ── Input (set by the API route, never changed after) ────────────────
-    query_type: str
-    # One of: "constituency" | "candidate" | "factcheck" | "manifesto"
+    # --- Input ---
+    session_id: str          # Unique ID for this request
+    query_type: str          # "constituency" | "candidate" | "factcheck" | "promises"
+    constituency_name: str   # e.g. "Saidapet"
+    candidate_name: str      # e.g. "M.K. Stalin"
+    claim_text: str          # For fact-check queries
+    party: str               # Optional party filter
 
-    constituency_name: str    # e.g. "Saidapet"
-    candidate_name: str       # e.g. "P. Chidambaram"
-    claim_text: str           # e.g. "TVK has no political experience"
-    party: str                # e.g. "DMK"
+    # --- Populated by agents ---
+    constituency: Optional[dict]        # Row from constituencies table
+    candidates: list                    # Rows from candidates table
+    election_results: list              # Rows from election_results table
+    criminal_records: list             # Rows from criminal_records table
+    promises: list                      # Rows from promises table
+    factcheck_result: Optional[dict]    # Verdict from factcheck agent
 
-    # ── Agent outputs (each specialist agent writes to its own key) ──────
-    candidates: list
-    # Written by ECI agent. List of candidate dicts with name, party, affidavit data.
+    # --- Routing ---
+    next_agent: str          # Which node the supervisor routes to next
 
-    criminal_findings: dict
-    # Written by Criminal agent. Maps candidate_id → list of case dicts.
-
-    promise_scores: dict
-    # Written by Promise agent. Maps candidate_id → {kept, broken, partial, total}.
-
-    fact_check_result: dict
-    # Written by Factcheck agent. {verdict, confidence, explanation, sources}.
-
-    manifesto_scores: list
-    # Written by Manifesto agent. List of {party, promise, scores, label}.
-
-    # ── Communication (the live feed) ────────────────────────────────────
-    agent_messages: list
-    # Every agent appends a message dict here:
-    # { from_agent, to_agent, message, message_type, created_at }
-    # These are ALSO written to Supabase agent_messages table in real time.
-    # Supabase Realtime pushes them to the browser — that's the live feed.
-
-    session_id: str
-    # UUID for this investigation run. Used to filter messages per session.
-
-    next_agent: str
-    # Written by Supervisor. Tells LangGraph which node to route to.
-    # Special value: "END" means the investigation is complete.
-
-    # ── Final output ──────────────────────────────────────────────────────
-    final_result: dict
-    # Assembled by the last agent. Merged summary of all findings.
-
-    error: Optional[str]
-    # If any agent fails, it writes a human-readable error here.
+    # --- Output ---
+    agent_messages: list     # Accumulated messages shown in the UI feed
+    final_summary: str       # Plain-English summary returned to frontend

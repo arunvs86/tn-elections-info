@@ -1,75 +1,85 @@
 """
-main.py — FastAPI application entry point.
-
-WHAT THIS FILE DOES:
-    Creates the FastAPI app, mounts all routes, configures CORS
-    (so the Next.js frontend can call this backend), and starts
-    the uvicorn server.
-
-WHY CORS MATTERS:
-    Browsers block cross-origin requests by default.
-    Your Next.js app runs on localhost:3000 (or Vercel).
-    Your FastAPI runs on localhost:8000 (or Railway).
-    CORS headers tell the browser "it's OK for this frontend to call me".
-
-WHAT BREAKS WITHOUT IT:
-    Every frontend API call fails with a CORS error in the browser console.
-
-RUN COMMAND: uvicorn main:app --reload --port 8000
+TN Elections FastAPI backend.
+Single endpoint: POST /api/investigate
 """
-
 import os
+import uuid
 from dotenv import load_dotenv
 
-# Load .env file BEFORE importing anything that reads env vars
 load_dotenv()
 
-from fastapi import FastAPI
+# Disable LangSmith tracing (no key configured)
+os.environ["LANGCHAIN_TRACING_V2"] = "false"
+
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
-from api.routes import router
+from agents.graph import election_graph
+from tools.db_tools import save_messages
 
-app = FastAPI(
-    title="tnelections.info API",
-    description="AI-powered voter intelligence for Tamil Nadu Elections 2026",
-    version="1.0.0",
-    docs_url="/docs",       # Swagger UI at http://localhost:8000/docs
-    redoc_url="/redoc",     # ReDoc at http://localhost:8000/redoc
-)
+app = FastAPI(title="TN Elections API", version="2.0.0")
 
-# ── CORS configuration ────────────────────────────────────────────────
-# Allow requests from our frontend origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",          # Local Next.js dev server
-        "https://tnelections.info",       # Production domain
-        "https://www.tnelections.info",
-        "https://*.vercel.app",           # Vercel preview deployments
-    ],
-    allow_credentials=True,
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ── Mount all API routes under /api prefix ────────────────────────────
-app.include_router(router, prefix="/api")
+
+class InvestigateRequest(BaseModel):
+    query_type: str = "constituency"   # constituency | candidate | factcheck | promises
+    constituency_name: str = ""
+    candidate_name: str = ""
+    claim_text: str = ""
+    party: str = ""
 
 
-@app.get("/")
-async def root():
-    return {
-        "message": "tnelections.info API is running",
-        "docs": "/docs",
-        "health": "/api/health",
+@app.get("/api/health")
+def health():
+    return {"status": "ok", "version": "2.0.0"}
+
+
+@app.post("/api/investigate")
+def investigate(req: InvestigateRequest):
+    session_id = str(uuid.uuid4())
+
+    # Build initial state
+    initial_state = {
+        "session_id": session_id,
+        "query_type": req.query_type,
+        "constituency_name": req.constituency_name,
+        "candidate_name": req.candidate_name,
+        "claim_text": req.claim_text,
+        "party": req.party,
+        # Defaults
+        "constituency": None,
+        "candidates": [],
+        "election_results": [],
+        "criminal_records": [],
+        "promises": [],
+        "factcheck_result": None,
+        "next_agent": "",
+        "agent_messages": [],
+        "final_summary": "",
     }
 
+    try:
+        result = election_graph.invoke(initial_state)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",
-        port=int(os.getenv("PORT", 8000)),
-        reload=True,
-    )
+    # Persist messages to Supabase in background (non-blocking)
+    save_messages(result.get("agent_messages", []))
+
+    return {
+        "session_id": session_id,
+        "constituency": result.get("constituency"),
+        "candidates": result.get("candidates", []),
+        "election_results": result.get("election_results", []),
+        "criminal_records": result.get("criminal_records", []),
+        "promises": result.get("promises", []),
+        "factcheck_result": result.get("factcheck_result"),
+        "agent_messages": result.get("agent_messages", []),
+    }
