@@ -22,6 +22,11 @@ class TNElectionState(TypedDict):
     promises: list                      # Rows from promises table
     factcheck_result: Optional[dict]    # Verdict from factcheck agent
 
+    # --- Fact-check evidence chain (populated by sub-agents) ---
+    extracted_entities: Optional[dict]  # {party, people, topic, numbers, search_queries}
+    wikipedia_evidence: list            # [{title, extract, url}, ...]
+    db_evidence: list                   # [{source_table, records}, ...]
+
     # --- Routing ---
     next_agent: str          # Which node the supervisor routes to next
 
