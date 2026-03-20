@@ -262,7 +262,7 @@ export default function DistrictsPage() {
                 >
                   <ZoomableGroup>
                     <Geographies geography={TOPO_URL}>
-                      {({ geographies }) =>
+                      {({ geographies }: { geographies: any[] }) =>
                         geographies.map((geo) => {
                           const districtName =
                             geo.properties.district || "Unknown";
