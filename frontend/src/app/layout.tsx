@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import ChatWidget from "@/components/ChatWidget";
 
 export const metadata: Metadata = {
   title: "TN Elections 2026 — Know Your Candidates",
@@ -44,7 +45,10 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
       </head>
-      <body className="bg-cream font-sans antialiased">{children}</body>
+      <body className="bg-cream font-sans antialiased">
+        {children}
+        <ChatWidget />
+      </body>
     </html>
   );
 }

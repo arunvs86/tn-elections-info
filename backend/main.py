@@ -16,6 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from agents.graph import election_graph
+from agents.chat_agent import handle_chat
 from tools.db_tools import save_messages
 
 app = FastAPI(title="TN Elections API", version="2.0.0")
@@ -87,3 +88,17 @@ def investigate(req: InvestigateRequest):
         "factcheck_result": result.get("factcheck_result"),
         "agent_messages": result.get("agent_messages", []),
     }
+
+
+class ChatRequest(BaseModel):
+    message: str
+    context: list = []
+
+
+@app.post("/api/chat")
+def chat(req: ChatRequest):
+    try:
+        result = handle_chat(req.message, req.context)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    return result

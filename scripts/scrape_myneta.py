@@ -258,7 +258,7 @@ def scrape_candidate(candidate_id: int) -> dict | None:
         "age": age,
         "education": education,
         "criminal_cases": criminal_cases,
-        "criminal_details": "",
+        "criminal_details": criminal_details,
         "movable_assets": movable,
         "immovable_assets": immovable,
         "total_assets": total_assets,
@@ -296,7 +296,7 @@ def phase1_scrape():
         for row in existing_rows:
             writer.writerow(row)
 
-        for cid in range(2712, MAX_ID + 1):
+        for cid in range(1, MAX_ID + 1):
             if cid in scraped_ids:
                 continue
 
