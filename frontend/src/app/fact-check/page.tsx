@@ -7,11 +7,17 @@ import Link from "next/link";
 // ── Types ──────────────────────────────────────────────
 type Verdict = "true" | "misleading" | "false" | "unverifiable";
 
+interface Source {
+  title: string;
+  url: string;
+}
+
 interface FactCheckResult {
   verdict: Verdict;
   confidence_pct: number;
   explanation: string;
   party_about: string | null;
+  sources_used: (Source | string)[];
 }
 
 interface AgentMessage {
@@ -100,11 +106,12 @@ function timeAgo(dateStr: string): string {
   return `${days}d ago`;
 }
 
-// ── Thinking animation — matches the 4-agent pipeline ──
+// ── Thinking animation — matches the 5-agent pipeline ──
 const THINKING_STEPS = [
   { agent: "Entity Extractor", text: "Extracting parties, people, and topics from claim..." },
-  { agent: "Wikipedia Search", text: "Searching Wikipedia for relevant articles..." },
+  { agent: "Wikipedia Search", text: "Searching Wikipedia for background knowledge..." },
   { agent: "Database Search", text: "Querying our election database (ECI/MyNeta)..." },
+  { agent: "Web Search", text: "Searching news articles, fact-checks, and press releases..." },
   { agent: "Verdict Agent", text: "Reviewing all evidence and forming verdict..." },
 ];
 
@@ -119,6 +126,8 @@ function agentLabel(name: string): { label: string; icon: string } {
       return { label: "Wikipedia Search", icon: "📚" };
     case "db_searcher":
       return { label: "Database Search", icon: "🗄️" };
+    case "web_searcher":
+      return { label: "Web Search", icon: "🌐" };
     case "verdict_agent":
       return { label: "Verdict Agent", icon: "⚖️" };
     default:
@@ -201,6 +210,7 @@ export default function FactCheckPage() {
           confidence_pct: fc.confidence_pct || 0,
           explanation: fc.explanation || "No explanation provided.",
           party_about: fc.party_about || null,
+          sources_used: fc.sources_used || [],
         });
       } else {
         setError("The AI could not determine a verdict for this claim.");
@@ -442,6 +452,39 @@ export default function FactCheckPage() {
                       {result.explanation}
                     </p>
                   </div>
+
+                  {/* Sources */}
+                  {result.sources_used && result.sources_used.length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-gray-200/50">
+                      <p className="text-xs font-semibold text-gray-600 mb-2">
+                        Sources ({result.sources_used.length})
+                      </p>
+                      <div className="space-y-1.5">
+                        {result.sources_used.map((source, i) => {
+                          const title = typeof source === "string" ? source : source.title;
+                          const url = typeof source === "string" ? null : source.url;
+                          return (
+                            <div key={i} className="flex items-start gap-2">
+                              <span className="text-xs text-gray-400 mt-0.5">{i + 1}.</span>
+                              {url ? (
+                                <a
+                                  href={url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-blue-600 hover:text-blue-800 hover:underline leading-snug"
+                                >
+                                  {title}
+                                  <span className="text-gray-400 ml-1">↗</span>
+                                </a>
+                              ) : (
+                                <span className="text-xs text-gray-600">{title}</span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })()}
@@ -450,7 +493,7 @@ export default function FactCheckPage() {
             {agentMessages.length > 0 && (
               <details className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden" open>
                 <summary className="px-6 py-4 cursor-pointer text-sm font-semibold text-gray-800 hover:bg-gray-50 transition-colors">
-                  AI Reasoning Trace ({agentMessages.length} steps across 4 agents)
+                  AI Reasoning Trace ({agentMessages.length} steps across 5 agents)
                 </summary>
                 <div className="px-6 pb-4 border-t border-gray-100 pt-3">
                   {/* Group messages by agent */}

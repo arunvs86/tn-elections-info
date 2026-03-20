@@ -63,6 +63,7 @@ def investigate(req: InvestigateRequest):
         "extracted_entities": None,
         "wikipedia_evidence": [],
         "db_evidence": [],
+        "web_evidence": [],
         "next_agent": "",
         "agent_messages": [],
         "final_summary": "",

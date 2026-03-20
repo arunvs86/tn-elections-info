@@ -26,6 +26,7 @@ class TNElectionState(TypedDict):
     extracted_entities: Optional[dict]  # {party, people, topic, numbers, search_queries}
     wikipedia_evidence: list            # [{title, extract, url}, ...]
     db_evidence: list                   # [{source_table, records}, ...]
+    web_evidence: list                  # [{title, url, content, score}, ...] from Tavily
 
     # --- Routing ---
     next_agent: str          # Which node the supervisor routes to next
