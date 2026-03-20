@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { LanguageProvider } from "@/components/LanguageProvider";
 import ChatWidget from "@/components/ChatWidget";
 
 export const metadata: Metadata = {
@@ -46,8 +47,10 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-cream font-sans antialiased">
-        {children}
-        <ChatWidget />
+        <LanguageProvider>
+          {children}
+          <ChatWidget />
+        </LanguageProvider>
       </body>
     </html>
   );

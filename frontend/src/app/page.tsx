@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { useLang } from "@/components/LanguageProvider";
 import Link from "next/link";
 
 // ── Types ─────────────────────────────────────────
@@ -17,6 +18,7 @@ interface Constituency {
 interface CountdownTarget {
   label: string;
   date: Date;
+  daysLabel?: string;
 }
 
 const COUNTDOWN_DATES: CountdownTarget[] = [
@@ -64,7 +66,7 @@ function CountdownCard({ target }: { target: CountdownTarget }) {
         {target.label}
       </p>
       <p className="text-3xl font-bold text-terracotta">{time.days}</p>
-      <p className="text-sm text-gray-600">days away</p>
+      <p className="text-sm text-gray-600">{target.daysLabel || "days away"}</p>
       <p className="text-xs text-gray-400 mt-0.5">{time.hours}h left today</p>
     </div>
   );
@@ -187,6 +189,7 @@ const ALLIANCES = [
 
 // ── Main Page ─────────────────────────────────────
 export default function HomePage() {
+  const { lang, setLang, t } = useLang();
   const [constituencies, setConstituencies] = useState<Constituency[]>([]);
   const [claimInput, setClaimInput] = useState("");
 
@@ -199,6 +202,12 @@ export default function HomePage() {
         if (data) setConstituencies(data);
       });
   }, []);
+
+  const countdownDates: CountdownTarget[] = [
+    { label: t("home.nominations"), date: new Date("2026-04-06"), daysLabel: t("home.days_away") },
+    { label: t("home.polling"),     date: new Date("2026-04-23"), daysLabel: t("home.days_away") },
+    { label: t("home.results"),     date: new Date("2026-05-04"), daysLabel: t("home.days_away") },
+  ];
 
   return (
     <div className="min-h-screen bg-cream">
@@ -213,14 +222,15 @@ export default function HomePage() {
             </div>
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-            <Link href="/districts" className="hover:text-terracotta transition-colors">Districts</Link>
-            <Link href="/fact-check" className="hover:text-terracotta transition-colors">Narrative Check</Link>
-            <Link href="/manifestos" className="hover:text-terracotta transition-colors">Manifestos</Link>
-            <Link href="/polls" className="hover:text-terracotta transition-colors">Polls</Link>
-            <Link href="/swing-seats" className="hover:text-terracotta transition-colors">Swing Seats</Link>
+            <Link href="/districts" className="hover:text-terracotta transition-colors">{t("nav.districts")}</Link>
+            <Link href="/fact-check" className="hover:text-terracotta transition-colors">{t("nav.factcheck")}</Link>
+            <Link href="/swing-seats" className="hover:text-terracotta transition-colors">{t("nav.swingseats")}</Link>
           </nav>
-          <button className="text-sm font-semibold text-terracotta border border-terracotta px-3 py-1.5 rounded-[9px] hover:bg-terracotta hover:text-white transition-colors">
-            தமிழ்
+          <button
+            onClick={() => setLang(lang === "en" ? "ta" : "en")}
+            className="text-sm font-semibold text-terracotta border border-terracotta px-3 py-1.5 rounded-[9px] hover:bg-terracotta hover:text-white transition-colors"
+          >
+            {lang === "en" ? "தமிழ்" : "English"}
           </button>
         </div>
       </header>
@@ -229,32 +239,35 @@ export default function HomePage() {
       <section className="max-w-6xl mx-auto px-4 pt-12 pb-8 text-center">
         <div className="inline-flex items-center gap-2 bg-terracotta/10 text-terracotta px-3 py-1 rounded-full text-sm font-medium mb-4">
           <span className="pulse-dot inline-block w-2 h-2 bg-terracotta rounded-full"></span>
-          AI agents investigating candidates live
+          {t("home.badge")}
         </div>
         <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-3 leading-tight">
-          Know your candidates.<br />
-          <span className="text-terracotta">Break the narratives.</span>
+          {t("home.title")}<br />
+          <span className="text-terracotta">{t("home.subtitle")}</span>
         </h1>
         <p className="text-lg text-gray-600 mb-2">
-          Your vote, your truth. — Tamil Nadu Elections 2026
+          {t("home.tagline")}
         </p>
-        <p className="text-sm text-gray-500 mb-8 font-tamil">
-          உங்கள் வாக்கு, உங்கள் உண்மை
-        </p>
+        {lang === "en" && (
+          <p className="text-sm text-gray-500 mb-8 font-tamil">
+            உங்கள் வாக்கு, உங்கள் உண்மை
+          </p>
+        )}
+        {lang === "ta" && <div className="mb-8" />}
 
         <SearchBar constituencies={constituencies} />
 
         <p className="mt-3 text-xs text-gray-400">
           {constituencies.length > 0
-            ? `${constituencies.length} constituencies loaded · Click to investigate any candidate with AI`
-            : "Loading constituencies…"}
+            ? `${constituencies.length} ${t("home.search_hint")}`
+            : t("common.loading")}
         </p>
       </section>
 
       {/* ── Countdown ── */}
       <section className="max-w-6xl mx-auto px-4 pb-10">
         <div className="flex flex-wrap gap-4 justify-center">
-          {COUNTDOWN_DATES.map((d) => (
+          {countdownDates.map((d) => (
             <CountdownCard key={d.label} target={d} />
           ))}
         </div>
@@ -284,9 +297,11 @@ export default function HomePage() {
           <div className="flex items-start gap-3 mb-4">
             <span className="text-2xl">🔬</span>
             <div>
-              <h2 className="text-lg font-bold text-gray-900">Narrative Check</h2>
+              <h2 className="text-lg font-bold text-gray-900">{t("fc.title")}</h2>
               <p className="text-sm text-gray-500">
-                Paste any political claim — our AI finds sources and gives a verdict in seconds
+                {lang === "en"
+                  ? "Paste any political claim — our AI finds sources and gives a verdict in seconds"
+                  : "எந்தவொரு அரசியல் கூற்றையும் ஒட்டுங்கள் — எங்கள் AI ஆதாரங்களை கண்டறிந்து நொடிகளில் தீர்ப்பு வழங்கும்"}
               </p>
             </div>
           </div>
@@ -295,14 +310,17 @@ export default function HomePage() {
               type="text"
               value={claimInput}
               onChange={(e) => setClaimInput(e.target.value)}
-              placeholder={`Try: "TVK has no political experience" or "DMK reduced power cuts"`}
+              placeholder={lang === "en"
+                ? `Try: "TVK has no political experience" or "DMK reduced power cuts"`
+                : `முயற்சி: "TVK-க்கு அரசியல் அனுபவம் இல்லை" அல்லது "DMK மின்வெட்டை குறைத்தது"`
+              }
               className="flex-1 border border-gray-200 rounded-[9px] px-4 py-3 text-sm outline-none focus:border-terracotta"
             />
             <Link
               href={`/fact-check${claimInput ? `?claim=${encodeURIComponent(claimInput)}` : ""}`}
               className="bg-terracotta text-white px-6 py-3 rounded-[9px] font-semibold text-sm text-center hover:bg-[#a33d0e] transition-colors whitespace-nowrap"
             >
-              Check Claim →
+              {t("fc.submit")} →
             </Link>
           </div>
           <div className="flex flex-wrap gap-2 mt-3">
@@ -327,8 +345,7 @@ export default function HomePage() {
       <footer className="border-t border-gray-200 bg-white py-8 mt-4">
         <div className="max-w-6xl mx-auto px-4 text-center text-sm text-gray-500">
           <p className="font-medium text-gray-700 mb-1">tnelections.info</p>
-          <p>Data sourced from Election Commission of India, MyNeta, and eCourts.</p>
-          <p className="mt-1">Built for informed voting · Tamil Nadu Elections 2026</p>
+          <p>{t("common.footer")}</p>
         </div>
       </footer>
     </div>
