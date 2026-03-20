@@ -19,7 +19,7 @@ def _claude_call(system: str, user: str) -> str:
             "content-type": "application/json",
         },
         json={
-            "model": "claude-haiku-4-20250414",
+            "model": "claude-haiku-4-5-20251001",
             "max_tokens": 1500,
             "temperature": 0,
             "system": system,
