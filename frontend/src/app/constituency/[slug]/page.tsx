@@ -704,7 +704,7 @@ export default function ConstituencyPage() {
       {compareIds.size === 2 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
           <Link
-            href={`/compare?ids=${[...compareIds].join(",")}`}
+            href={`/compare?ids=${Array.from(compareIds).join(",")}`}
             className="flex items-center gap-3 bg-terracotta text-white px-6 py-3 rounded-full shadow-lg hover:bg-[#a33d0e] transition-all font-semibold text-sm"
           >
             Compare selected candidates →
