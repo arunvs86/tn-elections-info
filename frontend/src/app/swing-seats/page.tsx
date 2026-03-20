@@ -112,11 +112,11 @@ export default function SwingSeatsPage() {
 
   // Unique districts and parties for filter dropdowns
   const districts = useMemo(
-    () => [...new Set(seats.map((s) => s.district))].sort(),
+    () => Array.from(new Set(seats.map((s) => s.district))).sort(),
     [seats]
   );
   const parties = useMemo(
-    () => [...new Set(seats.map((s) => s.winner_party))].sort(),
+    () => Array.from(new Set(seats.map((s) => s.winner_party))).sort(),
     [seats]
   );
 

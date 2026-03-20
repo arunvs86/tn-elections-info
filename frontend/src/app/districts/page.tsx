@@ -288,7 +288,7 @@ export default function DistrictsPage() {
                                 },
                                 pressed: { outline: "none" },
                               }}
-                              onMouseEnter={(evt) => {
+                              onMouseEnter={(evt: React.MouseEvent) => {
                                 setTooltip({
                                   name: districtName,
                                   constituencyCount:
@@ -298,7 +298,7 @@ export default function DistrictsPage() {
                                   y: evt.clientY,
                                 });
                               }}
-                              onMouseMove={(evt) => {
+                              onMouseMove={(evt: React.MouseEvent) => {
                                 setTooltip((prev) =>
                                   prev
                                     ? {
