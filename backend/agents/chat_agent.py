@@ -102,13 +102,39 @@ def query_constituency(name: str) -> dict:
 
 
 def query_candidate(name: str) -> dict:
-    """Fetch a specific candidate by name."""
+    """Fetch a specific candidate by name. Handles fuzzy matching (M.K. Stalin vs MK Stalin)."""
+    # Try exact-ish match first
     rows = rest_get("candidates", {
         "name": f"ilike.*{name}*",
         "election_year": "eq.2021",
         "select": "id,name,party,constituency_id,votes_received,vote_share,is_winner,criminal_cases_declared,net_worth,assets_movable,assets_immovable,liabilities,age,education",
         "limit": "5",
     })
+
+    # If no results, try with dots between initials (MK → M.K.)
+    if not rows:
+        import re
+        # Add dots after single uppercase letters: "MK Stalin" → "M.K. Stalin"
+        dotted = re.sub(r'\b([A-Z])(?=[A-Z\s])', r'\1.', name)
+        if dotted != name:
+            rows = rest_get("candidates", {
+                "name": f"ilike.*{dotted}*",
+                "election_year": "eq.2021",
+                "select": "id,name,party,constituency_id,votes_received,vote_share,is_winner,criminal_cases_declared,net_worth,assets_movable,assets_immovable,liabilities,age,education",
+                "limit": "5",
+            })
+
+    # Last resort: try just the last word (surname)
+    if not rows and " " in name:
+        surname = name.strip().split()[-1]
+        if len(surname) > 2:  # avoid matching single initials
+            rows = rest_get("candidates", {
+                "name": f"ilike.*{surname}*",
+                "election_year": "eq.2021",
+                "select": "id,name,party,constituency_id,votes_received,vote_share,is_winner,criminal_cases_declared,net_worth,assets_movable,assets_immovable,liabilities,age,education",
+                "limit": "5",
+            })
+
     if not rows:
         return {"found": False}
 
