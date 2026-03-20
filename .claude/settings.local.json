@@ -81,7 +81,9 @@
       "Bash(curl -s -X POST https://zealous-spontaneity-production-71e6.up.railway.app/api/investigate -H \"Content-Type: application/json\" -d '{\"\"\"\"query_type\"\"\"\":\"\"\"\"factcheck\"\"\"\",\"\"\"\"claim_text\"\"\"\":\"\"\"\"DMK won 159 seats in 2021\"\"\"\"}')",
       "Bash(curl -s -X POST https://zealous-spontaneity-production-71e6.up.railway.app/api/investigate -H \"Content-Type: application/json\" -d '{\"\"\"\"query_type\"\"\"\":\"\"\"\"factcheck\"\"\"\",\"\"\"\"claim_text\"\"\"\":\"\"\"\"DMK won 159 seats in 2021 Tamil Nadu elections\"\"\"\"}')",
       "Bash(git rm:*)",
-      "Bash(npx next:*)"
+      "Bash(npx next:*)",
+      "Bash(python scrape_myneta.py scrape)",
+      "Bash(pkill -f \"next dev\")"
     ]
   }
 }

@@ -3,6 +3,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
+import { useLang } from "@/components/LanguageProvider";
+import Header from "@/components/Header";
 
 // ── Types ──────────────────────────────────────────────
 interface SwingSeat {
@@ -67,6 +69,7 @@ export default function SwingSeatsPage() {
   const [districtFilter, setDistrictFilter] = useState("all");
   const [partyFilter, setPartyFilter] = useState("all");
   const [levelFilter, setLevelFilter] = useState<"all" | DangerLevel>("all");
+  const { lang, setLang, t } = useLang();
 
   useEffect(() => {
     async function fetchData() {
@@ -144,57 +147,23 @@ export default function SwingSeatsPage() {
 
   return (
     <div className="min-h-screen bg-cream">
-      {/* ── Header ── */}
-      <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl">🗳️</span>
-            <div>
-              <p className="font-bold text-gray-900 leading-none">
-                tnelections.info
-              </p>
-              <p className="text-xs text-gray-500">Tamil Nadu 2026</p>
-            </div>
-          </Link>
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-            <Link
-              href="/districts"
-              className="hover:text-terracotta transition-colors"
-            >
-              Districts
-            </Link>
-            <Link
-              href="/swing-seats"
-              className="text-terracotta font-semibold"
-            >
-              Swing Seats
-            </Link>
-          </nav>
-          <Link
-            href="/"
-            className="text-sm text-gray-500 hover:text-terracotta transition-colors"
-          >
-            ← Home
-          </Link>
-        </div>
-      </header>
+      <Header active="swing" />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         {/* Breadcrumb */}
         <p className="text-xs text-gray-400 mb-2">
           <Link href="/" className="hover:text-terracotta">
-            Home
+            {t("nav.home")}
           </Link>
           {" / "}
-          <span className="text-gray-600 font-medium">Swing Seats</span>
+          <span className="text-gray-600 font-medium">{t("nav.swingseats")}</span>
         </p>
 
         <h1 className="text-3xl font-extrabold text-gray-900 mb-1">
-          Swing Seat Detector
+          {t("swing.title")}
         </h1>
         <p className="text-sm text-gray-500 mb-6">
-          Constituencies ranked by 2021 victory margin. Smaller margin = higher
-          chance of flipping in 2026.
+          {t("swing.subtitle")}
         </p>
 
         {loading ? (
@@ -219,7 +188,7 @@ export default function SwingSeatsPage() {
               >
                 <p className="text-2xl font-bold text-red-600">{redCount}</p>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  High Risk (&lt;5k)
+                  {t("swing.red")} (&lt;5k)
                 </p>
               </button>
               <button
@@ -236,7 +205,7 @@ export default function SwingSeatsPage() {
                   {yellowCount}
                 </p>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  Competitive (5-15k)
+                  {t("swing.yellow")} (5-15k)
                 </p>
               </button>
               <button
@@ -253,7 +222,7 @@ export default function SwingSeatsPage() {
                   {greenCount}
                 </p>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  Safe (&gt;15k)
+                  {t("swing.green")} (&gt;15k)
                 </p>
               </button>
             </div>
@@ -265,7 +234,7 @@ export default function SwingSeatsPage() {
                 onChange={(e) => setDistrictFilter(e.target.value)}
                 className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white text-gray-700 focus:outline-none focus:border-terracotta"
               >
-                <option value="all">All Districts</option>
+                <option value="all">{t("swing.filter_district")}</option>
                 {districts.map((d) => (
                   <option key={d} value={d}>
                     {d}
@@ -277,7 +246,7 @@ export default function SwingSeatsPage() {
                 onChange={(e) => setPartyFilter(e.target.value)}
                 className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white text-gray-700 focus:outline-none focus:border-terracotta"
               >
-                <option value="all">All Parties</option>
+                <option value="all">{t("swing.filter_party")}</option>
                 {parties.map((p) => (
                   <option key={p} value={p}>
                     {p}
@@ -295,7 +264,7 @@ export default function SwingSeatsPage() {
                   }}
                   className="text-sm text-terracotta hover:underline"
                 >
-                  Clear filters
+                  {t("swing.clear_filters")}
                 </button>
               )}
             </div>
@@ -368,7 +337,7 @@ export default function SwingSeatsPage() {
                           {fmt(s.margin)}
                         </p>
                         <p className="text-[10px] text-gray-400">
-                          {marginPct}% margin
+                          {marginPct}% {t("swing.margin_label")}
                         </p>
                       </div>
                     </div>
@@ -407,7 +376,7 @@ export default function SwingSeatsPage() {
                   }}
                   className="text-terracotta text-sm mt-2 hover:underline"
                 >
-                  Clear all filters
+                  {t("swing.clear_filters")}
                 </button>
               </div>
             )}
@@ -419,7 +388,7 @@ export default function SwingSeatsPage() {
       <footer className="border-t border-gray-200 bg-white py-6 mt-8">
         <div className="max-w-6xl mx-auto px-4 text-center text-sm text-gray-500">
           <p>
-            Data from Election Commission of India · Tamil Nadu Elections 2026
+            {t("common.footer")}
           </p>
         </div>
       </footer>

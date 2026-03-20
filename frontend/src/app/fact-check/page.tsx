@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
+import { useLang } from "@/components/LanguageProvider";
+import Header from "@/components/Header";
 
 // ── Types ──────────────────────────────────────────────
 type Verdict = "true" | "misleading" | "false" | "unverifiable";
@@ -146,6 +148,7 @@ export default function FactCheckPage() {
   const [recentChecks, setRecentChecks] = useState<RecentCheck[]>([]);
   const [loadingRecent, setLoadingRecent] = useState(true);
   const resultRef = useRef<HTMLDivElement>(null);
+  const { lang, setLang, t } = useLang();
 
   // Fetch recent checks on mount
   useEffect(() => {
@@ -246,66 +249,25 @@ export default function FactCheckPage() {
 
   return (
     <div className="min-h-screen bg-cream">
-      {/* ── Header ── */}
-      <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl">🗳️</span>
-            <div>
-              <p className="font-bold text-gray-900 leading-none">
-                tnelections.info
-              </p>
-              <p className="text-xs text-gray-500">Tamil Nadu 2026</p>
-            </div>
-          </Link>
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-            <Link
-              href="/districts"
-              className="hover:text-terracotta transition-colors"
-            >
-              Districts
-            </Link>
-            <Link
-              href="/fact-check"
-              className="text-terracotta font-semibold"
-            >
-              Narrative Check
-            </Link>
-            <Link
-              href="/swing-seats"
-              className="hover:text-terracotta transition-colors"
-            >
-              Swing Seats
-            </Link>
-          </nav>
-          <Link
-            href="/"
-            className="text-sm text-gray-500 hover:text-terracotta transition-colors"
-          >
-            ← Home
-          </Link>
-        </div>
-      </header>
+      <Header active="factcheck" />
 
       <main className="max-w-3xl mx-auto px-4 py-8">
         {/* Breadcrumb */}
         <p className="text-xs text-gray-400 mb-2">
           <Link href="/" className="hover:text-terracotta">
-            Home
+            {t("nav.home")}
           </Link>
           {" / "}
-          <span className="text-gray-600 font-medium">Narrative Check</span>
+          <span className="text-gray-600 font-medium">{t("nav.factcheck")}</span>
         </p>
 
         {/* ── Hero section ── */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-extrabold text-gray-900 mb-2">
-            Narrative Check
+            {t("fc.title")}
           </h1>
           <p className="text-sm text-gray-500 max-w-lg mx-auto">
-            Paste any political claim, WhatsApp forward, or social media post.
-            Our AI fact-checker will verify it against official election data and
-            return a verdict.
+            {t("fc.subtitle")}
           </p>
         </div>
 
@@ -315,7 +277,7 @@ export default function FactCheckPage() {
             htmlFor="claim-input"
             className="block text-sm font-semibold text-gray-800 mb-2"
           >
-            What claim do you want to check?
+            {t("fc.input_label")}
           </label>
           <textarea
             id="claim-input"
@@ -339,7 +301,7 @@ export default function FactCheckPage() {
               disabled={!claim.trim() || loading}
               className="px-5 py-2.5 bg-terracotta text-white text-sm font-semibold rounded-xl hover:bg-terracotta/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
-              {loading ? "Checking..." : "Check Claim"}
+              {loading ? t("fc.checking") : t("fc.submit")}
             </button>
           </div>
         </div>
@@ -350,7 +312,7 @@ export default function FactCheckPage() {
             <div className="flex items-center gap-3 mb-4">
               <div className="w-5 h-5 border-2 border-terracotta border-t-transparent rounded-full animate-spin" />
               <p className="text-sm font-semibold text-gray-800">
-                Multi-agent pipeline running...
+                {t("fc.pipeline")}
               </p>
             </div>
             <div className="space-y-3 ml-8">
@@ -381,14 +343,14 @@ export default function FactCheckPage() {
         {error && !loading && (
           <div className="bg-red-50 rounded-2xl border border-red-200 p-6 mb-6">
             <p className="text-sm text-red-700 font-medium">
-              Something went wrong
+              {t("common.error")}
             </p>
             <p className="text-xs text-red-500 mt-1">{error}</p>
             <button
               onClick={handleSubmit}
               className="text-xs text-terracotta hover:underline mt-2"
             >
-              Try again
+              {t("common.try_again")}
             </button>
           </div>
         )}
@@ -437,7 +399,7 @@ export default function FactCheckPage() {
 
                   {/* Claim being checked */}
                   <div className="bg-white/60 rounded-xl p-3 mb-4">
-                    <p className="text-xs text-gray-400 mb-1">Claim checked</p>
+                    <p className="text-xs text-gray-400 mb-1">{t("fc.claim_checked")}</p>
                     <p className="text-sm text-gray-700 italic">
                       &ldquo;{claim}&rdquo;
                     </p>
@@ -446,7 +408,7 @@ export default function FactCheckPage() {
                   {/* Explanation */}
                   <div>
                     <p className="text-sm font-semibold text-gray-800 mb-1">
-                      Explanation
+                      {t("fc.explanation")}
                     </p>
                     <p className="text-sm text-gray-700 leading-relaxed">
                       {result.explanation}
@@ -457,7 +419,7 @@ export default function FactCheckPage() {
                   {result.sources_used && result.sources_used.length > 0 && (
                     <div className="mt-4 pt-4 border-t border-gray-200/50">
                       <p className="text-xs font-semibold text-gray-600 mb-2">
-                        Sources ({result.sources_used.length})
+                        {t("fc.sources")} ({result.sources_used.length})
                       </p>
                       <div className="space-y-1.5">
                         {result.sources_used.map((source, i) => {
@@ -493,7 +455,7 @@ export default function FactCheckPage() {
             {agentMessages.length > 0 && (
               <details className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden" open>
                 <summary className="px-6 py-4 cursor-pointer text-sm font-semibold text-gray-800 hover:bg-gray-50 transition-colors">
-                  AI Reasoning Trace ({agentMessages.length} steps across 5 agents)
+                  {t("fc.reasoning")} ({agentMessages.length} steps across 5 agents)
                 </summary>
                 <div className="px-6 pb-4 border-t border-gray-100 pt-3">
                   {/* Group messages by agent */}
@@ -536,8 +498,7 @@ export default function FactCheckPage() {
 
             {/* Disclaimer */}
             <p className="text-[10px] text-gray-400 text-center">
-              AI-generated analysis. Always verify with official sources. This
-              is not legal or journalistic advice.
+              {t("fc.disclaimer")}
             </p>
           </div>
         )}
@@ -545,7 +506,7 @@ export default function FactCheckPage() {
         {/* ── Recent Checks Feed ── */}
         <div className="mt-8">
           <h2 className="text-lg font-bold text-gray-900 mb-4">
-            Recent Checks
+            {t("fc.recent")}
           </h2>
 
           {loadingRecent ? (
@@ -555,7 +516,7 @@ export default function FactCheckPage() {
           ) : recentChecks.length === 0 ? (
             <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
               <p className="text-gray-500 text-sm">
-                No fact-checks yet. Be the first to check a claim!
+                {t("fc.no_checks")}
               </p>
             </div>
           ) : (
@@ -612,7 +573,7 @@ export default function FactCheckPage() {
       <footer className="border-t border-gray-200 bg-white py-6 mt-8">
         <div className="max-w-6xl mx-auto px-4 text-center text-sm text-gray-500">
           <p>
-            Data from Election Commission of India · Tamil Nadu Elections 2026
+            {t("common.footer")}
           </p>
         </div>
       </footer>

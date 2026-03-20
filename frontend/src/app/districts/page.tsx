@@ -9,6 +9,8 @@ import {
 } from "react-simple-maps";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
+import { useLang } from "@/components/LanguageProvider";
+import Header from "@/components/Header";
 
 // ── Types ──────────────────────────────────────────
 interface DistrictStats {
@@ -89,6 +91,7 @@ export default function DistrictsPage() {
   >({});
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
   const [loading, setLoading] = useState(true);
+  const { lang, setLang, t } = useLang();
 
   // Fetch district stats from Supabase
   useEffect(() => {
@@ -175,68 +178,23 @@ export default function DistrictsPage() {
 
   return (
     <div className="min-h-screen bg-cream">
-      {/* ── Header ── */}
-      <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl">🗳️</span>
-            <div>
-              <p className="font-bold text-gray-900 leading-none">
-                tnelections.info
-              </p>
-              <p className="text-xs text-gray-500">Tamil Nadu 2026</p>
-            </div>
-          </Link>
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-            <Link
-              href="/districts"
-              className="text-terracotta font-semibold"
-            >
-              Districts
-            </Link>
-            <Link
-              href="/fact-check"
-              className="hover:text-terracotta transition-colors"
-            >
-              Narrative Check
-            </Link>
-            <Link
-              href="/manifestos"
-              className="hover:text-terracotta transition-colors"
-            >
-              Manifestos
-            </Link>
-            <Link
-              href="/polls"
-              className="hover:text-terracotta transition-colors"
-            >
-              Polls
-            </Link>
-          </nav>
-          <Link
-            href="/"
-            className="text-sm text-gray-500 hover:text-terracotta transition-colors"
-          >
-            ← Home
-          </Link>
-        </div>
-      </header>
+      <Header active="districts" />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         {/* Breadcrumb */}
         <p className="text-xs text-gray-400 mb-2">
           <Link href="/" className="hover:text-terracotta">
-            Home
+            {t("nav.home")}
           </Link>
           {" / "}
-          <span className="text-gray-600 font-medium">Districts</span>
+          <span className="text-gray-600 font-medium">{t("nav.districts")}</span>
         </p>
 
         <h1 className="text-3xl font-extrabold text-gray-900 mb-1">
-          Tamil Nadu Districts
+          {t("districts.title")}
         </h1>
         <p className="text-sm text-gray-500 mb-6">
-          Click any district to see its constituencies and election history
+          {t("districts.subtitle")}
         </p>
 
         {loading ? (
@@ -392,13 +350,13 @@ export default function DistrictsPage() {
                 className="block bg-red-50 rounded-2xl border border-red-200 shadow-sm p-4 mt-4 hover:shadow-md transition-all group"
               >
                 <h3 className="font-bold text-gray-900 text-sm mb-1 group-hover:text-terracotta transition-colors">
-                  Swing Seat Detector
+                  {t("districts.swing_title")}
                 </h3>
                 <p className="text-xs text-gray-500">
-                  39 seats won by &lt;5,000 votes in 2021. See which seats could flip in 2026.
+                  {t("districts.swing_desc")}
                 </p>
                 <span className="text-xs text-terracotta font-semibold mt-2 inline-block">
-                  View all swing seats →
+                  {t("districts.view_swing")} →
                 </span>
               </Link>
 
@@ -438,8 +396,7 @@ export default function DistrictsPage() {
       <footer className="border-t border-gray-200 bg-white py-6 mt-8">
         <div className="max-w-6xl mx-auto px-4 text-center text-sm text-gray-500">
           <p>
-            Data from Election Commission of India · Tamil Nadu Elections
-            2026
+            {t("common.footer")}
           </p>
         </div>
       </footer>

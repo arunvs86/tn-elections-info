@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { supabase } from "@/lib/supabase";
 import Link from "next/link";
+import { useLang } from "@/components/LanguageProvider";
 
 // ── Types ──────────────────────────────────────────────
 interface CandidateCard {
@@ -150,17 +152,18 @@ function CandidateMiniCard({ c }: { c: CandidateCard }) {
 
 // ── Main ChatWidget ────────────────────────────────────
 export default function ChatWidget() {
+  const { t } = useLang();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "welcome",
       role: "assistant",
-      text: "Hi! I'm your TN Elections assistant. Ask me anything about candidates, constituencies, or election data. You can also use voice!",
+      text: t("chat.welcome"),
       timestamp: new Date(),
       suggestions: [
-        "Who is the MLA of Singanallur?",
-        "Richest candidate in Chennai?",
-        "DMK vs ADMK seat count in 2021",
+        t("chat.suggestion1"),
+        t("chat.suggestion2"),
+        t("chat.suggestion3"),
       ],
     },
   ]);
@@ -181,6 +184,143 @@ export default function ChatWidget() {
       setTimeout(() => inputRef.current?.focus(), 200);
     }
   }, [open]);
+
+  // Extract keywords from natural language query
+  function extractSearchTerm(text: string): string {
+    // Remove common question prefixes to get the core search term
+    let cleaned = text
+      .replace(/^(who is|what is|tell me about|show me|find|search|get|list|what are|how many|which)/i, "")
+      .replace(/\b(the|a|an|of|in|for|from|mla|mp|candidate|candidates|constituency|district|results|election|elections|2021|2026)\b/gi, "")
+      .replace(/[?.,!]/g, "")
+      .trim();
+    // If nothing left, return original
+    return cleaned || text.trim();
+  }
+
+  // Local Supabase fallback when backend is unreachable
+  async function handleLocalFallback(text: string) {
+    const searchTerm = extractSearchTerm(text);
+
+    try {
+      // Try matching a constituency
+      const { data: constituencies } = await supabase
+        .from("constituencies")
+        .select("id,name,district,current_mla,current_mla_party")
+        .ilike("name", `%${searchTerm}%`)
+        .limit(1);
+
+      if (constituencies && constituencies.length > 0) {
+        const cons = constituencies[0];
+        // Fetch candidates for this constituency
+        const { data: candidates } = await supabase
+          .from("candidates")
+          .select("*")
+          .eq("constituency_id", cons.id)
+          .eq("election_year", 2021)
+          .order("votes_received", { ascending: false });
+
+        const cards: CandidateCard[] = (candidates || []).map((c: any) => ({
+          name: c.name,
+          party: c.party,
+          constituency: cons.name,
+          votes: c.votes_received,
+          vote_share: c.vote_share,
+          criminal_cases: c.criminal_cases_declared || 0,
+          net_worth: c.net_worth,
+          is_winner: c.is_winner || false,
+        }));
+
+        const winner = cards.find((c) => c.is_winner);
+        const responseText = winner
+          ? `${cons.name} (${cons.district} district): The current MLA is ${winner.name} from ${winner.party}${winner.votes ? `, who won with ${winner.votes.toLocaleString("en-IN")} votes (${winner.vote_share}%)` : ""}. There were ${cards.length} candidates in 2021.`
+          : `${cons.name} (${cons.district} district): Found ${cards.length} candidates from the 2021 election.`;
+
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: generateId(),
+            role: "assistant",
+            text: responseText,
+            timestamp: new Date(),
+            candidates: cards.length > 0 ? cards.slice(0, 5) : undefined,
+            suggestions: [
+              `Compare top 2 in ${cons.name}`,
+              `Criminal cases in ${cons.name}?`,
+              `Swing seats in ${cons.district}`,
+            ],
+          },
+        ]);
+        return;
+      }
+
+      // Try matching a candidate by name
+      const { data: candidateRows } = await supabase
+        .from("candidates")
+        .select("*, constituencies(name,district)")
+        .ilike("name", `%${searchTerm}%`)
+        .eq("election_year", 2021)
+        .limit(5);
+
+      if (candidateRows && candidateRows.length > 0) {
+        const cards: CandidateCard[] = candidateRows.map((c: any) => ({
+          name: c.name,
+          party: c.party,
+          constituency: c.constituencies?.name || "",
+          votes: c.votes_received,
+          vote_share: c.vote_share,
+          criminal_cases: c.criminal_cases_declared || 0,
+          net_worth: c.net_worth,
+          is_winner: c.is_winner || false,
+        }));
+
+        const first = cards[0];
+        const responseText = `Found ${cards.length} candidate(s) matching "${searchTerm}". ${first.name} (${first.party}) contested from ${first.constituency}${first.is_winner ? " and won" : ""}.`;
+
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: generateId(),
+            role: "assistant",
+            text: responseText,
+            timestamp: new Date(),
+            candidates: cards,
+            suggestions: [
+              "Compare with opponents",
+              "Criminal case details",
+              `More about ${first.constituency}`,
+            ],
+          },
+        ]);
+        return;
+      }
+
+      // Nothing found
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: generateId(),
+          role: "assistant",
+          text: `I couldn't find results for "${searchTerm}". Try a constituency name like "Singanallur" or "Coimbatore South", or a candidate name.`,
+          timestamp: new Date(),
+          suggestions: [
+            "Who is the MLA of Singanallur?",
+            "Show me Chennai results",
+            "DMK candidates in Coimbatore",
+          ],
+        },
+      ]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: generateId(),
+          role: "assistant",
+          text: "Sorry, I'm having trouble connecting right now. Please try again.",
+          timestamp: new Date(),
+        },
+      ]);
+    }
+  }
 
   async function sendMessage(text: string) {
     if (!text.trim() || loading) return;
@@ -231,69 +371,8 @@ export default function ChatWidget() {
 
       setMessages((prev) => [...prev, assistantMsg]);
     } catch {
-      // Fallback: try the /api/investigate endpoint directly
-      try {
-        const res = await fetch(`${backendUrl}/api/investigate`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            query_type: "constituency",
-            constituency_name: text.trim(),
-          }),
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          const candidateCards: CandidateCard[] = (data.candidates || []).map(
-            (c: any) => ({
-              name: c.name,
-              party: c.party,
-              constituency: c.constituency || text.trim(),
-              votes: c.votes_received,
-              vote_share: c.vote_share,
-              criminal_cases: c.criminal_cases_declared || 0,
-              net_worth: c.net_worth,
-              is_winner: c.is_winner || false,
-            })
-          );
-
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: generateId(),
-              role: "assistant",
-              text:
-                candidateCards.length > 0
-                  ? `Here's what I found for "${text.trim()}":`
-                  : `I couldn't find results for "${text.trim()}". Try a constituency name like "Singanallur" or "Coimbatore South".`,
-              timestamp: new Date(),
-              candidates:
-                candidateCards.length > 0 ? candidateCards : undefined,
-              suggestions: [
-                "Compare the top 2 candidates",
-                "Who has criminal cases?",
-                "Show swing seats nearby",
-              ],
-            },
-          ]);
-        } else {
-          throw new Error("fallback also failed");
-        }
-      } catch {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: generateId(),
-            role: "assistant",
-            text: "Sorry, I'm having trouble connecting right now. Please try again in a moment.",
-            timestamp: new Date(),
-            suggestions: [
-              "Who is the MLA of Singanallur?",
-              "Show me Coimbatore results",
-            ],
-          },
-        ]);
-      }
+      // Fallback: query Supabase directly from the frontend
+      await handleLocalFallback(text.trim());
     } finally {
       setLoading(false);
     }
@@ -345,10 +424,10 @@ export default function ChatWidget() {
               <span className="text-lg">🗳️</span>
               <div>
                 <p className="font-bold text-sm leading-none">
-                  Ask TN Elections
+                  {t("chat.title")}
                 </p>
                 <p className="text-[10px] text-white/70">
-                  AI-powered election assistant
+                  {t("chat.subtitle")}
                 </p>
               </div>
             </div>
@@ -573,7 +652,7 @@ export default function ChatWidget() {
                 }
               }}
               placeholder={
-                isListening ? "Listening..." : "Ask about TN elections..."
+                isListening ? t("chat.listening") : t("chat.placeholder")
               }
               className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta/30"
               disabled={loading || isListening}

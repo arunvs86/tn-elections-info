@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useLang } from "@/components/LanguageProvider";
+import Header from "@/components/Header";
 import Link from "next/link";
 
 // ── Types ─────────────────────────────────────────
@@ -211,29 +212,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-cream">
-      {/* ── Header ── */}
-      <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl">🗳️</span>
-            <div>
-              <p className="font-bold text-gray-900 leading-none">tnelections.info</p>
-              <p className="text-xs text-gray-500">Tamil Nadu 2026</p>
-            </div>
-          </Link>
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-            <Link href="/districts" className="hover:text-terracotta transition-colors">{t("nav.districts")}</Link>
-            <Link href="/fact-check" className="hover:text-terracotta transition-colors">{t("nav.factcheck")}</Link>
-            <Link href="/swing-seats" className="hover:text-terracotta transition-colors">{t("nav.swingseats")}</Link>
-          </nav>
-          <button
-            onClick={() => setLang(lang === "en" ? "ta" : "en")}
-            className="text-sm font-semibold text-terracotta border border-terracotta px-3 py-1.5 rounded-[9px] hover:bg-terracotta hover:text-white transition-colors"
-          >
-            {lang === "en" ? "தமிழ்" : "English"}
-          </button>
-        </div>
-      </header>
+      <Header active="home" />
 
       {/* ── Hero ── */}
       <section className="max-w-6xl mx-auto px-4 pt-12 pb-8 text-center">
