@@ -94,7 +94,7 @@ export default function DistrictDetailPage() {
         .in("constituency_id", ids);
 
       // Build a map of results by constituency_id
-      const resultMap: Record<number, (typeof results)[0]> = {};
+      const resultMap: Record<number, NonNullable<typeof results>[0]> = {};
       if (results) {
         for (const r of results) {
           resultMap[r.constituency_id] = r;
