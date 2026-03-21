@@ -1,0 +1,3523 @@
+[
+  {
+    "id": 48,
+    "status": "pending",
+    "evidence": "Could not find specific evidence of Thirukuvalai-Nagapattinam connectivity implementation despite railway developments in the region.",
+    "evidence_ta": "திருக்குவளை-நாகப்பட்டினம் இணைப்பு திட்டம் பற்றி தெளிவான தகவல் கிடைக்கவில்லை.",
+    "source_url": ""
+  },
+  {
+    "id": 49,
+    "status": "partially_kept",
+    "evidence": "Railway conversion work completed for Thiruvarur-Karaikudi route but full connectivity promise unclear.",
+    "evidence_ta": "திருவாரூர்-கரைக்குடி ரயில் பாதை மாற்ற வேலை முடிந்தது ஆனால் முழு இணைப்பு தெளிவில்லை.",
+    "source_url": "https://www.constructionworld.in/transport-infrastructure/metro-rail-and-railways-infrastructure/indian-railways-advances-major-projects-across-tamil-nadu/88212"
+  },
+  {
+    "id": 50,
+    "status": "pending",
+    "evidence": "Could not find specific evidence of Thanjavur-Orathanadu-Pattukottai connectivity implementation.",
+    "evidence_ta": "தஞ்சாவூர்-ஒரத்தநாடு-பட்டுக்கோட்டை இணைப்பு பற்றி தகவல் கிடைக்கவில்லை.",
+    "source_url": ""
+  },
+  {
+    "id": 51,
+    "status": "pending",
+    "evidence": "Could not find specific evidence of Mannarkudi-Mathukkur-Pattukottai connectivity implementation.",
+    "evidence_ta": "மன்னார்குடி-மதுக்கூர்-பட்டுக்கோட்டை இணைப்பு பற்றி தகவல் கிடைக்கவில்லை.",
+    "source_url": ""
+  },
+  {
+    "id": 52,
+    "status": "partially_kept",
+    "evidence": "Railway conversion completed for Karaikudi route but full Ramanathapuram-Thoothukudi connectivity unclear.",
+    "evidence_ta": "கரைக்குடி ரயில் பாதை வேலை முடிந்தது ஆனால் ராமநாதபுரம்-தூத்துக்குடி இணைப்பு தெளிவில்லை.",
+    "source_url": "https://www.constructionworld.in/transport-infrastructure/metro-rail-and-railways-infrastructure/indian-railways-advances-major-projects-across-tamil-nadu/88212"
+  },
+  {
+    "id": 53,
+    "status": "pending",
+    "evidence": "Could not find specific evidence of Madurai-Theni-Bodi connectivity implementation.",
+    "evidence_ta": "மதுரை-தேனி-போடி இணைப்பு பற்றி தகவல் கிடைக்கவில்லை.",
+    "source_url": ""
+  },
+  {
+    "id": 54,
+    "status": "pending",
+    "evidence": "Could not find specific evidence of Ariyalur-Thanjavur connectivity implementation.",
+    "evidence_ta": "அரியலூர்-தஞ்சாவூர் இணைப்பு பற்றி தகவல் கிடைக்கவில்லை.",
+    "source_url": ""
+  },
+  {
+    "id": 55,
+    "status": "pending",
+    "evidence": "Could not find specific evidence of Kumbakonam-Ariyalur/Jayankondam-Virudhachalam connectivity implementation.",
+    "evidence_ta": "கும்பகோணம்-அரியலூர்/ஜெயங்கொண்டம்-விருதாசலம் இணைப்பு பற்றி தகவல் கிடைக்கவில்லை.",
+    "source_url": ""
+  },
+  {
+    "id": 56,
+    "status": "pending",
+    "evidence": "Could not find specific evidence of Madurai-Melur-Karaikudi connectivity implementation.",
+    "evidence_ta": "மதுரை-மேலூர்-கரைக்குடி இணைப்பு பற்றி தகவல் கிடைக்கவில்லை.",
+    "source_url": ""
+  },
+  {
+    "id": 57,
+    "status": "pending",
+    "evidence": "Could not find specific evidence of Madurai-Aruppukottai-Thoothukudi connectivity implementation.",
+    "evidence_ta": "மதுரை-அருப்புக்கோட்டை-தூத்துக்குடி இணைப்பு பற்றி தகவல் கிடைக்கவில்லை.",
+    "source_url": ""
+  },
+  {
+    "id": 58,
+    "status": "partially_kept",
+    "evidence": "DPR for Avadi-Guduvanchery railway line via Sriperumbudur is ready with Phase-1 costing ₹945 crore, but construction has not yet begun.",
+    "evidence_ta": "அவடி-குடுவாஞ்சேரி ரயில் பாதைக்கான டிபிஆர் தயாராகி இருக்கு, ஆனா இன்னும் கட்டுமான வேலை ஆரம்பிக்கலை.",
+    "source_url": "https://buildwatchnews.com/avadi-guduvanchery-rail-project-dpr-phase-1/"
+  },
+  {
+    "id": 59,
+    "status": "kept",
+    "evidence": "Peralam-Karaikal new railway line construction is progressing actively with 80% of Tirunallar station completed and ₹320.64 crore sanctioned for the 23.55 km project.",
+    "evidence_ta": "பேராலம்-கரைக்கால் ரயில் பாதை வேலை நடந்துட்டு இருக்கு, திருநள்ளாருல 80% ஸ்டேஷன் முடிஞ்சி இருக்கு.",
+    "source_url": "https://mysuruinfrahub.com/karaikal-peralam-new-railway-line-progressing-swiftly/"
+  },
+  {
+    "id": 60,
+    "status": "partially_kept",
+    "evidence": "Erode-Palani railway project received ₹100.01 crore allocation in Railway Budget 2024 but construction status remains unclear.",
+    "evidence_ta": "ஈரோடு-பழநி ரயில் பாதைக்கு 100 கோடி ரூபா ஒதுக்கப்பட்டு இருக்கு, ஆனா கட்டுமான நிலவரம் தெரியலை.",
+    "source_url": "https://www.news9live.com/state/tamil-nadu/railway-budget-2024-heres-full-list-of-funds-allocated-for-new-rail-line-projects-in-tamil-nadu-2426358"
+  },
+  {
+    "id": 61,
+    "status": "pending",
+    "evidence": "No clear evidence found of Mettupalayam-Sathiyamangalam-Gobichetipalayam railway project being launched or implemented by DMK government.",
+    "evidence_ta": "மெட்டுப்பாளையம்-சத்யமங்கலம்-கோபிசெட்டிப்பாளையம் ரயில் பாதை பத்தி தெளிவான தகவல் இல்லை.",
+    "source_url": ""
+  },
+  {
+    "id": 62,
+    "status": "pending",
+    "evidence": "No clear evidence found of Vandalur-Valajabath transportation project being implemented during DMK tenure 2021-2025.",
+    "evidence_ta": "வண்டலூர்-வாலஜபாத் போக்குவரத்து திட்டம் பத்தி தெளிவான தகவல் கிடைக்கலை.",
+    "source_url": ""
+  },
+  {
+    "id": 63,
+    "status": "pending",
+    "evidence": "No evidence found of DMK government specifically urging Central government for Indian citizenship laws for Sri Lankan Tamil refugees during 2021-2025 period.",
+    "evidence_ta": "இலங்கை தமிழ் அகதிகளுக்கு இந்திய குடியுரிமை வழங்க மத்திய அரசை வலியுறுத்தின தகவல் கிடைக்கலை.",
+    "source_url": ""
+  },
+  {
+    "id": 64,
+    "status": "pending",
+    "evidence": "No evidence found of a dedicated Non-Resident Tamils Department being created by DMK government to look after Tamils living abroad.",
+    "evidence_ta": "வெளிநாட்டுல இருக்கிற தமிழர்களுக்காக தனி துறை உருவாக்கின தகவல் கிடைக்கலை.",
+    "source_url": ""
+  },
+  {
+    "id": 65,
+    "status": "broken",
+    "evidence": "DMK promised to revive Lok Ayukta and pass Right to Services Act but both remain unfulfilled after 4 years, with government putting proposals on hold.",
+    "evidence_ta": "லோக் ஆயுக்த மறுசீரமைப்பு, உரிமைச் சேவைகள் சட்டம் எல்லாம் வாக்குறுதி கொடுத்தாங்க, ஆனா 4 வருஷம் ஆச்சும் இன்னும் நடக்கலை.",
+    "source_url": "https://www.dtnext.in/news/tamilnadu/dmk-failing-right-to-public-service-poll-promise-even-as-pinarayi-shows-the-way-849373"
+  },
+  {
+    "id": 66,
+    "status": "broken",
+    "evidence": "DVAC continues to face interference allegations with corruption cases against DMK ministers being closed after they came to power, contradicting corruption-free governance promise.",
+    "evidence_ta": "DVAC-கிட்ட இன்னும் அரசாங்க தலையீடு இருக்கு, DMK மந்திரிகளோட corruption case-ஐ அவங்க அதிகாரத்துக்கு வந்த பின்னாடி dismiss பண்ணிட்டாங்க.",
+    "source_url": "https://thefederal.com/category/states/south/tamil-nadu/da-cases-thangam-thennarasu-kkssr-ramachandran-229411"
+  },
+  {
+    "id": 67,
+    "status": "pending",
+    "evidence": "No evidence found of DMK government specifically probing Jayalalithaa's death or taking legal action regarding her death during 2021-2025 period.",
+    "evidence_ta": "ஜெயலலிதா மரணம் பத்தி விசாரணை நடத்துனதா அல்லது சட்டப்படி நடவடிக்கை எடுத்ததா தகவல் கிடைக்கலை.",
+    "source_url": ""
+  },
+  {
+    "id": 68,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 69,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 70,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 71,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 72,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 73,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 74,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 75,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 76,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 77,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 78,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 79,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 80,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 81,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 82,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 83,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 84,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 85,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 86,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 87,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 88,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 89,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 90,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 91,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 92,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 93,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 94,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 95,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 96,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 97,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 98,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 99,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 100,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 101,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 102,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 103,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 104,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 105,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 106,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 107,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 108,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 109,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 110,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 111,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 112,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 113,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 114,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 115,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 116,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 117,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 118,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 119,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 120,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 121,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 122,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 123,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 124,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 125,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 126,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 127,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 128,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 129,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 130,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 131,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 132,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 133,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 134,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 135,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 136,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 137,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 138,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 139,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 140,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 141,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 142,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 143,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 144,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 145,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 146,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 147,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 148,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 149,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 150,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 151,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 152,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 153,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 154,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 155,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 156,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 157,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 158,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 159,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 160,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 161,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 162,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 163,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 164,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 165,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 166,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 167,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 168,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 169,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 170,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 171,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 172,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 173,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 174,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 175,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 176,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 177,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 178,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 179,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 180,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 181,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 182,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 183,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 184,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 185,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 186,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 187,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 188,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 189,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 190,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 191,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 192,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 193,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 194,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 195,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 196,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 197,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 198,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 199,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 200,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 201,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 202,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 203,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 204,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 205,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 206,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 207,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 208,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 209,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 210,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 211,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 212,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 213,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 214,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 215,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 216,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 217,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 218,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 219,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 220,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 221,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 222,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 223,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 224,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 225,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 226,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 227,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 228,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 229,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 230,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 231,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 232,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 233,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 234,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 235,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 236,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 237,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 238,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 239,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 240,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 241,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 242,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 243,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 244,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 245,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 246,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 247,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 248,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 249,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 250,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 251,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 252,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 253,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 254,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 255,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 256,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 257,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 258,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 259,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 260,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 261,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 262,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 263,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 264,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 265,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 266,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 267,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 268,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 269,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 270,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 271,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 272,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 273,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 274,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 275,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 276,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 277,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 278,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 279,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 280,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 281,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 282,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 283,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 284,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 285,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 286,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 287,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 288,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 289,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 290,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 291,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 292,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 293,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 294,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 295,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 296,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 297,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 298,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 299,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 300,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 301,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 302,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 303,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 304,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 305,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 306,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 307,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 308,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 309,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 310,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 311,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 312,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 313,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 314,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 315,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 316,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 317,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 318,
+    "status": "pending",
+    "evidence": "General welfare programs exist for Adi Dravidar communities, but no specific evidence found for backlog vacancies filling initiatives.",
+    "evidence_ta": "அதிதிராவிடர் சமூகத்துக்கு பொதுவான நலத் திட்டங்கள் உள்ளன, ஆனால் பின்தங்கிய காலியிடங்கள் நிரப்பும் குறிப்பிட்ட திட்டங்கள் கண்டுபிடிக்க முடியவில்லை.",
+    "source_url": ""
+  },
+  {
+    "id": 319,
+    "status": "partially_kept",
+    "evidence": "Tamil Nadu operates overseas scholarship schemes for SC/ST communities covering engineering and medicine with full funding up to ₹36 lakh, but specific focus on first-generation women farmers' daughters unclear.",
+    "evidence_ta": "தமிழ்நாடு SC/ST சமூகத்துக்கு வெளிநாட்டு ஸ்காலர்ஷிப் திட்டம் நடத்துகிறது இன்ஜினியரிங் மற்றும் மருத்துவத்துக்கு ₹36 லட்சம் வரை, ஆனால் முதல் தலைமுறை பெண் விவசாயிகளின் மகள்களுக்கான குறிப்பிட்ட கவனம் தெளிவில்லை.",
+    "source_url": "https://www.scribd.com/document/899016799/The-Tamil-Nadu-Government-s-Overseas-Scholarship-Scheme-aims-to-support-students-from-Adi-Dravidar-SC-Scheduled-Tribes-ST-and-Adi-Dravidar-conve"
+  },
+  {
+    "id": 320,
+    "status": "pending",
+    "evidence": "Special Component Plan mentioned in government documents as ongoing activity, but no specific evidence of strengthened implementation under DMK government.",
+    "evidence_ta": "சிறப்பு கூறு திட்டம் அரசு ஆவணங்களில் நடப்பு நடவடிக்கையாக குறிப்பிடப்பட்டுள்ளது, ஆனால் DMK அரசின் கீழ் வலுப்படுத்தப்பட்ட செயல்பாட்டுக்கான குறிப்பிட்ட ஆதாரம் இல்லை.",
+    "source_url": ""
+  },
+  {
+    "id": 321,
+    "status": "partially_kept",
+    "evidence": "Government provides hostel facilities and various welfare schemes for SC/ST students, with evidence of hostel infrastructure improvements in districts like Perambalur.",
+    "evidence_ta": "அரசு SC/ST மாணவர்களுக்கு விடுதி வசதிகள் மற்றும் பல்வேறு நல திட்டங்களை வழங்குகிறது, பெரம்பலூர் போன்ற மாவட்டங்களில் விடுதி உள்கட்டமைப்பு மேம்பாடுகளுக்கான ஆதாரங்கள் உள்ளன.",
+    "source_url": "https://perambalur.nic.in/adi-dravidar-tribal-welfare-department/"
+  },
+  {
+    "id": 322,
+    "status": "partially_kept",
+    "evidence": "Educational scholarships are provided from 1st standard to PhD level for Adi Dravidar and ST communities, with ₹16 crore allocated for research incentives in 2024-25.",
+    "evidence_ta": "அதிதிராவிடர் மற்றும் ST சமூகங்களுக்கு 1-ம் வகுப்பு முதல் PhD வரை கல்வி ஸ்காலர்ஷிப்கள் வழங்கப்படுகின்றன, 2024-25-ல் ஆராய்ச்சி ஊக்கத் தொகைக்கு ₹16 கோடி ஒதுக்கப்பட்டுள்ளது.",
+    "source_url": "https://www.tnadw.in/incentive"
+  },
+  {
+    "id": 323,
+    "status": "pending",
+    "evidence": "No specific evidence found for DMK government's efforts to include additional communities in ST list or expedite community certificate processes.",
+    "evidence_ta": "ST பட்டியலில் கூடுதல் சமூகங்களை சேர்க்க அல்லது சமூக சான்றிதழ் செயல்முறைகளை விரைவுபடுத்த DMK அரசின் முயற்சிகளுக்கான குறிப்பிட்ட ஆதாரம் கிடைக்கவில்லை.",
+    "source_url": ""
+  },
+  {
+    "id": 324,
+    "status": "broken",
+    "evidence": "Manual scavenging continues in Tamil Nadu with multiple deaths reported between 2021-2024, and mechanized cleaning rollout has been very slow despite DMK promises.",
+    "evidence_ta": "2021-2024 இல் பல மரணங்கள் பதிவாகியுள்ள நிலையில் தமிழ்நாட்டில் கைமுறை துப்புரவு பணி தொடர்கிறது, DMK வாக்குறுதிகள் இருந்தபோதிலும் இயந்திரமயமாக்கப்பட்ட சுத்தப்படுத்தல் மிகவும் மெதுவாக உள்ளது.",
+    "source_url": "https://www.oneindia.com/chennai/dmk-faces-backlash-as-manual-scavenging-deaths-expose-governance-gaps-7879995.html"
+  },
+  {
+    "id": 325,
+    "status": "pending",
+    "evidence": "No specific evidence found for implementation of weekly holidays or overtime wages for sanitation workers under DMK government.",
+    "evidence_ta": "DMK அரசின் கீழ் துப்புरவு தொழிலாளர்களுக்கு வாராந்திர விடுமுறை அல்லது கூடுதல் நேர ஊதியம் வழங்குவதற்கான குறிப்பிட்ட ஆதாரம் கிடைக்கவில்லை.",
+    "source_url": ""
+  },
+  {
+    "id": 326,
+    "status": "pending",
+    "evidence": "No specific evidence found for compassionate appointment scheme for children of deceased sanitation workers implemented by DMK government.",
+    "evidence_ta": "DMK அரசால் செயல்படுத்தப்பட்ட இறந்த துப்புரவு தொழிலாளர்களின் குழந்தைகளுக்கான இரக்க நியமன திட்டத்துக்கான குறிப்பிட்ட ஆதாரம் கிடைக்கவில்லை.",
+    "source_url": ""
+  },
+  {
+    "id": 327,
+    "status": "pending",
+    "evidence": "No specific evidence found for promotion schemes based on educational qualifications for sanitation workers during their service under DMK government.",
+    "evidence_ta": "DMK அரசின் கீழ் சேவையின் போது துப்புரவு தொழிலாளர்களுக்கு கல்வித் தகுதியின் அடிப்படையில் பதவி உயர்வு திட்டங்களுக்கான குறிப்பிட்ட ஆதாரம் கிடைக்கவில்லை.",
+    "source_url": ""
+  },
+  {
+    "id": 328,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 329,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 330,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 331,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 332,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 333,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 334,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 335,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 336,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 337,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 338,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 339,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 340,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 341,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 342,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 343,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 344,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 345,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 346,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 347,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 348,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 349,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 350,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 351,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 352,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 353,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 354,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 355,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 356,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 357,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 358,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 359,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 360,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 361,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 362,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 363,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 364,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 365,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 366,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 367,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 368,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 369,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 370,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 371,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 372,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 373,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 374,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 375,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 376,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 377,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 378,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 379,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 380,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 381,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 382,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 383,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 384,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 385,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 386,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 387,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 388,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 389,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 390,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 391,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 392,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 393,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 394,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 395,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 396,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 397,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 398,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 399,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 400,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 401,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 402,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 403,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 404,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 405,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 406,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 407,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 408,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 409,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 410,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 411,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 412,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 413,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 414,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 415,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 416,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 417,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 418,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 419,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 420,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 421,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 422,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 423,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 424,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 425,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 426,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 427,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 428,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 429,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 430,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 431,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 432,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 433,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 434,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 435,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 436,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 437,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 438,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 439,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 440,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 441,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 442,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 443,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 444,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 445,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 446,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 447,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 448,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 449,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 450,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 451,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 452,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 453,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 454,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 455,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 456,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 457,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 458,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 459,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 460,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 461,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 462,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 463,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 464,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 465,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 466,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 467,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 468,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 469,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 470,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 471,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 472,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 473,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 474,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 475,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 476,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 477,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 478,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 479,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 480,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 481,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 482,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 483,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 484,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 485,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 486,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 487,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 488,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 489,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 490,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 491,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 492,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 493,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 494,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 495,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 496,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 497,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 498,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 499,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 500,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 501,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 502,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 503,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 504,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 505,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 506,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 507,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 508,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 509,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 510,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 511,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 512,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 513,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 514,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 515,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 516,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 517,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 518,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 519,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 520,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 521,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 522,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 523,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 524,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 525,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 526,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 527,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 528,
+    "status": "partially_kept",
+    "evidence": "Tamil Nadu government announced CCTV installation in all government high and higher secondary schools by 2024, with surveillance cameras made mandatory in school buses in 2022.",
+    "evidence_ta": "அரசு பள்ளிகள்ல சிசிடிவி கேமரா போடறதுக்கு 2024ல அறிவிப்பு வந்துச்சு, 2022ல பள்ளி பஸ்ஸுகள்ல கேமரா கட்டாயம் ஆக்கினாங்க.",
+    "source_url": "https://www.dtnext.in/news/tamilnadu/cctv-to-be-installed-in-all-govt-high-and-higher-secondary-schools-762646"
+  },
+  {
+    "id": 529,
+    "status": "partially_kept",
+    "evidence": "DMK government withdrew 5,570 cases against CAA and Farm Law protesters, and 26 cases against Kudankulam protesters, but 63 serious cases including sedition charges remain pending.",
+    "evidence_ta": "சிஏஏ, விவசாயி போராட்டம் கேஸ்கள் 5,570 விலக்கினாங்க, குடங்குளம் 26 கேஸ் விலக்கினாங்க, ஆனா 63 பெரிய கேஸ்கள் இன்னும் இருக்கு.",
+    "source_url": "https://www.republicworld.com/india-news/politics/tamil-nadu-govt-officially-withdraws-5570-cases-against-caa-and-farm-laws-protesters.html"
+  },
+  {
+    "id": 530,
+    "status": "pending",
+    "evidence": "No clear evidence found of a specific executive committee formed to investigate TNPSC malpractices or punishment of guilty officials.",
+    "evidence_ta": "TNPSC துறையில நடக்கும் ஊழல்கள பத்தி விசாரிக்க கமிட்டி அமைச்சாங்க இல்லன்னு தெரியலை.",
+    "source_url": ""
+  },
+  {
+    "id": 531,
+    "status": "pending",
+    "evidence": "No specific information found about transparency measures implemented in TNPSC and Teachers Recruitment Board recruitment processes.",
+    "evidence_ta": "TNPSC மற்றும் ஆசிரியர் நியமனங்கள்ல வெளிப்படைத்தன்மை கொண்டு வந்தாங்க இல்லன்னு தெரியலை.",
+    "source_url": ""
+  },
+  {
+    "id": 532,
+    "status": "pending",
+    "evidence": "No clear evidence found regarding property tax hikes being avoided during COVID recovery period.",
+    "evidence_ta": "கோவிட் பாதிப்பு நேரத்துல சொத்து வரி உயர்த்தாம இருந்தாங்க இல்லன்னு தெரியலை.",
+    "source_url": ""
+  },
+  {
+    "id": 533,
+    "status": "pending",
+    "evidence": "No specific evidence found of Tamil Nadu DMK government actively opposing railway privatization at the national level.",
+    "evidence_ta": "ரயில்வே தனியார் மயம் எதிர்த்து DMK அரசு என்ன செஞ்சுங்க இல்லன்னு தெரியலை.",
+    "source_url": ""
+  },
+  {
+    "id": 534,
+    "status": "pending",
+    "evidence": "No specific evidence found of Tamil Nadu DMK government opposing banking sector privatization at the national level.",
+    "evidence_ta": "வங்கி துறை தனியார் மயம் எதிர்த்து DMK அரசு என்ன செஞ்சுங்க இல்லன்னு தெரியலை.",
+    "source_url": ""
+  },
+  {
+    "id": 535,
+    "status": "pending",
+    "evidence": "No specific evidence found of Tamil Nadu DMK government opposing LIC privatization at the national level.",
+    "evidence_ta": "LIC தனியார் மயம் எதிர்த்து DMK அரசு என்ன செஞ்சுங்க இல்லன்னு தெரியலை.",
+    "source_url": ""
+  },
+  {
+    "id": 536,
+    "status": "pending",
+    "evidence": "No clear evidence found of a specific Ministry for New Schemes Implementation being created or its functioning as described in the manifesto.",
+    "evidence_ta": "புதிய திட்டங்கள் நடைமுறைப்படுத்த தனி அமைச்சகம் ஆரம்பிச்சாங்க இல்லன்னு தெரியலai.",
+    "source_url": ""
+  },
+  {
+    "id": 537,
+    "status": "pending",
+    "evidence": "No specific evidence found about approval being granted to religious institutions to construct religious centers irrespective of religious affiliation.",
+    "evidence_ta": "மதம் பாக்காம எல்லா மத நிறுவனங்களுக்கும் மத சென்டர் கட்ட அனுமதி கொடுத்தாங்க இல்லன்னு தெரியலை.",
+    "source_url": ""
+  },
+  {
+    "id": 538,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 539,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 540,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 541,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 542,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 543,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 544,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 545,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 546,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 547,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 548,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 549,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  },
+  {
+    "id": 550,
+    "status": "pending",
+    "evidence": "Verification pending — web search failed",
+    "evidence_ta": "சரிபார்ப்பு நிலுவையில்",
+    "source_url": ""
+  }
+]

@@ -238,17 +238,35 @@ export default function HomePage() {
     <div className="min-h-screen bg-cream">
       <Header active="home" />
 
-      {/* ── Hero with background image ── */}
+      {/* ── Hero with 4-leader background ── */}
       <section className="relative overflow-hidden">
-        {/* Background image */}
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url('/hero-bg.jpg')` }}
-        />
+        {/* 4-panel leader photos */}
+        <div className="absolute inset-0 grid grid-cols-4">
+          {[
+            { src: "/leaders/stalin.jpg", party: "DMK" },
+            { src: "/leaders/eps.jpg", party: "AIADMK" },
+            { src: "/leaders/vijay.jpg", party: "TVK" },
+            { src: "/leaders/seeman.jpg", party: "NTK" },
+          ].map((leader) => (
+            <div key={leader.party} className="relative overflow-hidden">
+              <div
+                className="absolute inset-0 bg-cover bg-top bg-no-repeat scale-110"
+                style={{ backgroundImage: `url('${leader.src}')` }}
+              />
+            </div>
+          ))}
+        </div>
         {/* Dark overlay for readability */}
-        <div className="absolute inset-0 bg-black/70" />
-        {/* Gradient overlay for depth */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
+        <div className="absolute inset-0 bg-black/65" />
+        {/* Gradient overlay — darker at top and bottom */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/70" />
+        {/* Subtle vertical dividers between panels */}
+        <div className="absolute inset-0 grid grid-cols-4 pointer-events-none">
+          <div className="border-r border-white/5" />
+          <div className="border-r border-white/5" />
+          <div className="border-r border-white/5" />
+          <div />
+        </div>
 
         {/* Content */}
         <div className="relative max-w-6xl mx-auto px-4 pt-16 pb-20 text-center">
