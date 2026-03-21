@@ -447,6 +447,23 @@ export default function FactCheckPage() {
                       </div>
                     </div>
                   )}
+
+                  {/* WhatsApp Share (5.6) */}
+                  <div className="mt-4 pt-4 border-t border-gray-200/50">
+                    <a
+                      href={`https://wa.me/?text=${encodeURIComponent(
+                        `Fact Check: "${claim}"\n\n` +
+                        `Verdict: ${config.label.toUpperCase()} (${result.confidence_pct}% confidence)\n\n` +
+                        `${result.explanation?.slice(0, 200) || ""}...\n\n` +
+                        `Check facts at: https://tnelections.info/fact-check`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-full text-xs font-semibold hover:bg-green-700 transition-colors"
+                    >
+                      Share on WhatsApp
+                    </a>
+                  </div>
                 </div>
               );
             })()}

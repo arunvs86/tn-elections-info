@@ -340,6 +340,7 @@ export default function ConstituencyPage() {
 
   // Phase 1: instant data from Supabase
   const [constituency, setConstituency] = useState<Constituency | null>(null);
+  const [allResults, setAllResults] = useState<ElectionResult[]>([]);
   const [electionResult, setElectionResult] = useState<ElectionResult | null>(
     null
   );
@@ -397,6 +398,15 @@ export default function ConstituencyPage() {
         .single();
 
       if (resultData) setElectionResult(resultData);
+
+      // 2b. Get ALL election results for trend chart
+      const { data: allResultsData } = await supabase
+        .from("election_results")
+        .select("*")
+        .eq("constituency_id", constData.id)
+        .order("election_year", { ascending: true });
+
+      if (allResultsData) setAllResults(allResultsData);
 
       // 3. Get candidates
       const { data: candData } = await supabase
@@ -638,6 +648,36 @@ export default function ConstituencyPage() {
                     </div>
                   );
                 })()}
+
+                {/* Turnout Trend Chart (3.9) */}
+                {allResults.length > 1 && (
+                  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                    <h3 className="font-bold text-gray-900 text-sm mb-3">Turnout Trend</h3>
+                    <div className="space-y-2">
+                      {allResults.map((r) => {
+                        const turnout = r.turnout ?? 0;
+                        return (
+                          <div key={r.election_year}>
+                            <div className="flex items-center justify-between text-xs mb-0.5">
+                              <span className="text-gray-600 font-medium">{r.election_year}</span>
+                              <span className="font-semibold text-gray-700">{turnout.toFixed(1)}%</span>
+                            </div>
+                            <div className="w-full bg-gray-100 rounded-full h-2">
+                              <div
+                                className="h-2 rounded-full transition-all"
+                                style={{
+                                  width: `${Math.min(turnout, 100)}%`,
+                                  background: turnout >= 75 ? "#2d7a4f" : turnout >= 60 ? "#b8860b" : "#c0392b",
+                                }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <p className="text-[10px] text-gray-400 mt-2">Voter turnout across elections</p>
+                  </div>
+                )}
 
                 {/* AI Investigate button */}
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">

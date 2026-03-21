@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useLang } from "@/components/LanguageProvider";
 import Header from "@/components/Header";
+import DailyBriefing from "@/components/DailyBriefing";
 import Link from "next/link";
 
 // ── Types ─────────────────────────────────────────
@@ -251,6 +252,9 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* ── Daily AI Briefing ── */}
+      <DailyBriefing />
 
       {/* ── Alliance summary ── */}
       <section className="max-w-6xl mx-auto px-4 pb-12">

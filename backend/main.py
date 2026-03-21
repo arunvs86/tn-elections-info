@@ -18,6 +18,7 @@ from pydantic import BaseModel
 from agents.graph import election_graph
 from agents.chat_agent import handle_chat
 from agents.summary_agent import generate_candidate_summary
+from agents.briefing_agent import generate_briefing, get_latest_briefing
 from tools.db_tools import save_messages
 
 app = FastAPI(title="TN Elections API", version="2.0.0")
@@ -115,4 +116,23 @@ def candidate_summary(req: SummaryRequest):
         result = generate_candidate_summary(req.candidate_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    return result
+
+
+@app.post("/api/generate-briefing")
+def api_generate_briefing():
+    """Generate today's daily election briefing (scrape RSS + Claude summary)."""
+    try:
+        result = generate_briefing()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    return result
+
+
+@app.get("/api/briefing/latest")
+def api_latest_briefing():
+    """Return the most recent daily briefing."""
+    result = get_latest_briefing()
+    if not result:
+        raise HTTPException(status_code=404, detail="No briefings found")
     return result

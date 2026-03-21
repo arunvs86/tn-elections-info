@@ -34,6 +34,13 @@ interface Candidate {
 }
 
 // Rival = other candidate from same constituency (minimal fields)
+interface CandidateExtended extends Candidate {
+  assembly_attendance_pct?: number | null;
+  assembly_sessions_attended?: number | null;
+  assembly_sessions_total?: number | null;
+  ai_summary_ta?: string | null;
+}
+
 interface Rival {
   id: number;
   name: string;
@@ -50,6 +57,13 @@ interface Promise {
   category: string | null;
   status: "kept" | "broken" | "partial" | "pending";
   evidence_url: string | null;
+}
+
+interface HistoricalAsset {
+  election_year: number;
+  net_worth: number | null;
+  assets_movable: number | null;
+  assets_immovable: number | null;
 }
 
 interface CriminalCase {
@@ -320,6 +334,7 @@ export default function CandidatePage() {
   const [rivals, setRivals] = useState<Rival[]>([]);
   const [criminalCases, setCriminalCases] = useState<CriminalCase[]>([]);
   const [promises, setPromises] = useState<Promise[]>([]);
+  const [historicalAssets, setHistoricalAssets] = useState<HistoricalAsset[]>([]);
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -374,6 +389,16 @@ export default function CandidatePage() {
 
       // Load cached AI summary if available
       if (candData.ai_summary_ta) setAiSummary(candData.ai_summary_ta);
+
+      // Fetch historical assets (same name, different years)
+      const { data: histData } = await supabase
+        .from("candidates")
+        .select("election_year, net_worth, assets_movable, assets_immovable")
+        .eq("name", candData.name)
+        .not("net_worth", "is", null)
+        .order("election_year", { ascending: true });
+
+      if (histData && histData.length > 0) setHistoricalAssets(histData);
 
       setLoading(false);
     }
@@ -685,6 +710,51 @@ export default function CandidatePage() {
             )}
           </div>
 
+          {/* ── Assets Over Time (4.8) ── */}
+          {historicalAssets.length > 1 && (
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 md:col-span-2">
+              <h2 className="font-bold text-gray-900 text-sm mb-4">
+                Assets Over Time
+              </h2>
+              <div className="flex items-end gap-3 h-40">
+                {historicalAssets.map((h) => {
+                  const maxNW = Math.max(...historicalAssets.map((a) => a.net_worth || 0), 1);
+                  const pct = ((h.net_worth || 0) / maxNW) * 100;
+                  return (
+                    <div key={h.election_year} className="flex-1 flex flex-col items-center">
+                      <p className="text-xs font-semibold text-terracotta mb-1">
+                        {fmtCurrency(h.net_worth)}
+                      </p>
+                      <div className="w-full bg-gray-100 rounded-t-lg flex-1 relative">
+                        <div
+                          className="absolute bottom-0 left-0 right-0 rounded-t-lg transition-all"
+                          style={{
+                            height: `${Math.max(pct, 5)}%`,
+                            background: `linear-gradient(to top, #c84b11, #e8734a)`,
+                          }}
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1 font-medium">{h.election_year}</p>
+                    </div>
+                  );
+                })}
+              </div>
+              {(() => {
+                const first = historicalAssets[0]?.net_worth || 0;
+                const last = historicalAssets[historicalAssets.length - 1]?.net_worth || 0;
+                if (first > 0 && last > first) {
+                  const growth = ((last - first) / first * 100).toFixed(0);
+                  return (
+                    <p className="text-xs text-gray-500 mt-3 text-center">
+                      Net worth grew <strong className="text-terracotta">{growth}%</strong> from {historicalAssets[0].election_year} to {historicalAssets[historicalAssets.length - 1].election_year}
+                    </p>
+                  );
+                }
+                return null;
+              })()}
+            </div>
+          )}
+
           {/* ── Criminal record ── */}
           <div
             className={`bg-white rounded-2xl border shadow-sm p-5 ${
@@ -748,6 +818,43 @@ export default function CandidatePage() {
               </div>
             )}
           </div>
+
+          {/* ── Assembly Attendance (4.9) ── */}
+          {candidate.is_winner && (
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+              <h2 className="font-bold text-gray-900 text-sm mb-4">
+                Assembly Attendance
+              </h2>
+              {(candidate as CandidateExtended).assembly_attendance_pct != null ? (
+                <div className="text-center">
+                  <div className="relative w-24 h-24 mx-auto mb-2">
+                    <svg width="96" height="96" className="-rotate-90">
+                      <circle cx="48" cy="48" r="40" fill="none" stroke="#e5e7eb" strokeWidth="8" />
+                      <circle
+                        cx="48" cy="48" r="40" fill="none"
+                        stroke={((candidate as CandidateExtended).assembly_attendance_pct || 0) >= 75 ? "#2d7a4f" : ((candidate as CandidateExtended).assembly_attendance_pct || 0) >= 50 ? "#b8860b" : "#c0392b"}
+                        strokeWidth="8" strokeLinecap="round"
+                        strokeDasharray={`${2 * Math.PI * 40}`}
+                        strokeDashoffset={`${2 * Math.PI * 40 * (1 - ((candidate as CandidateExtended).assembly_attendance_pct || 0) / 100)}`}
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-lg font-bold text-gray-900">
+                        {(candidate as CandidateExtended).assembly_attendance_pct}%
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    {(candidate as CandidateExtended).assembly_sessions_attended || "?"} of {(candidate as CandidateExtended).assembly_sessions_total || "?"} sessions attended
+                  </p>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-400 text-center py-4">
+                  Attendance data will be available soon
+                </p>
+              )}
+            </div>
+          )}
 
           {/* ── Criminal Case Details (4.4) ── */}
           {criminalCases.length > 0 && (
@@ -1098,6 +1205,21 @@ export default function CandidatePage() {
               View Affidavit ↗
             </a>
           )}
+          {/* WhatsApp Share (4.10) */}
+          <a
+            href={`https://wa.me/?text=${encodeURIComponent(
+              `${candidate.name} (${candidate.party}) — ${constituency?.name || ""} constituency\n` +
+              `Votes: ${candidate.votes_received?.toLocaleString("en-IN") || "N/A"} (${candidate.vote_share?.toFixed(1) || "?"}%)\n` +
+              `Criminal Cases: ${candidate.criminal_cases_declared}\n` +
+              `Net Worth: ${candidate.net_worth ? (candidate.net_worth >= 10000000 ? `₹${(candidate.net_worth / 10000000).toFixed(1)}Cr` : `₹${(candidate.net_worth / 100000).toFixed(1)}L`) : "N/A"}\n` +
+              `\nView full profile: https://tnelections.info/candidate/${candidate.id}`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-green-600 text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-green-700 transition-colors"
+          >
+            Share on WhatsApp
+          </a>
         </div>
       </main>
 

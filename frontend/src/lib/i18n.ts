@@ -126,6 +126,14 @@ const dict: Record<string, DictEntry> = {
   "chat.suggestion2": { en: "Richest candidate in Chennai?", ta: "சென்னையின் பணக்கார வேட்பாளர்?" },
   "chat.suggestion3": { en: "DMK vs ADMK seat count in 2021", ta: "2021 DMK vs ADMK இடங்கள்" },
 
+  // ── Daily Briefing ────────────────────────────────
+  "briefing.section_title": { en: "Daily Election Briefing", ta: "தினசரி தேர்தல் சுருக்கம்" },
+  "briefing.ai_tag": { en: "AI Generated", ta: "AI உருவாக்கம்" },
+  "briefing.read_more": { en: "Read full briefing", ta: "முழு சுருக்கத்தைப் படிக்கவும்" },
+  "briefing.show_less": { en: "Show less", ta: "குறைவாகக் காட்டு" },
+  "briefing.sources": { en: "Source Stories", ta: "மூல செய்திகள்" },
+  "briefing.disclaimer": { en: "AI-generated summary from public news sources. Verify with official sources.", ta: "பொது செய்தி ஆதாரங்களிலிருந்து AI உருவாக்கிய சுருக்கம். அதிகாரப்பூர்வ ஆதாரங்களுடன் சரிபார்க்கவும்." },
+
   // ── Common ──────────────────────────────────────
   "common.loading": { en: "Loading...", ta: "ஏற்றுகிறது..." },
   "common.error": { en: "Something went wrong", ta: "ஏதோ தவறாகிவிட்டது" },
