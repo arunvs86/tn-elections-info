@@ -6,7 +6,7 @@ import { useLang } from "@/components/LanguageProvider";
 
 interface HeaderProps {
   /** Which nav link is currently active (highlighted) */
-  active?: "home" | "districts" | "factcheck" | "swing" | "chat";
+  active?: "home" | "districts" | "factcheck" | "swing" | "chat" | "manifesto";
 }
 
 export default function Header({ active }: HeaderProps) {
@@ -17,6 +17,7 @@ export default function Header({ active }: HeaderProps) {
     { href: "/districts", key: "nav.districts", id: "districts" },
     { href: "/fact-check", key: "nav.factcheck", id: "factcheck" },
     { href: "/swing-seats", key: "nav.swingseats", id: "swing" },
+    { href: "/manifesto", key: "nav.manifesto", id: "manifesto" },
   ];
 
   return (

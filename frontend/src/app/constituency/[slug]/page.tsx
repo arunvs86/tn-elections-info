@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import Header from "@/components/Header";
+import ScopedChat from "@/components/ScopedChat";
 
 // ── Types ──────────────────────────────────────────────
 interface Constituency {
@@ -14,6 +15,8 @@ interface Constituency {
   total_voters_2021: number | null;
   turnout_2021: number | null;
   is_swing_seat: boolean;
+  current_mla: string | null;
+  current_mla_party: string | null;
 }
 
 interface Candidate {
@@ -582,6 +585,60 @@ export default function ConstituencyPage() {
                   </div>
                 </div>
 
+                {/* Alliance Breakdown (3.4) */}
+                {candidates.length > 0 && (() => {
+                  const allianceMap: Record<string, { parties: string[]; votes: number; color: string }> = {};
+                  const allianceLookup: Record<string, string> = {
+                    "DMK": "DMK+ (INDIA)", "INC": "DMK+ (INDIA)", "CPI": "DMK+ (INDIA)",
+                    "CPI(M)": "DMK+ (INDIA)", "CPM": "DMK+ (INDIA)", "VCK": "DMK+ (INDIA)",
+                    "MDMK": "DMK+ (INDIA)", "IUML": "DMK+ (INDIA)", "CONGRESS": "DMK+ (INDIA)",
+                    "ADMK": "ADMK+ (NDA)", "AIADMK": "ADMK+ (NDA)", "BJP": "ADMK+ (NDA)",
+                    "PMK": "ADMK+ (NDA)", "DMDK": "ADMK+ (NDA)",
+                    "NTK": "NTK", "TVK": "TVK", "MNM": "MNM",
+                  };
+                  const allianceColors: Record<string, string> = {
+                    "DMK+ (INDIA)": "#c0392b", "ADMK+ (NDA)": "#2d7a4f",
+                    "NTK": "#6c3483", "TVK": "#1a5276", "MNM": "#0e6655", "Others": "#7f8c8d",
+                  };
+                  candidates.forEach((c) => {
+                    const p = (c.party || "").toUpperCase();
+                    const alliance = allianceLookup[p] || allianceLookup[c.party] || "Others";
+                    if (!allianceMap[alliance]) {
+                      allianceMap[alliance] = { parties: [], votes: 0, color: allianceColors[alliance] || "#888" };
+                    }
+                    if (!allianceMap[alliance].parties.includes(c.party)) {
+                      allianceMap[alliance].parties.push(c.party);
+                    }
+                    allianceMap[alliance].votes += c.votes_received || 0;
+                  });
+                  const totalVotes = candidates.reduce((s, c) => s + (c.votes_received || 0), 0);
+                  const sorted = Object.entries(allianceMap).sort((a, b) => b[1].votes - a[1].votes);
+
+                  return (
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
+                      <h3 className="font-bold text-gray-900 text-sm">Alliance Breakdown</h3>
+                      {sorted.map(([name, data]) => {
+                        const pct = totalVotes > 0 ? (data.votes / totalVotes) * 100 : 0;
+                        return (
+                          <div key={name}>
+                            <div className="flex items-center justify-between text-xs mb-1">
+                              <span className="font-semibold text-gray-700">{name}</span>
+                              <span className="font-bold" style={{ color: data.color }}>{pct.toFixed(1)}%</span>
+                            </div>
+                            <div className="w-full bg-gray-100 rounded-full h-2.5 mb-1">
+                              <div
+                                className="h-2.5 rounded-full transition-all"
+                                style={{ width: `${Math.min(pct, 100)}%`, background: data.color }}
+                              />
+                            </div>
+                            <p className="text-[10px] text-gray-400">{data.parties.join(", ")} — {fmt(data.votes)} votes</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+
                 {/* AI Investigate button */}
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
                   <h3 className="font-bold text-gray-900 text-sm mb-2">
@@ -615,6 +672,18 @@ export default function ConstituencyPage() {
                     </p>
                   )}
                 </div>
+
+                {/* Scoped Chat (3.12) */}
+                <ScopedChat
+                  title={`Ask about ${constituencyName}`}
+                  placeholder="Ask anything about this constituency..."
+                  context={`The user is asking about ${constituencyName} constituency in ${constituency?.district || ""} district, Tamil Nadu. Current MLA: ${constituency?.current_mla || "unknown"} (${constituency?.current_mla_party || "unknown"}). Voters: ${constituency?.total_voters_2021 || "unknown"}. Answer specifically about this constituency.`}
+                  suggestions={[
+                    `Who won ${constituencyName} in 2021?`,
+                    `Is ${constituencyName} a swing seat?`,
+                    `How many candidates contested here?`,
+                  ]}
+                />
               </div>
 
               {/* ── Right column: candidates grid ── */}

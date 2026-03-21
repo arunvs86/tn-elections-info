@@ -16,6 +16,7 @@ const dict: Record<string, DictEntry> = {
   "nav.districts": { en: "Districts", ta: "மாவட்டங்கள்" },
   "nav.factcheck": { en: "Narrative Check", ta: "கூற்று சரிபார்ப்பு" },
   "nav.swingseats": { en: "Swing Seats", ta: "ஊசலாடும் தொகுதிகள்" },
+  "nav.manifesto": { en: "Manifestos", ta: "தேர்தல் அறிக்கை" },
   "nav.chat": { en: "Ask TN Elections", ta: "தேர்தல் உதவி" },
   "nav.back_home": { en: "Home", ta: "முகப்பு" },
 

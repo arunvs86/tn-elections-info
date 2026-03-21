@@ -3,6 +3,18 @@
 -- Run this in: Supabase Dashboard → SQL Editor → New Query
 -- ============================================================
 
+-- Persons (unique humans — links same person across elections)
+CREATE TABLE IF NOT EXISTS persons (
+  id               SERIAL PRIMARY KEY,
+  canonical_name   TEXT NOT NULL,
+  gender           TEXT,
+  dob              DATE,
+  photo_url        TEXT,
+  myneta_id        INTEGER,
+  notes            TEXT,
+  created_at       TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Constituencies (all 234 TN assembly constituencies)
 CREATE TABLE IF NOT EXISTS constituencies (
   id                   SERIAL PRIMARY KEY,
@@ -44,6 +56,13 @@ CREATE TABLE IF NOT EXISTS candidates (
   criminal_mismatch       BOOLEAN DEFAULT FALSE,
   affidavit_url           TEXT,
   photo_url               TEXT,
+  person_id               INTEGER REFERENCES persons(id),
+  ai_summary_ta           TEXT,
+  ai_summary_en           TEXT,
+  ai_summary_updated_at   TIMESTAMPTZ,
+  assembly_attendance_pct DECIMAL,
+  assembly_sessions_attended INTEGER,
+  assembly_sessions_total INTEGER,
   created_at              TIMESTAMPTZ DEFAULT NOW()
 );
 

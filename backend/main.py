@@ -17,6 +17,7 @@ from pydantic import BaseModel
 
 from agents.graph import election_graph
 from agents.chat_agent import handle_chat
+from agents.summary_agent import generate_candidate_summary
 from tools.db_tools import save_messages
 
 app = FastAPI(title="TN Elections API", version="2.0.0")
@@ -99,6 +100,19 @@ class ChatRequest(BaseModel):
 def chat(req: ChatRequest):
     try:
         result = handle_chat(req.message, req.context)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    return result
+
+
+class SummaryRequest(BaseModel):
+    candidate_id: int
+
+
+@app.post("/api/candidate-summary")
+def candidate_summary(req: SummaryRequest):
+    try:
+        result = generate_candidate_summary(req.candidate_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     return result

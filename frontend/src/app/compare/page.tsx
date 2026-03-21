@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
+import Header from "@/components/Header";
 
 // ── Types ──────────────────────────────────────────────
 interface CandidateRow {
@@ -182,11 +183,8 @@ function CandidateSelector({
         .select("*")
         .ilike("name", `%${query}%`)
         .eq("election_year", 2021)
+        .order("votes_received", { ascending: false })
         .limit(10);
-
-      if (constituencyId) {
-        q = q.eq("constituency_id", constituencyId);
-      }
 
       const { data } = await q;
       setResults(
@@ -366,49 +364,7 @@ function CompareContent() {
 
   return (
     <div className="min-h-screen bg-cream">
-      {/* Header */}
-      <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl">🗳️</span>
-            <div>
-              <p className="font-bold text-gray-900 leading-none">
-                tnelections.info
-              </p>
-              <p className="text-xs text-gray-500">Tamil Nadu 2026</p>
-            </div>
-          </Link>
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-            <Link
-              href="/districts"
-              className="hover:text-terracotta transition-colors"
-            >
-              Districts
-            </Link>
-            <Link
-              href="/compare"
-              className="text-terracotta font-semibold"
-            >
-              Compare
-            </Link>
-          </nav>
-          {constituency ? (
-            <Link
-              href={`/constituency/${slugify(constituency.name)}`}
-              className="text-sm text-gray-500 hover:text-terracotta transition-colors"
-            >
-              ← {constituency.name}
-            </Link>
-          ) : (
-            <Link
-              href="/districts"
-              className="text-sm text-gray-500 hover:text-terracotta transition-colors"
-            >
-              ← Districts
-            </Link>
-          )}
-        </div>
-      </header>
+      <Header />
 
       <main className="max-w-4xl mx-auto px-4 py-8">
         {/* Breadcrumb */}

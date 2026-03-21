@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import Header from "@/components/Header";
+import ScopedChat from "@/components/ScopedChat";
 
 // ── Types ──────────────────────────────────────────────
 interface Candidate {
@@ -40,6 +41,27 @@ interface Rival {
   votes_received: number | null;
   vote_share: number | null;
   is_winner: boolean;
+}
+
+interface Promise {
+  id: number;
+  promise_text: string;
+  promise_text_tamil: string | null;
+  category: string | null;
+  status: "kept" | "broken" | "partial" | "pending";
+  evidence_url: string | null;
+}
+
+interface CriminalCase {
+  id: number;
+  candidate_id: number;
+  case_number: string | null;
+  court_name: string | null;
+  case_type: string | null;
+  sections: string | null;
+  status: string | null;
+  next_hearing: string | null;
+  is_disclosed: boolean;
 }
 
 interface Constituency {
@@ -296,6 +318,10 @@ export default function CandidatePage() {
     null
   );
   const [rivals, setRivals] = useState<Rival[]>([]);
+  const [criminalCases, setCriminalCases] = useState<CriminalCase[]>([]);
+  const [promises, setPromises] = useState<Promise[]>([]);
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showBreakdown, setShowBreakdown] = useState(false);
 
@@ -317,8 +343,8 @@ export default function CandidatePage() {
 
       setCandidate(candData);
 
-      // Fetch constituency + rivals in parallel
-      const [constResult, rivalsResult] = await Promise.all([
+      // Fetch constituency, rivals, criminal cases, promises in parallel
+      const [constResult, rivalsResult, casesResult, promisesResult] = await Promise.all([
         supabase
           .from("constituencies")
           .select("id, name, district")
@@ -331,10 +357,23 @@ export default function CandidatePage() {
           .eq("election_year", candData.election_year)
           .neq("id", candData.id)
           .order("votes_received", { ascending: false }),
+        supabase
+          .from("criminal_cases")
+          .select("*")
+          .eq("candidate_id", candData.id),
+        supabase
+          .from("promises")
+          .select("*")
+          .eq("candidate_id", candData.id),
       ]);
 
       if (constResult.data) setConstituency(constResult.data);
       if (rivalsResult.data) setRivals(rivalsResult.data);
+      if (casesResult.data) setCriminalCases(casesResult.data);
+      if (promisesResult.data) setPromises(promisesResult.data);
+
+      // Load cached AI summary if available
+      if (candData.ai_summary_ta) setAiSummary(candData.ai_summary_ta);
 
       setLoading(false);
     }
@@ -710,6 +749,227 @@ export default function CandidatePage() {
             )}
           </div>
 
+          {/* ── Criminal Case Details (4.4) ── */}
+          {criminalCases.length > 0 && (
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 md:col-span-2">
+              <h2 className="font-bold text-gray-900 text-sm mb-4">
+                Case Details ({criminalCases.length})
+              </h2>
+              <div className="space-y-3">
+                {criminalCases.map((c) => (
+                  <div
+                    key={c.id}
+                    className={`rounded-xl p-4 border ${
+                      c.is_disclosed
+                        ? "bg-gray-50 border-gray-200"
+                        : "bg-red-50 border-red-200"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {c.case_type && (
+                            <span className="text-xs font-semibold bg-white px-2 py-0.5 rounded border border-gray-200 text-gray-700">
+                              {c.case_type}
+                            </span>
+                          )}
+                          {!c.is_disclosed && (
+                            <span className="text-xs font-semibold bg-red-100 text-red-700 px-2 py-0.5 rounded">
+                              Not Disclosed
+                            </span>
+                          )}
+                          {c.status && (
+                            <span
+                              className={`text-xs font-semibold px-2 py-0.5 rounded ${
+                                c.status.toLowerCase() === "convicted"
+                                  ? "bg-red-100 text-red-700"
+                                  : c.status.toLowerCase() === "disposed" || c.status.toLowerCase() === "acquitted"
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-yellow-100 text-yellow-700"
+                              }`}
+                            >
+                              {c.status}
+                            </span>
+                          )}
+                        </div>
+                        {c.case_number && (
+                          <p className="text-sm text-gray-700 font-medium mt-1.5">
+                            Case: {c.case_number}
+                          </p>
+                        )}
+                        {c.court_name && (
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            Court: {c.court_name}
+                          </p>
+                        )}
+                        {c.sections && (
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            Sections: {c.sections}
+                          </p>
+                        )}
+                      </div>
+                      {c.next_hearing && (
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-[10px] text-gray-400">Next Hearing</p>
+                          <p className="text-xs font-semibold text-gray-700">
+                            {new Date(c.next_hearing).toLocaleDateString("en-IN", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            })}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── Tamil AI Summary (4.5) ── */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 md:col-span-2">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-bold text-gray-900 text-sm">
+                AI Summary / சுருக்கம்
+              </h2>
+              {!aiSummary && !summaryLoading && (
+                <button
+                  onClick={async () => {
+                    setSummaryLoading(true);
+                    try {
+                      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "";
+                      const res = await fetch(`${backendUrl}/api/candidate-summary`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ candidate_id: candidate.id }),
+                      });
+                      if (res.ok) {
+                        const data = await res.json();
+                        setAiSummary(data.summary_ta || data.summary_en);
+                      }
+                    } catch {
+                      // silently fail
+                    } finally {
+                      setSummaryLoading(false);
+                    }
+                  }}
+                  className="text-xs bg-terracotta text-white px-3 py-1.5 rounded-full font-semibold hover:bg-[#a33d0e] transition-colors"
+                >
+                  Generate Summary
+                </button>
+              )}
+            </div>
+            {summaryLoading ? (
+              <div className="space-y-2 animate-pulse">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-gray-300 mt-1.5 flex-shrink-0" />
+                    <div className="h-4 bg-gray-200 rounded w-full" style={{ width: `${70 + Math.random() * 30}%` }} />
+                  </div>
+                ))}
+                <p className="text-xs text-gray-400 mt-2">Generating Tamil summary...</p>
+              </div>
+            ) : aiSummary ? (
+              <div className="space-y-2">
+                {aiSummary.split("\n").filter(Boolean).map((line, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <span className="text-terracotta mt-0.5 flex-shrink-0">•</span>
+                    <p className="text-sm text-gray-700 leading-relaxed">{line.replace(/^[-•]\s*/, "")}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400 text-center py-4">
+                Click &quot;Generate Summary&quot; for an AI-generated overview in Tamil
+              </p>
+            )}
+          </div>
+
+          {/* ── Promise Tracker (4.6) ── */}
+          {(promises.length > 0 || candidate.is_winner) && (
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 md:col-span-2">
+              <h2 className="font-bold text-gray-900 text-sm mb-4">
+                Promise Tracker
+              </h2>
+              {promises.length > 0 ? (
+                <>
+                  {/* Summary bar */}
+                  {(() => {
+                    const kept = promises.filter((p) => p.status === "kept").length;
+                    const broken = promises.filter((p) => p.status === "broken").length;
+                    const partial = promises.filter((p) => p.status === "partial").length;
+                    const pending = promises.filter((p) => p.status === "pending").length;
+                    const total = promises.length;
+                    return (
+                      <div className="mb-4">
+                        <div className="flex rounded-full overflow-hidden h-3 mb-2">
+                          {kept > 0 && <div style={{ width: `${(kept / total) * 100}%`, background: "#2d7a4f" }} />}
+                          {partial > 0 && <div style={{ width: `${(partial / total) * 100}%`, background: "#b8860b" }} />}
+                          {pending > 0 && <div style={{ width: `${(pending / total) * 100}%`, background: "#d1d5db" }} />}
+                          {broken > 0 && <div style={{ width: `${(broken / total) * 100}%`, background: "#c0392b" }} />}
+                        </div>
+                        <div className="flex gap-4 text-xs text-gray-600">
+                          <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: "#2d7a4f" }} />Kept ({kept})</span>
+                          <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: "#b8860b" }} />Partial ({partial})</span>
+                          <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: "#d1d5db" }} />Pending ({pending})</span>
+                          <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: "#c0392b" }} />Broken ({broken})</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                  {/* Promise list */}
+                  <div className="space-y-2">
+                    {promises.map((p) => {
+                      const statusConfig = {
+                        kept: { bg: "bg-green-50", border: "border-green-200", text: "text-green-700", label: "Kept" },
+                        broken: { bg: "bg-red-50", border: "border-red-200", text: "text-red-700", label: "Broken" },
+                        partial: { bg: "bg-yellow-50", border: "border-yellow-200", text: "text-yellow-700", label: "Partial" },
+                        pending: { bg: "bg-gray-50", border: "border-gray-200", text: "text-gray-500", label: "Pending" },
+                      }[p.status];
+                      return (
+                        <div key={p.id} className={`rounded-xl p-3 border ${statusConfig.bg} ${statusConfig.border}`}>
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1">
+                              <p className="text-sm text-gray-700">{p.promise_text}</p>
+                              {p.promise_text_tamil && (
+                                <p className="text-xs text-gray-500 mt-0.5">{p.promise_text_tamil}</p>
+                              )}
+                              {p.category && (
+                                <span className="text-[10px] bg-white px-1.5 py-0.5 rounded border border-gray-200 text-gray-500 mt-1 inline-block">
+                                  {p.category}
+                                </span>
+                              )}
+                            </div>
+                            <span className={`text-xs font-semibold px-2 py-1 rounded-full flex-shrink-0 ${statusConfig.text} ${statusConfig.bg}`}>
+                              {statusConfig.label}
+                            </span>
+                          </div>
+                          {p.evidence_url && (
+                            <a
+                              href={p.evidence_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[10px] text-terracotta hover:underline mt-1 inline-block"
+                            >
+                              View evidence →
+                            </a>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm text-gray-400 text-center py-4">
+                  {candidate.is_winner
+                    ? "Promise tracking data will be available soon"
+                    : "Only available for winning candidates"}
+                </p>
+              )}
+            </div>
+          )}
+
           {/* ── Source & affidavit ── */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <h2 className="font-bold text-gray-900 text-sm mb-4">
@@ -740,6 +1000,20 @@ export default function CandidatePage() {
               )}
             </div>
           </div>
+        </div>
+
+        {/* ── Scoped Chat (4.11) ── */}
+        <div className="mt-6">
+          <ScopedChat
+            title={`Ask about ${candidate.name}`}
+            placeholder={`Ask anything about ${candidate.name}...`}
+            context={`The user is asking about candidate ${candidate.name} from ${candidate.party} party, contesting from ${constituency?.name || "unknown"} constituency in ${constituency?.district || ""} district. Election year: ${candidate.election_year}. ${candidate.is_winner ? "Won the election." : "Lost the election."} Votes: ${candidate.votes_received || "unknown"}, vote share: ${candidate.vote_share || "unknown"}%. Criminal cases: ${candidate.criminal_cases_declared}. Answer specifically about this candidate.`}
+            suggestions={[
+              `Does ${candidate.name} have criminal cases?`,
+              `What is ${candidate.name}'s net worth?`,
+              `How did ${candidate.name} perform in 2021?`,
+            ]}
+          />
         </div>
 
         {/* ── Rivals from same constituency ── */}
