@@ -46,7 +46,13 @@ CREATE TABLE IF NOT EXISTS candidates (
   vote_share              DECIMAL,
   margin                  INTEGER,
   assets_movable          DECIMAL,
+  assets_movable_self     DECIMAL,
+  assets_movable_spouse   DECIMAL,
+  assets_movable_dep      DECIMAL,
   assets_immovable        DECIMAL,
+  assets_immovable_self   DECIMAL,
+  assets_immovable_spouse DECIMAL,
+  assets_immovable_dep    DECIMAL,
   liabilities             DECIMAL,
   net_worth               DECIMAL,
   education               TEXT,
@@ -227,3 +233,6 @@ CREATE POLICY "Public read" ON polls FOR SELECT USING (true);
 CREATE POLICY "Public read" ON fact_checks FOR SELECT USING (true);
 CREATE POLICY "Public read" ON agent_messages FOR SELECT USING (true);
 CREATE POLICY "Public read" ON daily_briefings FOR SELECT USING (true);
+CREATE POLICY "Public read" ON live_results FOR SELECT USING (true);
+CREATE POLICY "Public read" ON live_tally FOR SELECT USING (true);
+CREATE POLICY "Public read" ON counting_status FOR SELECT USING (true);

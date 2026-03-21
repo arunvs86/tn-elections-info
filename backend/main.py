@@ -23,9 +23,16 @@ from tools.db_tools import save_messages
 
 app = FastAPI(title="TN Elections API", version="2.0.0")
 
+ALLOWED_ORIGINS = [
+    "https://tnelections.info",
+    "https://www.tnelections.info",
+    "http://localhost:3000",
+    "http://localhost:3001",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )

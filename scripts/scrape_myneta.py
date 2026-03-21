@@ -31,7 +31,9 @@ CSV_FIELDS = [
     "myneta_id", "name", "constituency", "district", "party",
     "age", "education",
     "criminal_cases", "criminal_details",
-    "movable_assets", "immovable_assets", "total_assets", "liabilities",
+    "movable_self", "movable_spouse", "movable_dependents", "movable_total",
+    "immovable_self", "immovable_spouse", "immovable_dependents", "immovable_total",
+    "total_assets", "liabilities",
     "affidavit_url",
 ]
 
@@ -74,10 +76,15 @@ def scrape_candidate(candidate_id: int) -> dict | None:
         resp = requests.get(url, headers=HEADERS, timeout=15)
         if resp.status_code != 200:
             return None
+        # Skip abnormally large pages (>250KB) — they cause parser hangs
+        # Pages 100-200KB are normal for candidates with many assets
+        if len(resp.text) > 250000:
+            print(f"   ⚠️ Skipping ID {candidate_id} — page too large ({len(resp.text)} bytes)", flush=True)
+            return None
     except requests.RequestException:
         return None
 
-    soup = BeautifulSoup(resp.text, "html.parser")
+    soup = BeautifulSoup(resp.text, "lxml")
 
     # ── Validate page ──
     title = soup.find("title")
@@ -177,77 +184,88 @@ def scrape_candidate(candidate_id: int) -> dict | None:
     # e.g., "IPC 143, 341, 269, 188 | Epidemic Disease Act"
     criminal_details = "; ".join(all_ipc_sections) if all_ipc_sections else ""
 
-    # ── Assets & Liabilities (from summary table) ──
-    # Table 3 pattern: "Assets:" → "Rs X" and "Liabilities:" → "Rs X"
-    total_assets = None
-    liabilities = None
+    # ── Assets & Liabilities ──
+    # We extract from detail tables: self, spouse, dependents, total
+    # Table structure:
+    #   Header: Sr No | Description | self | spouse | huf | dependent1 | dependent2 | dependent3
+    #   ...item rows...
+    #   Total row: "Gross Total Value (as per Affidavit)" | self_val | spouse_val | dep_val | ... | grand_total
+    #   Calculated row: "Totals (Calculated...)" | self_val | spouse_val | dep_val | ... | grand_total
 
-    for table in soup.find_all("table"):
+    def _parse_total_row(cells):
+        """Parse a total row into (self, spouse, dependents, total)."""
+        a_self = parse_rupees(cells[1].get_text(strip=True)) if len(cells) >= 3 else 0
+        a_spouse = parse_rupees(cells[2].get_text(strip=True)) if len(cells) >= 4 else 0
+        # Dependents: sum huf + dep1 + dep2 + dep3 (cells 3 to second-last)
+        dep_sum = 0
+        for i in range(3, min(len(cells) - 1, 7)):
+            val = parse_rupees(cells[i].get_text(strip=True))
+            if val:
+                dep_sum += val
+        # Grand total is always the last cell
+        a_total = parse_rupees(cells[-1].get_text(strip=True)) if len(cells) >= 2 else 0
+        return a_self or 0, a_spouse or 0, dep_sum, a_total or 0
+
+    def extract_asset_breakdown(table):
+        """Extract self/spouse/dependents/total from a movable or immovable asset table.
+        Prefers 'Totals Calculated' row (matches MyNeta display).
+        Falls back to 'Gross Total / Total Current Market Value' row.
+        Returns (self, spouse, dependents, total) as ints."""
+        if not table:
+            return 0, 0, 0, 0
+
         rows = table.find_all("tr")
+
+        # Priority 1: "Totals (Calculated...)" — this is what MyNeta displays on the site
         for row in rows:
             cells = row.find_all(["td", "th"])
-            if len(cells) >= 2:
-                label = cells[0].get_text(strip=True).lower()
-                value_text = cells[-1].get_text(strip=True)
+            if not cells:
+                continue
+            label = cells[0].get_text(strip=True).lower()
+            if "totals" in label and "calculated" in label:
+                return _parse_total_row(cells)
 
-                if label.startswith("assets") and ":" in label:
-                    total_assets = parse_rupees(value_text)
-                elif label.startswith("liabilit") and ":" in label:
-                    liabilities = parse_rupees(value_text)
+        # Priority 2: "Gross Total Value (as per Affidavit)" or "Total Current Market Value"
+        for row in rows:
+            cells = row.find_all(["td", "th"])
+            if not cells:
+                continue
+            label = cells[0].get_text(strip=True).lower()
+            if "gross total" in label or "total current market" in label:
+                return _parse_total_row(cells)
 
-    # ── Movable / Immovable from detail tables ──
-    movable = None
-    immovable = None
+        return 0, 0, 0, 0
+
+        return a_self or 0, a_spouse or 0, a_dep or 0, a_total or 0
+
+    movable_self, movable_spouse, movable_dep, movable_total = 0, 0, 0, 0
+    immovable_self, immovable_spouse, immovable_dep, immovable_total = 0, 0, 0, 0
+    liabilities = 0
 
     for h3 in soup.find_all("h3"):
         h3_text = h3.get_text(strip=True).lower()
         if "details of movable assets" in h3_text:
             table = h3.find_next("table")
-            if table:
-                # Last column of last row often has the total
-                rows = table.find_all("tr")
-                # Sum up: each row's last cell may have subtotal
-                # But simpler: look for the row that says "Total" or grab last data row
-                for row in reversed(rows):
-                    cells = row.find_all(["td", "th"])
-                    if cells:
-                        last_val = cells[-1].get_text(strip=True)
-                        parsed = parse_rupees(last_val)
-                        if parsed and parsed > 0:
-                            movable = parsed
-                            break
+            movable_self, movable_spouse, movable_dep, movable_total = extract_asset_breakdown(table)
 
         elif "details of immovable assets" in h3_text:
             table = h3.find_next("table")
-            if table:
-                for row in reversed(table.find_all("tr")):
-                    cells = row.find_all(["td", "th"])
-                    if cells:
-                        last_val = cells[-1].get_text(strip=True)
-                        parsed = parse_rupees(last_val)
-                        if parsed and parsed > 0:
-                            immovable = parsed
-                            break
+            immovable_self, immovable_spouse, immovable_dep, immovable_total = extract_asset_breakdown(table)
 
-        elif "details of liabilities" in h3_text and liabilities is None:
+        elif "details of liabilities" in h3_text:
             table = h3.find_next("table")
             if table:
-                for row in reversed(table.find_all("tr")):
+                # Liabilities total row: same pattern, last cell = grand total
+                for row in table.find_all("tr"):
                     cells = row.find_all(["td", "th"])
-                    if cells:
-                        last_val = cells[-1].get_text(strip=True)
-                        parsed = parse_rupees(last_val)
-                        if parsed is not None and parsed > 0:
-                            liabilities = parsed
-                            break
+                    if not cells:
+                        continue
+                    label = cells[0].get_text(strip=True).lower()
+                    if "gross total" in label or "total" in label:
+                        liabilities = parse_rupees(cells[-1].get_text(strip=True)) or 0
+                        break
 
-    # Fallback: if total_assets from summary but no movable/immovable breakdown
-    if total_assets and movable is None and immovable is None:
-        pass  # We still have the total from summary table
-
-    # If we have movable+immovable but no total, calculate it
-    if total_assets is None and movable is not None and immovable is not None:
-        total_assets = movable + immovable
+    total_assets = movable_total + immovable_total
 
     return {
         "myneta_id": candidate_id,
@@ -259,8 +277,14 @@ def scrape_candidate(candidate_id: int) -> dict | None:
         "education": education,
         "criminal_cases": criminal_cases,
         "criminal_details": criminal_details,
-        "movable_assets": movable,
-        "immovable_assets": immovable,
+        "movable_self": movable_self,
+        "movable_spouse": movable_spouse,
+        "movable_dependents": movable_dep,
+        "movable_total": movable_total,
+        "immovable_self": immovable_self,
+        "immovable_spouse": immovable_spouse,
+        "immovable_dependents": immovable_dep,
+        "immovable_total": immovable_total,
         "total_assets": total_assets,
         "liabilities": liabilities,
         "affidavit_url": url,

@@ -134,6 +134,12 @@ const dict: Record<string, DictEntry> = {
   "briefing.sources": { en: "Source Stories", ta: "மூல செய்திகள்" },
   "briefing.disclaimer": { en: "AI-generated summary from public news sources. Verify with official sources.", ta: "பொது செய்தி ஆதாரங்களிலிருந்து AI உருவாக்கிய சுருக்கம். அதிகாரப்பூர்வ ஆதாரங்களுடன் சரிபார்க்கவும்." },
 
+  // ── News Feed ─────────────────────────────────
+  "nav.news": { en: "News", ta: "செய்திகள்" },
+  "nav.results": { en: "Results", ta: "தேர்தல் முடிவுகள்" },
+  "news.title": { en: "Party News Feed", ta: "கட்சி செய்திகள்" },
+  "news.subtitle": { en: "Live election news from Tamil Nadu — filtered by party, with source bias labels", ta: "தமிழ்நாட்டின் நேரடி தேர்தல் செய்திகள் — கட்சி வாரியாக, ஊடக சார்பு அடையாளங்களுடன்" },
+
   // ── Common ──────────────────────────────────────
   "common.loading": { en: "Loading...", ta: "ஏற்றுகிறது..." },
   "common.error": { en: "Something went wrong", ta: "ஏதோ தவறாகிவிட்டது" },

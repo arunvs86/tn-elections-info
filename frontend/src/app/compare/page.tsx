@@ -18,6 +18,7 @@ interface CandidateRow {
   criminal_cases_ecourts: number | null;
   votes_received: number | null;
   vote_share: number | null;
+  margin: number | null;
   is_winner: boolean;
   is_incumbent: boolean;
   constituency_id: number;
@@ -25,6 +26,11 @@ interface CandidateRow {
   movable_assets: number | null;
   immovable_assets: number | null;
   liabilities: number | null;
+  assets_movable: number | null;
+  assets_immovable: number | null;
+  assembly_attendance_pct: number | null;
+  assembly_sessions_attended: number | null;
+  assembly_sessions_total: number | null;
 }
 
 interface ConstituencyRow {
@@ -292,6 +298,135 @@ function CandidateSelector({
   );
 }
 
+// ── Quick verdict: auto-generated comparison highlights ──
+function QuickVerdict({
+  left,
+  right,
+  leftColor,
+  rightColor,
+}: {
+  left: CandidateRow;
+  right: CandidateRow;
+  leftColor: string;
+  rightColor: string;
+}) {
+  const verdicts: { label: string; winner: "left" | "right" | "tie"; detail: string }[] = [];
+
+  // More votes
+  if ((left.votes_received ?? 0) > (right.votes_received ?? 0)) {
+    verdicts.push({
+      label: "More Votes",
+      winner: "left",
+      detail: `${fmt(left.votes_received)} vs ${fmt(right.votes_received)}`,
+    });
+  } else if ((right.votes_received ?? 0) > (left.votes_received ?? 0)) {
+    verdicts.push({
+      label: "More Votes",
+      winner: "right",
+      detail: `${fmt(right.votes_received)} vs ${fmt(left.votes_received)}`,
+    });
+  }
+
+  // Higher vote share
+  if ((left.vote_share ?? 0) > (right.vote_share ?? 0)) {
+    verdicts.push({
+      label: "Higher Vote Share",
+      winner: "left",
+      detail: `${(left.vote_share ?? 0).toFixed(1)}% vs ${(right.vote_share ?? 0).toFixed(1)}%`,
+    });
+  } else if ((right.vote_share ?? 0) > (left.vote_share ?? 0)) {
+    verdicts.push({
+      label: "Higher Vote Share",
+      winner: "right",
+      detail: `${(right.vote_share ?? 0).toFixed(1)}% vs ${(left.vote_share ?? 0).toFixed(1)}%`,
+    });
+  }
+
+  // Richer
+  if ((left.net_worth ?? 0) > (right.net_worth ?? 0)) {
+    verdicts.push({
+      label: "Wealthier",
+      winner: "left",
+      detail: `${fmtCurrency(left.net_worth)} vs ${fmtCurrency(right.net_worth)}`,
+    });
+  } else if ((right.net_worth ?? 0) > (left.net_worth ?? 0)) {
+    verdicts.push({
+      label: "Wealthier",
+      winner: "right",
+      detail: `${fmtCurrency(right.net_worth)} vs ${fmtCurrency(left.net_worth)}`,
+    });
+  }
+
+  // Fewer criminal cases (lower is better)
+  const lCases = left.criminal_cases_declared;
+  const rCases = right.criminal_cases_declared;
+  if (lCases < rCases) {
+    verdicts.push({
+      label: "Fewer Criminal Cases",
+      winner: "left",
+      detail: `${lCases} vs ${rCases}`,
+    });
+  } else if (rCases < lCases) {
+    verdicts.push({
+      label: "Fewer Criminal Cases",
+      winner: "right",
+      detail: `${rCases} vs ${lCases}`,
+    });
+  } else {
+    verdicts.push({ label: "Criminal Cases", winner: "tie", detail: `Both: ${lCases}` });
+  }
+
+  // Better attendance
+  if (
+    left.assembly_attendance_pct != null &&
+    right.assembly_attendance_pct != null
+  ) {
+    if (left.assembly_attendance_pct > right.assembly_attendance_pct) {
+      verdicts.push({
+        label: "Better Attendance",
+        winner: "left",
+        detail: `${left.assembly_attendance_pct}% vs ${right.assembly_attendance_pct}%`,
+      });
+    } else if (right.assembly_attendance_pct > left.assembly_attendance_pct) {
+      verdicts.push({
+        label: "Better Attendance",
+        winner: "right",
+        detail: `${right.assembly_attendance_pct}% vs ${left.assembly_attendance_pct}%`,
+      });
+    }
+  }
+
+  if (verdicts.length === 0) return null;
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+      <h2 className="font-bold text-gray-900 text-sm mb-3">
+        Quick Verdict
+      </h2>
+      <div className="space-y-2">
+        {verdicts.map((v, i) => (
+          <div key={i} className="flex items-center gap-3 py-1.5">
+            <span className="text-xs text-gray-400 w-36 flex-shrink-0">{v.label}</span>
+            {v.winner === "tie" ? (
+              <span className="text-xs text-gray-500 font-medium">{v.detail}</span>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span
+                  className="text-xs font-bold px-2 py-0.5 rounded-full text-white"
+                  style={{ background: v.winner === "left" ? leftColor : rightColor }}
+                >
+                  {v.winner === "left" ? left.name.split(" ")[0] : right.name.split(" ")[0]}
+                </span>
+                <span className="text-xs text-gray-500">{v.detail}</span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── Main compare content (uses useSearchParams) ────────
 function CompareContent() {
   const searchParams = useSearchParams();
@@ -300,6 +435,8 @@ function CompareContent() {
   const [left, setLeft] = useState<CandidateRow | null>(null);
   const [right, setRight] = useState<CandidateRow | null>(null);
   const [constituency, setConstituency] = useState<ConstituencyRow | null>(null);
+  const [leftConst, setLeftConst] = useState<ConstituencyRow | null>(null);
+  const [rightConst, setRightConst] = useState<ConstituencyRow | null>(null);
   const [loading, setLoading] = useState(false);
 
   // Load candidates from URL params on mount
@@ -341,6 +478,7 @@ function CompareContent() {
   useEffect(() => {
     if (!left) {
       setConstituency(null);
+      setLeftConst(null);
       return;
     }
 
@@ -351,11 +489,34 @@ function CompareContent() {
         .eq("id", left!.constituency_id)
         .single();
 
-      if (data) setConstituency(data);
+      if (data) {
+        setConstituency(data);
+        setLeftConst(data);
+      }
     }
 
     loadConst();
   }, [left?.id]);
+
+  // When right candidate changes, load their constituency
+  useEffect(() => {
+    if (!right) {
+      setRightConst(null);
+      return;
+    }
+
+    async function loadConst() {
+      const { data } = await supabase
+        .from("constituencies")
+        .select("id, name, district")
+        .eq("id", right!.constituency_id)
+        .single();
+
+      if (data) setRightConst(data);
+    }
+
+    loadConst();
+  }, [right?.id]);
 
   const leftColor = left ? partyColor(left.party) : "#888";
   const rightColor = right ? partyColor(right.party) : "#888";
@@ -694,6 +855,116 @@ function CompareContent() {
                       }
                     />
                   )}
+                </div>
+
+                {/* Constituency Context (cross-constituency compare) */}
+                {leftConst && rightConst && (
+                  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                    <h2 className="font-bold text-gray-900 text-sm mb-3">
+                      Constituency Context
+                    </h2>
+
+                    <StatRow
+                      label="Constituency"
+                      leftVal={0}
+                      rightVal={0}
+                      leftDisplay={leftConst.name}
+                      rightDisplay={rightConst.name}
+                      leftColor={leftColor}
+                      rightColor={rightColor}
+                      showBar={false}
+                    />
+
+                    <StatRow
+                      label="District"
+                      leftVal={0}
+                      rightVal={0}
+                      leftDisplay={leftConst.district}
+                      rightDisplay={rightConst.district}
+                      leftColor={leftColor}
+                      rightColor={rightColor}
+                      showBar={false}
+                    />
+
+                    <StatRow
+                      label="Victory Margin"
+                      leftVal={left.margin ?? 0}
+                      rightVal={right.margin ?? 0}
+                      leftDisplay={left.margin != null ? fmt(left.margin) : "—"}
+                      rightDisplay={right.margin != null ? fmt(right.margin) : "—"}
+                      leftColor={leftColor}
+                      rightColor={rightColor}
+                    />
+                  </div>
+                )}
+
+                {/* Assembly Attendance (for winners) */}
+                {(left.is_winner || right.is_winner) &&
+                  (left.assembly_attendance_pct != null ||
+                    right.assembly_attendance_pct != null) && (
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                      <h2 className="font-bold text-gray-900 text-sm mb-3">
+                        Assembly Attendance
+                      </h2>
+
+                      <StatRow
+                        label="Attendance %"
+                        leftVal={left.assembly_attendance_pct ?? 0}
+                        rightVal={right.assembly_attendance_pct ?? 0}
+                        leftDisplay={
+                          left.assembly_attendance_pct != null
+                            ? `${left.assembly_attendance_pct}%`
+                            : "—"
+                        }
+                        rightDisplay={
+                          right.assembly_attendance_pct != null
+                            ? `${right.assembly_attendance_pct}%`
+                            : "—"
+                        }
+                        leftColor={leftColor}
+                        rightColor={rightColor}
+                      />
+
+                      <StatRow
+                        label="Sessions Attended"
+                        leftVal={left.assembly_sessions_attended ?? 0}
+                        rightVal={right.assembly_sessions_attended ?? 0}
+                        leftDisplay={
+                          left.assembly_sessions_attended != null && left.assembly_sessions_total != null
+                            ? `${left.assembly_sessions_attended}/${left.assembly_sessions_total}`
+                            : "—"
+                        }
+                        rightDisplay={
+                          right.assembly_sessions_attended != null && right.assembly_sessions_total != null
+                            ? `${right.assembly_sessions_attended}/${right.assembly_sessions_total}`
+                            : "—"
+                        }
+                        leftColor={leftColor}
+                        rightColor={rightColor}
+                      />
+                    </div>
+                  )}
+
+                {/* Quick Verdict */}
+                <QuickVerdict left={left} right={right} leftColor={leftColor} rightColor={rightColor} />
+
+                {/* Share comparison */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      const text = `Compare: ${left.name} (${left.party}) vs ${right.name} (${right.party})\n\nVotes: ${fmt(left.votes_received)} vs ${fmt(right.votes_received)}\nAssets: ${fmtCurrency(left.net_worth)} vs ${fmtCurrency(right.net_worth)}\nCriminal Cases: ${left.criminal_cases_declared} vs ${right.criminal_cases_declared}\n\nSee full comparison at tnelections.info/compare?ids=${left.id},${right.id}`;
+                      window.open(
+                        `https://wa.me/?text=${encodeURIComponent(text)}`,
+                        "_blank"
+                      );
+                    }}
+                    className="flex-1 text-center bg-[#25d366] text-white rounded-2xl py-3 text-sm font-semibold hover:bg-[#1da851] transition-colors flex items-center justify-center gap-2"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                    </svg>
+                    Share Comparison
+                  </button>
                 </div>
 
                 {/* View full profiles */}
