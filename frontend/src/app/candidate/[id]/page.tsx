@@ -930,40 +930,35 @@ export default function CandidatePage() {
             )}
           </div>
 
-          {/* ── Assembly Attendance (4.9) ── */}
-          {candidate.is_winner && (
+          {/* ── Assembly Attendance (4.9) — only show if real data exists ── */}
+          {candidate.is_winner && (candidate as CandidateExtended).assembly_attendance_pct != null && (
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
               <h2 className="font-bold text-gray-900 text-sm mb-4">
                 Assembly Attendance
               </h2>
-              {(candidate as CandidateExtended).assembly_attendance_pct != null ? (
-                <div className="text-center">
-                  <div className="relative w-24 h-24 mx-auto mb-2">
-                    <svg width="96" height="96" className="-rotate-90">
-                      <circle cx="48" cy="48" r="40" fill="none" stroke="#e5e7eb" strokeWidth="8" />
-                      <circle
-                        cx="48" cy="48" r="40" fill="none"
-                        stroke={((candidate as CandidateExtended).assembly_attendance_pct || 0) >= 75 ? "#2d7a4f" : ((candidate as CandidateExtended).assembly_attendance_pct || 0) >= 50 ? "#b8860b" : "#c0392b"}
-                        strokeWidth="8" strokeLinecap="round"
-                        strokeDasharray={`${2 * Math.PI * 40}`}
-                        strokeDashoffset={`${2 * Math.PI * 40 * (1 - ((candidate as CandidateExtended).assembly_attendance_pct || 0) / 100)}`}
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-lg font-bold text-gray-900">
-                        {(candidate as CandidateExtended).assembly_attendance_pct}%
-                      </span>
-                    </div>
+              <div className="text-center">
+                <div className="relative w-24 h-24 mx-auto mb-2">
+                  <svg width="96" height="96" className="-rotate-90">
+                    <circle cx="48" cy="48" r="40" fill="none" stroke="#e5e7eb" strokeWidth="8" />
+                    <circle
+                      cx="48" cy="48" r="40" fill="none"
+                      stroke={((candidate as CandidateExtended).assembly_attendance_pct || 0) >= 75 ? "#2d7a4f" : ((candidate as CandidateExtended).assembly_attendance_pct || 0) >= 50 ? "#b8860b" : "#c0392b"}
+                      strokeWidth="8" strokeLinecap="round"
+                      strokeDasharray={`${2 * Math.PI * 40}`}
+                      strokeDashoffset={`${2 * Math.PI * 40 * (1 - ((candidate as CandidateExtended).assembly_attendance_pct || 0) / 100)}`}
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-lg font-bold text-gray-900">
+                      {(candidate as CandidateExtended).assembly_attendance_pct}%
+                    </span>
                   </div>
-                  <p className="text-xs text-gray-500">
-                    {(candidate as CandidateExtended).assembly_sessions_attended || "?"} of {(candidate as CandidateExtended).assembly_sessions_total || "?"} sessions attended
-                  </p>
                 </div>
-              ) : (
-                <p className="text-sm text-gray-400 text-center py-4">
-                  Attendance data will be available soon
+                <p className="text-xs text-gray-500">
+                  {(candidate as CandidateExtended).assembly_sessions_attended || "?"} of {(candidate as CandidateExtended).assembly_sessions_total || "?"} sessions attended
                 </p>
-              )}
+                <p className="text-[10px] text-gray-400 mt-1">Source: PRS India MLATrack</p>
+              </div>
             </div>
           )}
 
