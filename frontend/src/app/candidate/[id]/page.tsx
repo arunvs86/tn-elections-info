@@ -7,6 +7,117 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import ScopedChat from "@/components/ScopedChat";
 
+// ── IPC Sections Lookup (English + Tamil + severity) ──
+const IPC: Record<string, { en: string; ta: string; severity: string; category: string }> = {
+  "34": { en: "Acts done by several persons in furtherance of common intention", ta: "பொது நோக்கத்துடன் கூட்டு செயல்", severity: "minor", category: "abetment" },
+  "107": { en: "Abetment of a thing", ta: "குற்றத்திற்கு உடந்தை", severity: "moderate", category: "abetment" },
+  "109": { en: "Punishment of abetment if act abetted is committed", ta: "உடந்தை குற்றத்திற்கு தண்டனை", severity: "moderate", category: "abetment" },
+  "120B": { en: "Criminal conspiracy", ta: "குற்றவியல் சதி", severity: "serious", category: "conspiracy" },
+  "124A": { en: "Sedition", ta: "தேசத்துரோகம்", severity: "grave", category: "sedition" },
+  "138": { en: "Dishonour of cheque (NI Act)", ta: "காசோலை மோசடி", severity: "moderate", category: "fraud" },
+  "143": { en: "Unlawful assembly", ta: "சட்டவிரோத கூட்டம்", severity: "minor", category: "public order" },
+  "144": { en: "Joining unlawful assembly armed with weapon", ta: "ஆயுதத்துடன் சட்டவிரோத கூட்டத்தில் சேர்தல்", severity: "moderate", category: "public order" },
+  "145": { en: "Joining or continuing in unlawful assembly", ta: "சட்டவிரோத கூட்டத்தில் தொடர்தல்", severity: "minor", category: "public order" },
+  "146": { en: "Rioting", ta: "கலவரம்", severity: "moderate", category: "violence" },
+  "147": { en: "Rioting", ta: "கலவரம்", severity: "moderate", category: "violence" },
+  "148": { en: "Rioting armed with deadly weapon", ta: "ஆயுதத்துடன் கலவரம்", severity: "serious", category: "violence" },
+  "149": { en: "Every member of unlawful assembly guilty of offence committed", ta: "சட்டவிரோத கூட்டத்தின் உறுப்பினர் குற்றத்திற்கு பொறுப்பு", severity: "moderate", category: "public order" },
+  "151": { en: "Continuing in assembly after dispersal order", ta: "கலைக்க உத்தரவிட்ட பின்னும் தொடர்தல்", severity: "minor", category: "public order" },
+  "152": { en: "Assaulting public servant suppressing riot", ta: "கலவரத்தை அடக்கும் அரசு ஊழியரைத் தாக்குதல்", severity: "serious", category: "violence" },
+  "153": { en: "Wantonly provoking to cause riot", ta: "கலவரம் தூண்டும் ஆத்திரமூட்டுதல்", severity: "moderate", category: "public order" },
+  "153A": { en: "Promoting enmity between groups (religion, race, etc.)", ta: "மதம், இனம் அடிப்படையில் பகைமை தூண்டுதல்", severity: "serious", category: "hate speech" },
+  "166": { en: "Public servant disobeying law", ta: "அரசு ஊழியர் சட்ட மீறல்", severity: "moderate", category: "government" },
+  "171C": { en: "Bribery at elections", ta: "தேர்தலில் லஞ்சம்", severity: "serious", category: "election" },
+  "186": { en: "Obstructing public servant", ta: "அரசு ஊழியரின் பணியைத் தடுத்தல்", severity: "moderate", category: "government" },
+  "188": { en: "Disobedience to order by public servant", ta: "அரசு உத்தரவை மீறுதல்", severity: "minor", category: "government" },
+  "201": { en: "Causing disappearance of evidence", ta: "ஆதாரம் அழிப்பு/பொய் தகவல்", severity: "serious", category: "government" },
+  "269": { en: "Negligent act likely to spread disease", ta: "நோய் பரவ காரணமான அலட்சியம்", severity: "minor", category: "public nuisance" },
+  "270": { en: "Malignant act likely to spread disease", ta: "நோய் பரவ காரணமான தீங்கான செயல்", severity: "moderate", category: "public nuisance" },
+  "278": { en: "Making atmosphere noxious to health", ta: "சுகாதாரத்திற்கு தீங்கான சூழல்", severity: "minor", category: "public nuisance" },
+  "279": { en: "Rash driving on a public way", ta: "பொறுப்பற்ற ஓட்டம்", severity: "moderate", category: "public nuisance" },
+  "283": { en: "Obstruction in public way", ta: "பொது பாதையில் தடை", severity: "minor", category: "public nuisance" },
+  "290": { en: "Public nuisance", ta: "பொது தொல்லை", severity: "minor", category: "public nuisance" },
+  "294": { en: "Obscene acts and songs", ta: "ஆபாச செயல்கள்", severity: "minor", category: "obscenity" },
+  "294B": { en: "Obscene language in public", ta: "பொது இடத்தில் கெட்ட வார்த்தை", severity: "minor", category: "obscenity" },
+  "294b": { en: "Obscene language in public", ta: "பொது இடத்தில் கெட்ட வார்த்தை", severity: "minor", category: "obscenity" },
+  "295A": { en: "Deliberate acts to outrage religious feelings", ta: "மத உணர்வுகளை புண்படுத்தும் செயல்", severity: "serious", category: "hate speech" },
+  "302": { en: "Murder", ta: "கொலை", severity: "grave", category: "violence" },
+  "304": { en: "Culpable homicide not amounting to murder", ta: "கொலை அளவிற்கு இல்லாத மரணம்", severity: "grave", category: "violence" },
+  "304A": { en: "Causing death by negligence", ta: "அலட்சியத்தால் மரணம்", severity: "serious", category: "violence" },
+  "306": { en: "Abetment of suicide", ta: "தற்கொலைக்கு உடந்தை", severity: "grave", category: "violence" },
+  "307": { en: "Attempt to murder", ta: "கொலை முயற்சி", severity: "grave", category: "violence" },
+  "323": { en: "Voluntarily causing hurt", ta: "தன்னிச்சையாக காயம்", severity: "minor", category: "violence" },
+  "324": { en: "Causing hurt by dangerous weapon", ta: "ஆபத்தான ஆயுதத்தால் காயம்", severity: "serious", category: "violence" },
+  "325": { en: "Voluntarily causing grievous hurt", ta: "கடுமையான காயம்", severity: "serious", category: "violence" },
+  "326": { en: "Causing grievous hurt by dangerous weapon", ta: "ஆபத்தான ஆயுதத்தால் கடுமையான காயம்", severity: "grave", category: "violence" },
+  "332": { en: "Causing hurt to deter public servant", ta: "அரசு ஊழியரைத் தடுக்க காயம்", severity: "serious", category: "violence" },
+  "336": { en: "Act endangering life or safety of others", ta: "பிறர் பாதுகாப்பை ஆபத்தில் ஆழ்த்தும் செயல்", severity: "moderate", category: "violence" },
+  "337": { en: "Causing hurt by endangering act", ta: "ஆபத்தான செயலால் காயம்", severity: "moderate", category: "violence" },
+  "341": { en: "Wrongful restraint", ta: "தவறான தடுப்பு", severity: "minor", category: "restraint" },
+  "342": { en: "Wrongful confinement", ta: "தவறான சிறைவைப்பு", severity: "moderate", category: "restraint" },
+  "351": { en: "Assault to deter public servant from duty", ta: "அரசு ஊழியரை கடமையிலிருந்து தடுக்க தாக்குதல்", severity: "moderate", category: "violence" },
+  "352": { en: "Assault without grave provocation", ta: "தூண்டுதல் இல்லாமல் தாக்குதல்", severity: "minor", category: "violence" },
+  "353": { en: "Assault on public servant", ta: "அரசு ஊழியரைத் தாக்குதல்", severity: "serious", category: "violence" },
+  "354": { en: "Assault on woman to outrage modesty", ta: "பெண்ணை தாக்குதல்", severity: "serious", category: "sexual offence" },
+  "363": { en: "Kidnapping", ta: "கடத்தல்", severity: "serious", category: "kidnapping" },
+  "376": { en: "Rape", ta: "பாலியல் வன்கொடுமை", severity: "grave", category: "sexual offence" },
+  "379": { en: "Theft", ta: "திருட்டு", severity: "moderate", category: "property" },
+  "384": { en: "Extortion", ta: "மிரட்டி பணம் பறித்தல்", severity: "serious", category: "property" },
+  "392": { en: "Robbery", ta: "கொள்ளை", severity: "serious", category: "property" },
+  "395": { en: "Dacoity", ta: "கொள்ளைக்குழு", severity: "grave", category: "property" },
+  "406": { en: "Criminal breach of trust", ta: "நம்பிக்கை மோசடி", severity: "serious", category: "fraud" },
+  "409": { en: "Criminal breach of trust by public servant", ta: "அரசு ஊழியர் நம்பிக்கை மோசடி", severity: "grave", category: "fraud" },
+  "415": { en: "Cheating", ta: "ஏமாற்றுதல்", severity: "moderate", category: "fraud" },
+  "420": { en: "Cheating and dishonestly inducing delivery of property", ta: "மோசடி", severity: "serious", category: "fraud" },
+  "427": { en: "Mischief causing damage", ta: "சொத்து சேதம்", severity: "minor", category: "property" },
+  "435": { en: "Mischief by fire or explosive", ta: "தீ/வெடிமருந்து மூலம் சேதம்", severity: "serious", category: "property" },
+  "447": { en: "Criminal trespass", ta: "குற்றவியல் அத்துமீறல்", severity: "minor", category: "trespass" },
+  "448": { en: "House-trespass", ta: "வீட்டு அத்துமீறல்", severity: "moderate", category: "trespass" },
+  "452": { en: "House-trespass with preparation for hurt", ta: "தாக்குதலுக்கு தயாராகி வீட்டு அத்துமீறல்", severity: "serious", category: "trespass" },
+  "465": { en: "Forgery", ta: "ஆவண போலி", severity: "serious", category: "fraud" },
+  "467": { en: "Forgery of valuable security", ta: "மதிப்புள்ள ஆவண போலி", severity: "grave", category: "fraud" },
+  "468": { en: "Forgery for purpose of cheating", ta: "ஏமாற்ற ஆவண போலி", severity: "grave", category: "fraud" },
+  "471": { en: "Using forged document as genuine", ta: "போலி ஆவணம் பயன்படுத்துதல்", severity: "serious", category: "fraud" },
+  "498A": { en: "Husband subjecting woman to cruelty", ta: "கணவன் கொடுமை", severity: "serious", category: "domestic violence" },
+  "499": { en: "Defamation", ta: "அவதூறு", severity: "minor", category: "defamation" },
+  "500": { en: "Punishment for defamation", ta: "அவதூறு தண்டனை", severity: "minor", category: "defamation" },
+  "504": { en: "Intentional insult to provoke breach of peace", ta: "அமைதி குலைக்க வேண்டுமென்றே அவமானம்", severity: "minor", category: "intimidation" },
+  "505": { en: "Statements conducing to public mischief", ta: "பொது குழப்பம் தூண்டும் அறிக்கைகள்", severity: "serious", category: "public order" },
+  "506": { en: "Criminal intimidation", ta: "குற்றவியல் மிரட்டல்", severity: "moderate", category: "intimidation" },
+  "506(i)": { en: "Criminal intimidation", ta: "குற்றவியல் மிரட்டல்", severity: "moderate", category: "intimidation" },
+  "506(ii)": { en: "Criminal intimidation (death/grievous hurt/fire)", ta: "கொலை/தீவைப்பு மிரட்டல்", severity: "serious", category: "intimidation" },
+  "506(I)": { en: "Criminal intimidation", ta: "குற்றவியல் மிரட்டல்", severity: "moderate", category: "intimidation" },
+  "506(II)": { en: "Criminal intimidation (death/grievous hurt/fire)", ta: "கொலை/தீவைப்பு மிரட்டல்", severity: "serious", category: "intimidation" },
+  "506(1)": { en: "Criminal intimidation", ta: "குற்றவியல் மிரட்டல்", severity: "moderate", category: "intimidation" },
+  "506(2)": { en: "Criminal intimidation (death/grievous hurt/fire)", ta: "கொலை/தீவைப்பு மிரட்டல்", severity: "serious", category: "intimidation" },
+  "507": { en: "Criminal intimidation by anonymous communication", ta: "அநாமதேய மிரட்டல்", severity: "moderate", category: "intimidation" },
+  "509": { en: "Word/gesture to insult modesty of a woman", ta: "பெண்ணை அவமானப்படுத்தும் சொல்/செயல்", severity: "moderate", category: "sexual offence" },
+  "511": { en: "Attempting to commit offences", ta: "குற்ற முயற்சி", severity: "minor", category: "abetment" },
+  "505(2)": { en: "Statements creating enmity between classes", ta: "வகுப்புகளிடையே பகைமை தூண்டும் அறிக்கை", severity: "serious", category: "public order" },
+};
+
+const SEVERITY_COLORS: Record<string, { bg: string; text: string; border: string }> = {
+  grave: { bg: "bg-red-50", text: "text-red-700", border: "border-red-200" },
+  serious: { bg: "bg-orange-50", text: "text-orange-700", border: "border-orange-200" },
+  moderate: { bg: "bg-yellow-50", text: "text-yellow-700", border: "border-yellow-200" },
+  minor: { bg: "bg-gray-50", text: "text-gray-600", border: "border-gray-200" },
+};
+
+function parseSections(sectionsStr: string): { code: string; info: typeof IPC[string] | null }[] {
+  return sectionsStr.split(",").map(s => {
+    const code = s.trim();
+    return { code, info: IPC[code] || IPC[code.toUpperCase()] || IPC[code.toLowerCase()] || null };
+  }).filter(s => s.code);
+}
+
+function worstSeverity(sections: { code: string; info: typeof IPC[string] | null }[]): string {
+  const order = ["grave", "serious", "moderate", "minor"];
+  for (const level of order) {
+    if (sections.some(s => s.info?.severity === level)) return level;
+  }
+  return "minor";
+}
+
 // ── Types ──────────────────────────────────────────────
 interface Candidate {
   id: number;
@@ -863,60 +974,96 @@ export default function CandidatePage() {
                 Case Details ({criminalCases.length})
               </h2>
               <div className="space-y-3">
-                {criminalCases.map((c) => (
-                  <div
-                    key={c.id}
-                    className={`rounded-xl p-4 border ${
-                      c.is_disclosed
-                        ? "bg-gray-50 border-gray-200"
-                        : "bg-red-50 border-red-200"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {c.case_type && (
-                            <span className="text-xs font-semibold bg-white px-2 py-0.5 rounded border border-gray-200 text-gray-700">
-                              {c.case_type}
-                            </span>
-                          )}
-                          {!c.is_disclosed && (
-                            <span className="text-xs font-semibold bg-red-100 text-red-700 px-2 py-0.5 rounded">
-                              Not Disclosed
-                            </span>
-                          )}
-                          {c.status && (
-                            <span
-                              className={`text-xs font-semibold px-2 py-0.5 rounded ${
-                                c.status.toLowerCase() === "convicted"
-                                  ? "bg-red-100 text-red-700"
-                                  : c.status.toLowerCase() === "disposed" || c.status.toLowerCase() === "acquitted"
-                                  ? "bg-green-100 text-green-700"
-                                  : "bg-yellow-100 text-yellow-700"
-                              }`}
-                            >
-                              {c.status}
-                            </span>
-                          )}
-                        </div>
-                        {c.case_number && (
-                          <p className="text-sm text-gray-700 font-medium mt-1.5">
-                            Case: {c.case_number}
-                          </p>
+                {criminalCases.map((c) => {
+                  const sections = c.sections ? parseSections(c.sections) : [];
+                  const worst = worstSeverity(sections);
+                  const colors = SEVERITY_COLORS[worst] || SEVERITY_COLORS.minor;
+
+                  return (
+                    <div
+                      key={c.id}
+                      className={`rounded-xl p-4 border ${
+                        !c.is_disclosed
+                          ? "bg-red-50 border-red-200"
+                          : `${colors.bg} ${colors.border}`
+                      }`}
+                    >
+                      {/* Header row: badges */}
+                      <div className="flex items-center gap-2 flex-wrap mb-2">
+                        {c.case_type && (
+                          <span className="text-xs font-semibold bg-white px-2 py-0.5 rounded border border-gray-200 text-gray-700">
+                            {c.case_type}
+                          </span>
                         )}
-                        {c.court_name && (
-                          <p className="text-xs text-gray-500 mt-0.5">
-                            Court: {c.court_name}
-                          </p>
+                        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${colors.bg} ${colors.text}`}>
+                          {worst}
+                        </span>
+                        {!c.is_disclosed && (
+                          <span className="text-xs font-semibold bg-red-100 text-red-700 px-2 py-0.5 rounded">
+                            Not Disclosed
+                          </span>
                         )}
-                        {c.sections && (
-                          <p className="text-xs text-gray-500 mt-0.5">
-                            Sections: {c.sections}
-                          </p>
+                        {c.status && (
+                          <span
+                            className={`text-xs font-semibold px-2 py-0.5 rounded ${
+                              c.status.toLowerCase() === "convicted"
+                                ? "bg-red-100 text-red-700"
+                                : c.status.toLowerCase() === "disposed" || c.status.toLowerCase() === "acquitted"
+                                ? "bg-green-100 text-green-700"
+                                : "bg-yellow-100 text-yellow-700"
+                            }`}
+                          >
+                            {c.status}
+                          </span>
                         )}
                       </div>
+
+                      {/* Section details with descriptions */}
+                      {sections.length > 0 && (
+                        <div className="space-y-1.5 mt-2">
+                          {sections.map((s, i) => {
+                            const sColors = s.info ? (SEVERITY_COLORS[s.info.severity] || SEVERITY_COLORS.minor) : SEVERITY_COLORS.minor;
+                            return (
+                              <div key={i} className="flex items-start gap-2">
+                                <span className={`text-xs font-mono font-bold px-1.5 py-0.5 rounded flex-shrink-0 ${sColors.bg} ${sColors.text} border ${sColors.border}`}>
+                                  §{s.code}
+                                </span>
+                                <div className="min-w-0">
+                                  {s.info ? (
+                                    <>
+                                      <p className="text-xs font-medium text-gray-800 leading-snug">
+                                        {s.info.en}
+                                      </p>
+                                      <p className="text-[11px] text-gray-500 leading-snug">
+                                        {s.info.ta}
+                                      </p>
+                                    </>
+                                  ) : (
+                                    <p className="text-xs text-gray-500">
+                                      IPC Section {s.code}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Case number & court */}
+                      {(c.case_number || c.court_name) && (
+                        <div className="mt-2 pt-2 border-t border-gray-200/50">
+                          {c.case_number && (
+                            <p className="text-xs text-gray-500">Case: {c.case_number}</p>
+                          )}
+                          {c.court_name && (
+                            <p className="text-xs text-gray-500">Court: {c.court_name}</p>
+                          )}
+                        </div>
+                      )}
+
                       {c.next_hearing && (
-                        <div className="text-right flex-shrink-0">
+                        <div className="mt-2 pt-2 border-t border-gray-200/50">
                           <p className="text-[10px] text-gray-400">Next Hearing</p>
                           <p className="text-xs font-semibold text-gray-700">
                             {new Date(c.next_hearing).toLocaleDateString("en-IN", {
@@ -928,8 +1075,8 @@ export default function CandidatePage() {
                         </div>
                       )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
