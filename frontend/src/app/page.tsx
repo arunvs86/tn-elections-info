@@ -238,26 +238,17 @@ export default function HomePage() {
     <div className="min-h-screen bg-cream">
       <Header active="home" />
 
-      {/* ── Hero with dramatic background ── */}
+      {/* ── Hero with background image ── */}
       <section className="relative overflow-hidden">
-        {/* Background: dark gradient with subtle pattern */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460]" />
-
-        {/* Subtle grid pattern overlay */}
+        {/* Background image */}
         <div
-          className="absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }}
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url('/hero-bg.jpg')` }}
         />
-
-        {/* Decorative elements */}
-        <div className="absolute top-20 left-10 w-72 h-72 bg-terracotta/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
-
-        {/* Floating ballot box accent */}
-        <div className="absolute top-16 right-[15%] text-6xl opacity-10 hidden md:block">🗳️</div>
-        <div className="absolute bottom-20 left-[10%] text-5xl opacity-10 hidden md:block">🏛️</div>
+        {/* Dark overlay for readability */}
+        <div className="absolute inset-0 bg-black/70" />
+        {/* Gradient overlay for depth */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
 
         {/* Content */}
         <div className="relative max-w-6xl mx-auto px-4 pt-16 pb-20 text-center">
