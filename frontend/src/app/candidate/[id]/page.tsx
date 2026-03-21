@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
+import Header from "@/components/Header";
 
 // ── Types ──────────────────────────────────────────────
 interface Candidate {
@@ -403,28 +404,7 @@ export default function CandidatePage() {
 
   return (
     <div className="min-h-screen bg-cream">
-      {/* ── Header ── */}
-      <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl">🗳️</span>
-            <div>
-              <p className="font-bold text-gray-900 leading-none">
-                tnelections.info
-              </p>
-              <p className="text-xs text-gray-500">Tamil Nadu 2026</p>
-            </div>
-          </Link>
-          {constituency && (
-            <Link
-              href={`/constituency/${slugify(constituency.name)}`}
-              className="text-sm text-gray-500 hover:text-terracotta transition-colors"
-            >
-              ← {constituency.name}
-            </Link>
-          )}
-        </div>
-      </header>
+      <Header />
 
       <main className="max-w-4xl mx-auto px-4 py-8">
         {/* Breadcrumb */}
