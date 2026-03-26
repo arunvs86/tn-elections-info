@@ -200,13 +200,20 @@ export default function DistrictsPage() {
         {loading ? (
           <div className="flex items-center justify-center h-96">
             <p className="text-gray-400 animate-pulse">
-              Loading district data...
+              {t("districts.loading")}
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
             {/* ── Map column ── */}
             <div className="lg:col-span-2 relative">
+              {/* UX cue for clicking */}
+              <div className="bg-terracotta/10 border border-terracotta/20 rounded-xl px-4 py-2.5 mb-3 flex items-center gap-2">
+                <span className="text-lg">👆</span>
+                <p className="text-sm text-terracotta font-medium">
+                  {t("districts.click_hint")}
+                </p>
+              </div>
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 relative">
                 <ComposableMap
                   projection="geoMercator"
@@ -290,7 +297,7 @@ export default function DistrictsPage() {
                   >
                     <p className="font-semibold">{tooltip.name}</p>
                     <p className="text-gray-300 text-xs">
-                      {tooltip.constituencyCount} constituencies
+                      {tooltip.constituencyCount} {t("districts.constituencies")}
                     </p>
                     {tooltip.dominantParty && (
                       <p className="text-xs mt-0.5">
@@ -302,7 +309,7 @@ export default function DistrictsPage() {
                             ),
                           }}
                         />
-                        {tooltip.dominantParty} dominant
+                        {tooltip.dominantParty} {t("districts.dominant")}
                       </p>
                     )}
                   </div>
@@ -314,9 +321,9 @@ export default function DistrictsPage() {
             <div className="lg:col-span-1">
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
                 <h2 className="font-bold text-gray-900 mb-3">
-                  All Districts ({Object.keys(districtStats).length})
+                  {t("districts.all_districts")} ({Object.keys(districtStats).length})
                 </h2>
-                <div className="space-y-1 max-h-[600px] overflow-y-auto">
+                <div className="space-y-1 max-h-[300px] sm:max-h-[400px] md:max-h-[600px] overflow-y-auto">
                   {Object.values(districtStats)
                     .sort((a, b) => a.name.localeCompare(b.name))
                     .map((d) => (
@@ -337,7 +344,7 @@ export default function DistrictsPage() {
                           </span>
                         </div>
                         <span className="text-xs text-gray-400">
-                          {d.constituencyCount} seats
+                          {d.constituencyCount} {t("districts.seats")}
                         </span>
                       </Link>
                     ))}
@@ -363,9 +370,9 @@ export default function DistrictsPage() {
               {/* Legend */}
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mt-4">
                 <h3 className="font-bold text-gray-900 text-sm mb-3">
-                  Party Legend (2021 Dominant)
+                  {t("districts.party_legend")}
                 </h3>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {[
                     { name: "DMK", color: "#c0392b" },
                     { name: "AIADMK", color: "#2d7a4f" },

@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import Header from "@/components/Header";
 import ScopedChat from "@/components/ScopedChat";
+import { useLang } from "@/components/LanguageProvider";
 
 // ── Types ──────────────────────────────────────────────
 interface Constituency {
@@ -130,6 +131,7 @@ function fmt(n: number | null): string {
 // ── Components ─────────────────────────────────────────
 
 function ElectionResultCard({ result }: { result: ElectionResult }) {
+  const { t } = useLang();
   const winnerColor = partyColor(result.winner_party);
   const runnerColor = partyColor(result.runner_up_party);
   const winShare = result.winner_vote_share ?? 0;
@@ -142,9 +144,9 @@ function ElectionResultCard({ result }: { result: ElectionResult }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-bold text-gray-900">2021 Result</h3>
+        <h3 className="font-bold text-gray-900">{t("const.result_2021")}</h3>
         <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-          Turnout {result.turnout?.toFixed(1)}%
+          {t("const.turnout")} {result.turnout?.toFixed(1)}%
         </span>
       </div>
 
@@ -208,11 +210,11 @@ function ElectionResultCard({ result }: { result: ElectionResult }) {
 
       <div className="flex justify-between text-xs text-gray-500 border-t border-gray-100 pt-3">
         <span>
-          Margin:{" "}
+          {t("const.margin")}{" "}
           <strong className="text-gray-700">{fmt(result.margin)}</strong>
         </span>
         <span>
-          Total votes:{" "}
+          {t("const.total_votes")}{" "}
           <strong className="text-gray-700">{fmt(result.total_votes)}</strong>
         </span>
       </div>
@@ -221,6 +223,7 @@ function ElectionResultCard({ result }: { result: ElectionResult }) {
 }
 
 function CandidateCard({ c }: { c: Candidate }) {
+  const { t } = useLang();
   const color = partyColor(c.party);
   return (
     <div
@@ -232,12 +235,12 @@ function CandidateCard({ c }: { c: Candidate }) {
     >
       {c.is_winner && (
         <span className="absolute top-3 right-3 text-xs bg-yellow-100 text-yellow-700 font-semibold px-2 py-0.5 rounded-full">
-          Winner
+          {t("const.winner")}
         </span>
       )}
       {c.is_incumbent && !c.is_winner && (
         <span className="absolute top-3 right-3 text-xs bg-blue-50 text-blue-600 font-semibold px-2 py-0.5 rounded-full">
-          Incumbent
+          {t("const.incumbent")}
         </span>
       )}
 
@@ -261,17 +264,17 @@ function CandidateCard({ c }: { c: Candidate }) {
       <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-gray-500">
         {c.age && (
           <span>
-            Age: <strong className="text-gray-700">{c.age}</strong>
+            {t("const.age")} <strong className="text-gray-700">{c.age}</strong>
           </span>
         )}
         {c.education && (
           <span className="truncate">
-            Edu: <strong className="text-gray-700">{c.education}</strong>
+            {t("const.edu")} <strong className="text-gray-700">{c.education}</strong>
           </span>
         )}
         {c.votes_received != null && (
           <span>
-            Votes:{" "}
+            {t("const.votes_label")}{" "}
             <strong className="text-gray-700">
               {fmt(c.votes_received)}
             </strong>
@@ -279,7 +282,7 @@ function CandidateCard({ c }: { c: Candidate }) {
         )}
         {c.vote_share != null && (
           <span>
-            Share:{" "}
+            {t("const.share")}{" "}
             <strong className="text-gray-700">
               {c.vote_share.toFixed(1)}%
             </strong>
@@ -289,7 +292,7 @@ function CandidateCard({ c }: { c: Candidate }) {
 
       {c.criminal_cases_declared > 0 && (
         <div className="mt-2 flex items-center gap-1 text-xs text-red-600 bg-red-50 rounded-lg px-2 py-1">
-          <span>{c.criminal_cases_declared} criminal case(s) declared</span>
+          <span>{c.criminal_cases_declared} {t("const.criminal_cases_declared")}</span>
         </div>
       )}
 
@@ -304,7 +307,7 @@ function CandidateCard({ c }: { c: Candidate }) {
           {candidateScore(c)}/100
         </span>
         <p className="text-xs text-gray-400 group-hover:text-terracotta transition-colors">
-          View profile →
+          {t("const.view_profile")} →
         </p>
       </div>
     </div>
@@ -312,11 +315,12 @@ function CandidateCard({ c }: { c: Candidate }) {
 }
 
 function AgentFeed({ messages }: { messages: AgentMessage[] }) {
+  const { t } = useLang();
   return (
     <div className="bg-gray-950 rounded-2xl p-4 font-mono text-sm space-y-1 max-h-64 overflow-y-auto">
       {messages.length === 0 ? (
         <p className="text-gray-500 animate-pulse">
-          Agents initialising...
+          {t("const.agents_init")}
         </p>
       ) : (
         messages.map((m, i) => (
@@ -334,6 +338,7 @@ function AgentFeed({ messages }: { messages: AgentMessage[] }) {
 
 // ── Page ───────────────────────────────────────────────
 export default function ConstituencyPage() {
+  const { t } = useLang();
   const params = useParams();
   const slug = Array.isArray(params.slug) ? params.slug[0] : params.slug;
   const constituencyName = slugToName(slug || "");
@@ -346,6 +351,8 @@ export default function ConstituencyPage() {
   );
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedYear, setSelectedYear] = useState<number>(2021);
+  const availableYears = [2021]; // Add 2026 here when data is available
 
   // Compare selection
   const [compareIds, setCompareIds] = useState<Set<number>>(new Set());
@@ -389,15 +396,16 @@ export default function ConstituencyPage() {
 
       setConstituency(constData);
 
-      // 2. Get election result
+      // 2. Get election result for selected year
       const { data: resultData } = await supabase
         .from("election_results")
         .select("*")
         .eq("constituency_id", constData.id)
-        .eq("election_year", 2021)
+        .eq("election_year", selectedYear)
         .single();
 
       if (resultData) setElectionResult(resultData);
+      else setElectionResult(null);
 
       // 2b. Get ALL election results for trend chart
       const { data: allResultsData } = await supabase
@@ -408,21 +416,22 @@ export default function ConstituencyPage() {
 
       if (allResultsData) setAllResults(allResultsData);
 
-      // 3. Get candidates
+      // 3. Get candidates for selected year
       const { data: candData } = await supabase
         .from("candidates")
         .select("*")
         .eq("constituency_id", constData.id)
-        .eq("election_year", 2021)
+        .eq("election_year", selectedYear)
         .order("votes_received", { ascending: false });
 
       if (candData) setCandidates(candData);
+      else setCandidates([]);
 
       setLoading(false);
     }
 
     fetchData();
-  }, [constituencyName]);
+  }, [constituencyName, selectedYear]);
 
   // ── Phase 2: AI investigation (on demand) ───────────
   function handleInvestigate() {
@@ -474,11 +483,11 @@ export default function ConstituencyPage() {
         {/* Breadcrumb */}
         <p className="text-xs text-gray-400 mb-4">
           <Link href="/" className="hover:text-terracotta">
-            Home
+            {t("nav.home")}
           </Link>
           {" / "}
           <Link href="/districts" className="hover:text-terracotta">
-            Districts
+            {t("nav.districts")}
           </Link>
           {constituency && (
             <>
@@ -499,18 +508,18 @@ export default function ConstituencyPage() {
 
         {loading ? (
           <div className="flex items-center justify-center h-64">
-            <p className="text-gray-400 animate-pulse">Loading...</p>
+            <p className="text-gray-400 animate-pulse">{t("common.loading")}</p>
           </div>
         ) : !constituency ? (
           <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
             <p className="text-gray-500">
-              No constituency found for &ldquo;{constituencyName}&rdquo;
+              {t("const.no_constituency")} &ldquo;{constituencyName}&rdquo;
             </p>
             <Link
               href="/districts"
               className="text-terracotta text-sm mt-2 inline-block hover:underline"
             >
-              ← Browse districts
+              ← {t("const.browse_districts")}
             </Link>
           </div>
         ) : (
@@ -525,52 +534,81 @@ export default function ConstituencyPage() {
                   href={`/districts/${slugify(constituency.district)}`}
                   className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full hover:text-terracotta transition-colors"
                 >
-                  {constituency.district} District
+                  {constituency.district} {t("const.district")}
                 </Link>
                 {constituency.is_swing_seat && (
                   <span className="text-sm text-yellow-700 bg-yellow-100 px-3 py-1 rounded-full font-semibold">
-                    Swing Seat
+                    {t("const.swing_seat")}
                   </span>
                 )}
               </div>
               {constituency.total_voters_2021 && (
                 <p className="text-sm text-gray-500 mt-1">
-                  {fmt(constituency.total_voters_2021)} registered voters
-                  (2021) · {constituency.turnout_2021}% turnout
+                  {fmt(constituency.total_voters_2021)} {t("const.registered_voters")}
+                  (2021) · {constituency.turnout_2021}% {t("const.turnout_label")}
                 </p>
               )}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* ── 2026 Election Banner ── */}
+            <div className="bg-gradient-to-r from-terracotta/10 to-orange-50 border border-terracotta/20 rounded-xl px-5 py-3 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-3">
+                <span className="text-xl">🗳️</span>
+                <div>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-800">{t("const.election_2026_title")}</p>
+                  <p className="text-[10px] sm:text-xs text-gray-500">{t("const.election_2026_desc")}</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                {availableYears.map((yr) => (
+                  <button
+                    key={yr}
+                    onClick={() => setSelectedYear(yr)}
+                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                      selectedYear === yr
+                        ? "bg-terracotta text-white"
+                        : "bg-white text-gray-600 border border-gray-200 hover:border-terracotta"
+                    }`}
+                  >
+                    {yr}
+                  </button>
+                ))}
+                <span className="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-400 cursor-not-allowed">
+                  2026
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* ── Left column: election result + stats ── */}
               <div className="lg:col-span-1 space-y-4">
                 {electionResult ? (
                   <ElectionResultCard result={electionResult} />
                 ) : (
                   <div className="bg-white rounded-2xl border border-gray-100 p-5 text-center text-sm text-gray-400">
-                    No election results yet
+                    {t("const.no_results")}
                   </div>
                 )}
 
                 {/* Stats */}
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
                   <h3 className="font-bold text-gray-900 text-sm">
-                    Constituency Stats
+                    {t("const.constituency_stats")}
                   </h3>
-                  <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                     <div className="bg-gray-50 rounded-xl p-3 text-center">
                       <p className="text-2xl font-bold text-terracotta">
                         {candidates.length}
                       </p>
                       <p className="text-gray-500 mt-0.5">
-                        Candidates (2021)
+                        {t("const.candidates_label")} ({selectedYear})
                       </p>
                     </div>
                     <div className="bg-gray-50 rounded-xl p-3 text-center">
                       <p className="text-2xl font-bold text-terracotta">
                         {casesCount}
                       </p>
-                      <p className="text-gray-500 mt-0.5">With Cases</p>
+                      <p className="text-gray-500 mt-0.5">{t("const.with_cases")}</p>
                     </div>
                     {electionResult && (
                       <>
@@ -579,7 +617,7 @@ export default function ConstituencyPage() {
                             {fmt(electionResult.margin)}
                           </p>
                           <p className="text-gray-500 mt-0.5">
-                            Win Margin
+                            {t("const.win_margin")}
                           </p>
                         </div>
                         <div className="bg-gray-50 rounded-xl p-3 text-center">
@@ -587,7 +625,7 @@ export default function ConstituencyPage() {
                             {electionResult.total_candidates}
                           </p>
                           <p className="text-gray-500 mt-0.5">
-                            Total Contested
+                            {t("const.total_contested")}
                           </p>
                         </div>
                       </>
@@ -626,7 +664,7 @@ export default function ConstituencyPage() {
 
                   return (
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
-                      <h3 className="font-bold text-gray-900 text-sm">Alliance Breakdown</h3>
+                      <h3 className="font-bold text-gray-900 text-sm">{t("const.alliance_breakdown")}</h3>
                       {sorted.map(([name, data]) => {
                         const pct = totalVotes > 0 ? (data.votes / totalVotes) * 100 : 0;
                         return (
@@ -652,7 +690,7 @@ export default function ConstituencyPage() {
                 {/* Turnout Trend Chart (3.9) */}
                 {allResults.length > 1 && (
                   <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                    <h3 className="font-bold text-gray-900 text-sm mb-3">Turnout Trend</h3>
+                    <h3 className="font-bold text-gray-900 text-sm mb-3">{t("const.turnout_trend")}</h3>
                     <div className="space-y-2">
                       {allResults.map((r) => {
                         const turnout = r.turnout ?? 0;
@@ -682,25 +720,24 @@ export default function ConstituencyPage() {
                 {/* AI Investigate button */}
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
                   <h3 className="font-bold text-gray-900 text-sm mb-2">
-                    AI Investigation
+                    {t("const.ai_investigation")}
                   </h3>
                   <p className="text-xs text-gray-500 mb-3">
-                    Run our AI agents to investigate candidates, check
-                    criminal records, and analyse promises.
+                    {t("const.ai_desc")}
                   </p>
                   {!aiRunning && aiMessages.length === 0 && (
                     <button
                       onClick={handleInvestigate}
                       className="w-full bg-terracotta text-white px-4 py-2.5 rounded-[9px] font-semibold text-sm hover:bg-[#a33d0e] transition-colors"
                     >
-                      Investigate with AI
+                      {t("const.investigate_ai")}
                     </button>
                   )}
                   {(aiRunning || aiMessages.length > 0) && (
                     <div className="mt-2">
                       {aiRunning && (
                         <p className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full inline-block mb-2 animate-pulse">
-                          Agents running...
+                          {t("const.agents_running")}
                         </p>
                       )}
                       <AgentFeed messages={aiMessages} />
@@ -730,27 +767,27 @@ export default function ConstituencyPage() {
               <div className="lg:col-span-2">
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="font-bold text-gray-900">
-                    Candidates ({sortedCandidates.length})
+                    {t("const.candidates_label")} ({sortedCandidates.length})
                   </h2>
                   <div className="flex items-center gap-3">
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs sm:text-sm text-gray-400">
                       {compareIds.size > 0
-                        ? `${compareIds.size}/2 selected`
-                        : "Tick any 2 to compare"}
+                        ? `${compareIds.size}/2 ${t("const.selected_count")}`
+                        : t("const.tick_to_compare")}
                     </span>
                     {sortedCandidates.length >= 2 && (
                       <Link
                         href={`/compare?ids=${sortedCandidates[0].id},${sortedCandidates[1].id}`}
                         className="text-xs text-terracotta font-semibold hover:underline"
                       >
-                        Compare top 2
+                        {t("const.compare_top2")}
                       </Link>
                     )}
                   </div>
                 </div>
                 {sortedCandidates.length === 0 ? (
                   <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center text-sm text-gray-400">
-                    No candidates found
+                    {t("const.no_candidates")}
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -789,7 +826,7 @@ export default function ConstituencyPage() {
             href={`/compare?ids=${Array.from(compareIds).join(",")}`}
             className="flex items-center gap-3 bg-terracotta text-white px-6 py-3 rounded-full shadow-lg hover:bg-[#a33d0e] transition-all font-semibold text-sm"
           >
-            Compare selected candidates →
+            {t("const.compare_selected")} →
           </Link>
         </div>
       )}
@@ -798,8 +835,7 @@ export default function ConstituencyPage() {
       <footer className="border-t border-gray-200 bg-white py-6 mt-8">
         <div className="max-w-6xl mx-auto px-4 text-center text-sm text-gray-500">
           <p>
-            Data from Election Commission of India · Tamil Nadu Elections
-            2026
+            {t("common.footer")}
           </p>
         </div>
       </footer>

@@ -6,7 +6,7 @@ import { useLang } from "@/components/LanguageProvider";
 
 interface HeaderProps {
   /** Which nav link is currently active (highlighted) */
-  active?: "home" | "districts" | "factcheck" | "swing" | "chat" | "manifesto" | "news" | "results";
+  active?: "home" | "districts" | "factcheck" | "swing" | "chat" | "manifesto" | "news" | "results" | "parties";
 }
 
 export default function Header({ active }: HeaderProps) {
@@ -15,8 +15,9 @@ export default function Header({ active }: HeaderProps) {
 
   const navLinks = [
     { href: "/districts", key: "nav.districts", id: "districts" },
+    { href: "/parties", key: "nav.parties", id: "parties" },
     { href: "/fact-check", key: "nav.factcheck", id: "factcheck" },
-    { href: "/swing-seats", key: "nav.swingseats", id: "swing" },
+    { href: "/swing-seats", key: "nav.swing", id: "swing" },
     { href: "/manifesto", key: "nav.manifesto", id: "manifesto" },
     { href: "/news", key: "nav.news", id: "news" },
     { href: "/results", key: "nav.results", id: "results" },
@@ -27,10 +28,11 @@ export default function Header({ active }: HeaderProps) {
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-2xl">🗳️</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.svg" alt="TN Elections" className="w-8 h-8" />
           <div>
-            <p className="font-bold text-gray-900 leading-none">tnelections.info</p>
-            <p className="text-xs text-gray-500">Tamil Nadu 2026</p>
+            <p className="font-bold text-sm sm:text-base text-gray-900 leading-none">tnelections.info</p>
+            <p className="text-xs text-gray-500">{t("header.subtitle")}</p>
           </div>
         </Link>
 
@@ -84,7 +86,7 @@ export default function Header({ active }: HeaderProps) {
 
       {/* Mobile dropdown menu */}
       {menuOpen && (
-        <div className="md:hidden border-t border-gray-100 bg-white">
+        <div className="md:hidden border-t border-gray-100 bg-white max-h-[calc(100vh-60px)] overflow-y-auto">
           <nav className="max-w-6xl mx-auto px-4 py-3 flex flex-col gap-3">
             <Link
               href="/"

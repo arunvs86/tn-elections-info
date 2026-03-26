@@ -177,6 +177,14 @@ interface HistoricalAsset {
   assets_immovable: number | null;
 }
 
+interface Allegation {
+  title: string;
+  summary: string;
+  source_url: string | null;
+  source_name: string | null;
+  severity: "serious" | "moderate" | "minor";
+}
+
 interface CriminalCase {
   id: number;
   candidate_id: number;
@@ -389,7 +397,7 @@ function StatBox({
   color?: string;
 }) {
   return (
-    <div className="bg-gray-50 rounded-xl p-3 text-center">
+    <div className="bg-gray-50 rounded-xl p-2 sm:p-3 text-center">
       <p
         className="text-xl font-bold"
         style={{ color: color || "#c84b11" }}
@@ -450,6 +458,8 @@ export default function CandidatePage() {
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showBreakdown, setShowBreakdown] = useState(false);
+  const [allegations, setAllegations] = useState<Allegation[]>([]);
+  const [allegationsLoading, setAllegationsLoading] = useState(false);
 
   useEffect(() => {
     if (!candidateId) return;
@@ -512,10 +522,73 @@ export default function CandidatePage() {
       if (histData && histData.length > 0) setHistoricalAssets(histData);
 
       setLoading(false);
+
+      // Auto-trigger AI summary if not cached
+      if (!candData.ai_summary_ta) {
+        fetchAiSummary(candData.id);
+      }
+
+      // Auto-trigger allegations search
+      fetchAllegations(candData.name, candData.party, constResult.data?.name || "");
     }
 
     fetchData();
   }, [candidateId]);
+
+  // Fetch AI summary from backend
+  async function fetchAiSummary(candId: number) {
+    setSummaryLoading(true);
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "";
+      const res = await fetch(`${backendUrl}/api/candidate-summary`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ candidate_id: candId }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAiSummary(data.summary_ta || data.summary_en || "Summary not available.");
+      }
+    } catch {
+      // Silently fail — section will show fallback
+    } finally {
+      setSummaryLoading(false);
+    }
+  }
+
+  // Fetch allegations from backend
+  async function fetchAllegations(name: string, party: string, constName: string) {
+    setAllegationsLoading(true);
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "";
+      const res = await fetch(`${backendUrl}/api/candidate-allegations`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, party, constituency: constName }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAllegations(data.allegations || []);
+      } else {
+        setAllegations([{
+          title: "Could not fetch allegations",
+          summary: "The AI search service is currently unavailable. Please try again later.",
+          source_url: null,
+          source_name: null,
+          severity: "minor",
+        }]);
+      }
+    } catch {
+      setAllegations([{
+        title: "Service unavailable",
+        summary: "Could not connect to the backend. Allegations will be available once the API is deployed.",
+        source_url: null,
+        source_name: null,
+        severity: "minor",
+      }]);
+    }
+    setAllegationsLoading(false);
+  }
 
   if (loading) {
     return (
@@ -617,7 +690,7 @@ export default function CandidatePage() {
 
         {/* ── Candidate header ── */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
-          <div className="flex items-start gap-4">
+          <div className="flex flex-col sm:flex-row items-start gap-4">
             {/* Avatar */}
             <div
               className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold flex-shrink-0"
@@ -628,7 +701,7 @@ export default function CandidatePage() {
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 flex-wrap">
-                <h1 className="text-2xl font-extrabold text-gray-900">
+                <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900">
                   {candidate.name}
                 </h1>
                 {candidate.is_winner && (
@@ -718,7 +791,7 @@ export default function CandidatePage() {
               <p className="text-xs font-bold text-gray-700 mb-2">
               Candidate Score Breakdown
               </p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-1.5">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-3 sm:gap-x-6 gap-y-1.5">
                 <ScoreRow label="Criminal Record" points={score.criminal} max={35} />
                 <ScoreRow label="Asset Disclosure" points={score.assetDisclosure} max={25} />
                 <ScoreRow label="Affidavit Filed" points={score.affidavit} max={15} />
@@ -825,40 +898,74 @@ export default function CandidatePage() {
           {historicalAssets.length > 1 && (
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 md:col-span-2">
               <h2 className="font-bold text-gray-900 text-sm mb-4">
-                Assets Over Time
+                Wealth Growth Over Elections
               </h2>
-              <div className="flex items-end gap-3 h-40">
+              <div className="flex items-end gap-4 h-48">
                 {historicalAssets.map((h) => {
                   const maxNW = Math.max(...historicalAssets.map((a) => a.net_worth || 0), 1);
-                  const pct = ((h.net_worth || 0) / maxNW) * 100;
+                  const movable = h.assets_movable || 0;
+                  const immovable = h.assets_immovable || 0;
+                  const total = h.net_worth || 0;
+                  const pctMov = (movable / maxNW) * 100;
+                  const pctImm = (immovable / maxNW) * 100;
                   return (
-                    <div key={h.election_year} className="flex-1 flex flex-col items-center">
-                      <p className="text-xs font-semibold text-terracotta mb-1">
-                        {fmtCurrency(h.net_worth)}
+                    <div key={h.election_year} className="flex-1 flex flex-col items-center group">
+                      <p className="text-xs font-bold text-terracotta mb-1">
+                        {fmtCurrency(total)}
                       </p>
-                      <div className="w-full bg-gray-100 rounded-t-lg flex-1 relative">
+                      <div className="w-full bg-gray-50 rounded-t-lg flex-1 relative overflow-hidden border border-gray-100">
+                        {/* Immovable (bottom) */}
                         <div
-                          className="absolute bottom-0 left-0 right-0 rounded-t-lg transition-all"
+                          className="absolute bottom-0 left-0 right-0 transition-all"
                           style={{
-                            height: `${Math.max(pct, 5)}%`,
-                            background: `linear-gradient(to top, #c84b11, #e8734a)`,
+                            height: `${Math.max(pctImm, 3)}%`,
+                            background: "#2d7a4f",
+                          }}
+                        />
+                        {/* Movable (on top) */}
+                        <div
+                          className="absolute left-0 right-0 transition-all"
+                          style={{
+                            bottom: `${Math.max(pctImm, 3)}%`,
+                            height: `${Math.max(pctMov, 3)}%`,
+                            background: "#1a5276",
                           }}
                         />
                       </div>
-                      <p className="text-xs text-gray-500 mt-1 font-medium">{h.election_year}</p>
+                      <p className="text-xs text-gray-600 mt-1.5 font-bold">{h.election_year}</p>
+                      {/* Tooltip on hover */}
+                      <div className="hidden group-hover:block absolute -top-16 bg-gray-900 text-white text-[10px] rounded-lg px-2 py-1.5 z-10 whitespace-nowrap">
+                        <p>Movable: {fmtCurrency(movable)}</p>
+                        <p>Immovable: {fmtCurrency(immovable)}</p>
+                      </div>
                     </div>
                   );
                 })}
+              </div>
+              {/* Legend */}
+              <div className="flex items-center gap-4 mt-3 justify-center">
+                <div className="flex items-center gap-1">
+                  <span className="w-3 h-3 rounded-sm" style={{ background: "#1a5276" }} />
+                  <span className="text-[10px] text-gray-500">Movable</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="w-3 h-3 rounded-sm" style={{ background: "#2d7a4f" }} />
+                  <span className="text-[10px] text-gray-500">Immovable</span>
+                </div>
               </div>
               {(() => {
                 const first = historicalAssets[0]?.net_worth || 0;
                 const last = historicalAssets[historicalAssets.length - 1]?.net_worth || 0;
                 if (first > 0 && last > first) {
                   const growth = ((last - first) / first * 100).toFixed(0);
+                  const years = (historicalAssets[historicalAssets.length - 1].election_year) - historicalAssets[0].election_year;
                   return (
-                    <p className="text-xs text-gray-500 mt-3 text-center">
-                      Net worth grew <strong className="text-terracotta">{growth}%</strong> from {historicalAssets[0].election_year} to {historicalAssets[historicalAssets.length - 1].election_year}
-                    </p>
+                    <div className="bg-orange-50 border border-orange-100 rounded-lg px-3 py-2 mt-3 text-center">
+                      <p className="text-xs text-gray-700">
+                        Net worth grew <strong className="text-terracotta">{growth}%</strong> in {years} years
+                        ({historicalAssets[0].election_year} → {historicalAssets[historicalAssets.length - 1].election_year})
+                      </p>
+                    </div>
                   );
                 }
                 return null;
@@ -1076,48 +1183,28 @@ export default function CandidatePage() {
             </div>
           )}
 
-          {/* ── Tamil AI Summary (4.5) ── */}
+          {/* ── AI Summary with Sources (4.5) — auto-loads ── */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 md:col-span-2">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="font-bold text-gray-900 text-sm">
-                AI Summary / சுருக்கம்
-              </h2>
-              {!aiSummary && !summaryLoading && (
-                <button
-                  onClick={async () => {
-                    setSummaryLoading(true);
-                    try {
-                      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "";
-                      const res = await fetch(`${backendUrl}/api/candidate-summary`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ candidate_id: candidate.id }),
-                      });
-                      if (res.ok) {
-                        const data = await res.json();
-                        setAiSummary(data.summary_ta || data.summary_en);
-                      }
-                    } catch {
-                      // silently fail
-                    } finally {
-                      setSummaryLoading(false);
-                    }
-                  }}
-                  className="text-xs bg-terracotta text-white px-3 py-1.5 rounded-full font-semibold hover:bg-[#a33d0e] transition-colors"
-                >
-                  Generate Summary
-                </button>
-              )}
+              <div>
+                <h2 className="font-bold text-gray-900 text-sm">
+                  AI Summary / சுருக்கம்
+                </h2>
+                <p className="text-[10px] text-gray-400 mt-0.5">Sources: Election Commission, MyNeta, The Hindu, TNM</p>
+              </div>
+              <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium">
+                AI-powered
+              </span>
             </div>
             {summaryLoading ? (
-              <div className="space-y-2 animate-pulse">
+              <div className="space-y-2 animate-pulse py-4">
                 {[1, 2, 3, 4, 5].map((i) => (
                   <div key={i} className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-gray-300 mt-1.5 flex-shrink-0" />
                     <div className="h-4 bg-gray-200 rounded w-full" style={{ width: `${70 + Math.random() * 30}%` }} />
                   </div>
                 ))}
-                <p className="text-xs text-gray-400 mt-2">Generating Tamil summary...</p>
+                <p className="text-xs text-gray-400 mt-2 text-center">Generating summary with sources...</p>
               </div>
             ) : aiSummary ? (
               <div className="space-y-2">
@@ -1130,94 +1217,71 @@ export default function CandidatePage() {
               </div>
             ) : (
               <p className="text-sm text-gray-400 text-center py-4">
-                Click &quot;Generate Summary&quot; for an AI-generated overview in Tamil
+                Summary will appear here once the AI service is available.
               </p>
             )}
           </div>
 
-          {/* ── Promise Tracker (4.6) ── */}
-          {(promises.length > 0 || candidate.is_winner) && (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 md:col-span-2">
-              <h2 className="font-bold text-gray-900 text-sm mb-4">
-                Promise Tracker
-              </h2>
-              {promises.length > 0 ? (
-                <>
-                  {/* Summary bar */}
-                  {(() => {
-                    const kept = promises.filter((p) => p.status === "kept").length;
-                    const broken = promises.filter((p) => p.status === "broken").length;
-                    const partial = promises.filter((p) => p.status === "partial").length;
-                    const pending = promises.filter((p) => p.status === "pending").length;
-                    const total = promises.length;
-                    return (
-                      <div className="mb-4">
-                        <div className="flex rounded-full overflow-hidden h-3 mb-2">
-                          {kept > 0 && <div style={{ width: `${(kept / total) * 100}%`, background: "#2d7a4f" }} />}
-                          {partial > 0 && <div style={{ width: `${(partial / total) * 100}%`, background: "#b8860b" }} />}
-                          {pending > 0 && <div style={{ width: `${(pending / total) * 100}%`, background: "#d1d5db" }} />}
-                          {broken > 0 && <div style={{ width: `${(broken / total) * 100}%`, background: "#c0392b" }} />}
-                        </div>
-                        <div className="flex gap-4 text-xs text-gray-600">
-                          <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: "#2d7a4f" }} />Kept ({kept})</span>
-                          <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: "#b8860b" }} />Partial ({partial})</span>
-                          <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: "#d1d5db" }} />Pending ({pending})</span>
-                          <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: "#c0392b" }} />Broken ({broken})</span>
-                        </div>
-                      </div>
-                    );
-                  })()}
-                  {/* Promise list */}
-                  <div className="space-y-2">
-                    {promises.map((p) => {
-                      const statusConfig = {
-                        kept: { bg: "bg-green-50", border: "border-green-200", text: "text-green-700", label: "Kept" },
-                        broken: { bg: "bg-red-50", border: "border-red-200", text: "text-red-700", label: "Broken" },
-                        partial: { bg: "bg-yellow-50", border: "border-yellow-200", text: "text-yellow-700", label: "Partial" },
-                        pending: { bg: "bg-gray-50", border: "border-gray-200", text: "text-gray-500", label: "Pending" },
-                      }[p.status];
-                      return (
-                        <div key={p.id} className={`rounded-xl p-3 border ${statusConfig.bg} ${statusConfig.border}`}>
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1">
-                              <p className="text-sm text-gray-700">{p.promise_text}</p>
-                              {p.promise_text_tamil && (
-                                <p className="text-xs text-gray-500 mt-0.5">{p.promise_text_tamil}</p>
-                              )}
-                              {p.category && (
-                                <span className="text-[10px] bg-white px-1.5 py-0.5 rounded border border-gray-200 text-gray-500 mt-1 inline-block">
-                                  {p.category}
-                                </span>
-                              )}
-                            </div>
-                            <span className={`text-xs font-semibold px-2 py-1 rounded-full flex-shrink-0 ${statusConfig.text} ${statusConfig.bg}`}>
-                              {statusConfig.label}
-                            </span>
-                          </div>
-                          {p.evidence_url && (
-                            <a
-                              href={p.evidence_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-[10px] text-terracotta hover:underline mt-1 inline-block"
-                            >
-                              View evidence →
-                            </a>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </>
-              ) : (
-                <p className="text-sm text-gray-400 text-center py-4">
-                  {candidate.is_winner
-                    ? "Promise tracking data will be available soon"
-                    : "Only available for winning candidates"}
-                </p>
-              )}
+          {/* ── Allegations & News — auto-loads ── */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 md:col-span-2">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="font-bold text-gray-900 text-sm">
+                  Allegations & News
+                </h2>
+                <p className="text-[10px] text-gray-400 mt-0.5">Sources: The Hindu, TNM, TNIE, India Today, PRS</p>
+              </div>
+              <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium">
+                AI-powered
+              </span>
             </div>
-          )}
+            {allegationsLoading ? (
+              <div className="text-center py-6">
+                <p className="text-sm text-gray-400 animate-pulse">
+                  Searching verified news sources...
+                </p>
+              </div>
+            ) : allegations.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-4">
+                No allegations or news found for this candidate.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {allegations.map((a, i) => (
+                  <div key={i} className={`rounded-xl p-3 border ${
+                    a.severity === "serious" ? "bg-red-50 border-red-200" :
+                    a.severity === "moderate" ? "bg-yellow-50 border-yellow-200" :
+                    "bg-gray-50 border-gray-200"
+                  }`}>
+                    <p className="text-sm font-medium text-gray-800">{a.title}</p>
+                    <p className="text-xs text-gray-600 mt-1">{a.summary}</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      {a.source_url && (
+                        <a
+                          href={a.source_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[10px] text-terracotta hover:underline"
+                        >
+                          {a.source_name || "Source"} →
+                        </a>
+                      )}
+                      <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
+                        a.severity === "serious" ? "bg-red-100 text-red-700" :
+                        a.severity === "moderate" ? "bg-yellow-100 text-yellow-700" :
+                        "bg-gray-100 text-gray-600"
+                      }`}>
+                        {a.severity}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+                <p className="text-[10px] text-gray-400 text-center pt-2">
+                  AI-curated from verified news sources. May not be exhaustive.
+                </p>
+              </div>
+            )}
+          </div>
 
           {/* ── Source & affidavit ── */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
@@ -1347,14 +1411,27 @@ export default function CandidatePage() {
               View Affidavit ↗
             </a>
           )}
-          {/* WhatsApp Share (4.10) */}
+          {/* WhatsApp Share (4.10) — enriched */}
           <a
             href={`https://wa.me/?text=${encodeURIComponent(
-              `${candidate.name} (${candidate.party}) — ${constituency?.name || ""} constituency\n` +
-              `Votes: ${candidate.votes_received?.toLocaleString("en-IN") || "N/A"} (${candidate.vote_share?.toFixed(1) || "?"}%)\n` +
-              `Criminal Cases: ${candidate.criminal_cases_declared}\n` +
-              `Net Worth: ${candidate.net_worth ? (candidate.net_worth >= 10000000 ? `₹${(candidate.net_worth / 10000000).toFixed(1)}Cr` : `₹${(candidate.net_worth / 100000).toFixed(1)}L`) : "N/A"}\n` +
-              `\nView full profile: https://tnelections.info/candidate/${candidate.id}`
+              `🗳️ *${candidate.name}* (${candidate.party})\n` +
+              `📍 ${constituency?.name || ""} constituency, ${constituency?.district || ""}\n\n` +
+              `📊 *2021 Results:*\n` +
+              `   Votes: ${candidate.votes_received?.toLocaleString("en-IN") || "N/A"} (${candidate.vote_share?.toFixed(1) || "?"}%)\n` +
+              `   ${candidate.is_winner ? "✅ Won" : "❌ Lost"}\n\n` +
+              `💰 *Declared Wealth:*\n` +
+              `   Net Worth: ${candidate.net_worth ? (candidate.net_worth >= 10000000 ? `₹${(candidate.net_worth / 10000000).toFixed(1)} Crore` : `₹${(candidate.net_worth / 100000).toFixed(1)} Lakh`) : "N/A"}\n` +
+              (candidate.assets_movable ? `   Movable: ₹${candidate.assets_movable >= 10000000 ? (candidate.assets_movable / 10000000).toFixed(1) + "Cr" : (candidate.assets_movable / 100000).toFixed(1) + "L"}\n` : "") +
+              (candidate.assets_immovable ? `   Immovable: ₹${candidate.assets_immovable >= 10000000 ? (candidate.assets_immovable / 10000000).toFixed(1) + "Cr" : (candidate.assets_immovable / 100000).toFixed(1) + "L"}\n` : "") +
+              `\n⚖️ *Criminal Record:*\n` +
+              `   Declared: ${candidate.criminal_cases_declared} cases\n` +
+              `   eCourts: ${candidate.criminal_cases_ecourts} cases\n` +
+              (candidate.criminal_mismatch ? `   ⚠️ Mismatch detected!\n` : "") +
+              `\n📋 Transparency Score: ${score.total}/100 (${scoreLabel(score.total)})\n` +
+              (candidate.education ? `🎓 Education: ${candidate.education}\n` : "") +
+              (candidate.age ? `👤 Age: ${candidate.age}\n` : "") +
+              `\n🔗 Full profile: https://tnelections.info/candidate/${candidate.id}\n` +
+              `\n_via tnelections.info — Know your candidates_`
             )}`}
             target="_blank"
             rel="noopener noreferrer"

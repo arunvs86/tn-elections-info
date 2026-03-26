@@ -5,6 +5,8 @@ import { supabase } from "@/lib/supabase";
 import { useLang } from "@/components/LanguageProvider";
 import Header from "@/components/Header";
 import DailyBriefing from "@/components/DailyBriefing";
+import OpinionPoll from "@/components/OpinionPoll";
+import VisitorTracker from "@/components/VisitorTracker";
 import Link from "next/link";
 
 // ── Types ─────────────────────────────────────────
@@ -23,11 +25,7 @@ interface CountdownTarget {
   daysLabel?: string;
 }
 
-const COUNTDOWN_DATES: CountdownTarget[] = [
-  { label: "Nominations Open", date: new Date("2026-04-06") },
-  { label: "Polling Day",      date: new Date("2026-04-23") },
-  { label: "Results",          date: new Date("2026-05-04") },
-];
+// COUNTDOWN_DATES moved into component to use t()
 
 function getTimeLeft(target: Date) {
   const now = new Date();
@@ -63,15 +61,20 @@ function CountdownCard({ target }: { target: CountdownTarget }) {
   if (!time) return null;
 
   return (
-    <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl text-center px-6 py-4 min-w-[140px]">
-      <p className="text-xs text-white/70 font-medium uppercase tracking-wider mb-1">
+    <div className="bg-white/10 border border-white/15 rounded-lg md:rounded-xl text-center px-2.5 py-1.5 md:px-4 md:py-2.5 min-w-[70px] md:min-w-[100px]">
+      <p className="text-[8px] md:text-[10px] text-white/60 font-medium uppercase tracking-wider">
         {target.label}
       </p>
-      <p className="text-4xl font-extrabold text-white">{time.days}</p>
-      <p className="text-sm text-white/60">{target.daysLabel || "days away"}</p>
+      <p className="text-lg md:text-2xl font-extrabold text-white leading-tight">{time.days}</p>
+      <p className="text-[8px] md:text-[10px] text-white/50">{target.daysLabel}</p>
     </div>
   );
 }
+
+// ── Search result types ───────────────────────────
+type SearchResult =
+  | { type: "constituency"; data: Constituency }
+  | { type: "candidate"; data: { id: number; name: string; party: string; constituency_name: string } };
 
 // ── Search bar ────────────────────────────────────
 function SearchBar({
@@ -79,11 +82,12 @@ function SearchBar({
 }: {
   constituencies: Constituency[];
 }) {
+  const { t } = useLang();
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<Constituency[]>([]);
+  const [results, setResults] = useState<SearchResult[]>([]);
   const [open, setOpen] = useState(false);
 
-  function handleInput(val: string) {
+  async function handleInput(val: string) {
     setQuery(val);
     if (val.length < 2) {
       setResults([]);
@@ -91,16 +95,39 @@ function SearchBar({
       return;
     }
     const q = val.toLowerCase();
-    const matched = constituencies
+
+    // Search constituencies locally
+    const constMatches: SearchResult[] = constituencies
       .filter(
         (c) =>
           c.name.toLowerCase().includes(q) ||
           c.district.toLowerCase().includes(q) ||
           (c.current_mla || "").toLowerCase().includes(q)
       )
-      .slice(0, 8);
-    setResults(matched);
-    setOpen(matched.length > 0);
+      .slice(0, 5)
+      .map((c) => ({ type: "constituency", data: c }));
+
+    // Search candidates from Supabase
+    const { data: candidates } = await supabase
+      .from("candidates")
+      .select("id, name, party, constituencies(name)")
+      .ilike("name", `%${val}%`)
+      .eq("election_year", 2021)
+      .limit(5);
+
+    const candMatches: SearchResult[] = (candidates || []).map((c: Record<string, unknown>) => ({
+      type: "candidate",
+      data: {
+        id: c.id as number,
+        name: c.name as string,
+        party: c.party as string,
+        constituency_name: (c.constituencies as Record<string, string>)?.name || "",
+      },
+    }));
+
+    const combined = [...constMatches, ...candMatches].slice(0, 8);
+    setResults(combined);
+    setOpen(combined.length > 0);
   }
 
   return (
@@ -113,7 +140,7 @@ function SearchBar({
           onChange={(e) => handleInput(e.target.value)}
           onFocus={() => query.length >= 2 && setOpen(true)}
           onBlur={() => setTimeout(() => setOpen(false), 200)}
-          placeholder="Search constituency, district or candidate..."
+          placeholder={t("home.search_placeholder")}
           className="w-full px-3 py-4 text-base bg-transparent outline-none placeholder:text-gray-400"
         />
         {query && (
@@ -127,33 +154,58 @@ function SearchBar({
       </div>
 
       {open && (
-        <div className="absolute z-50 w-full mt-2 bg-white rounded-2xl border border-gray-100 shadow-2xl overflow-hidden">
-          {results.map((c) => (
-            <Link
-              key={c.id}
-              href={`/constituency/${c.name.toLowerCase().replace(/\s+/g, "-")}`}
-              className="flex items-center justify-between px-4 py-3 hover:bg-[#faf9f6] transition-colors border-b border-gray-50 last:border-0"
-            >
-              <div>
-                <p className="font-semibold text-gray-900">{c.name}</p>
-                <p className="text-xs text-gray-500">{c.district} District</p>
-              </div>
-              <div className="flex items-center gap-2">
-                {c.current_mla_party && (
+        <div className="absolute z-50 w-full mt-2 bg-white rounded-2xl border border-gray-100 shadow-2xl overflow-hidden max-h-[400px] overflow-y-auto">
+          {results.map((r) =>
+            r.type === "constituency" ? (
+              <Link
+                key={`c-${r.data.id}`}
+                href={`/constituency/${r.data.name.toLowerCase().replace(/\s+/g, "-")}`}
+                className="flex items-center justify-between px-4 py-3 hover:bg-[#faf9f6] transition-colors border-b border-gray-50 last:border-0"
+              >
+                <div>
+                  <p className="font-semibold text-gray-900">{r.data.name}</p>
+                  <p className="text-xs text-gray-500">{r.data.district} {t("common.district")}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {r.data.current_mla_party && (
+                    <span
+                      className="badge text-xs"
+                      style={{
+                        background: partyColor(r.data.current_mla_party) + "20",
+                        color: partyColor(r.data.current_mla_party),
+                      }}
+                    >
+                      {r.data.current_mla_party}
+                    </span>
+                  )}
+                  <span className="text-xs text-gray-400">{t("home.constituency_badge")}</span>
+                </div>
+              </Link>
+            ) : (
+              <Link
+                key={`cand-${r.data.id}`}
+                href={`/candidate/${r.data.id}`}
+                className="flex items-center justify-between px-4 py-3 hover:bg-[#faf9f6] transition-colors border-b border-gray-50 last:border-0"
+              >
+                <div>
+                  <p className="font-semibold text-gray-900">{r.data.name}</p>
+                  <p className="text-xs text-gray-500">{r.data.constituency_name}</p>
+                </div>
+                <div className="flex items-center gap-2">
                   <span
                     className="badge text-xs"
                     style={{
-                      background: partyColor(c.current_mla_party) + "20",
-                      color: partyColor(c.current_mla_party),
+                      background: partyColor(r.data.party) + "20",
+                      color: partyColor(r.data.party),
                     }}
                   >
-                    {c.current_mla_party}
+                    {r.data.party}
                   </span>
-                )}
-                <span className="text-gray-400 text-sm">&rarr;</span>
-              </div>
-            </Link>
-          ))}
+                  <span className="text-xs text-gray-400">{t("home.candidate_badge")}</span>
+                </div>
+              </Link>
+            )
+          )}
         </div>
       )}
     </div>
@@ -162,19 +214,21 @@ function SearchBar({
 
 // ── Quick stats ──────────────────────────────────
 function QuickStats() {
+  const { t } = useLang();
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
       {[
-        { value: "234", label: "Constituencies", icon: "🗳️" },
-        { value: "3,800+", label: "Candidates Tracked", icon: "👤" },
-        { value: "1,344", label: "Criminal Cases", icon: "⚖️" },
-        { value: "48", label: "Promises Audited", icon: "📋" },
+        { value: "234", labelKey: "home.stat_constituencies", descKey: "home.stat_constituencies_desc", icon: "🗳️", href: "/districts" },
+        { value: "3,800+", labelKey: "home.stat_candidates", descKey: "home.stat_candidates_desc", icon: "👤", href: "/districts" },
+        { value: "764", labelKey: "home.stat_cases", descKey: "home.stat_cases_desc", icon: "⚖️", href: "/districts" },
+        { value: "48", labelKey: "home.stat_promises", descKey: "home.stat_promises_desc", icon: "📋", href: "/manifesto" },
       ].map((s) => (
-        <div key={s.label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-center">
+        <Link key={s.labelKey} href={s.href} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-center hover:shadow-md hover:-translate-y-0.5 transition-all group">
           <p className="text-2xl mb-1">{s.icon}</p>
-          <p className="text-2xl font-extrabold text-gray-900">{s.value}</p>
-          <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
-        </div>
+          <p className="text-2xl font-extrabold text-gray-900 group-hover:text-terracotta transition-colors">{s.value}</p>
+          <p className="text-xs font-semibold text-gray-700 mt-0.5">{t(s.labelKey)}</p>
+          <p className="text-[10px] text-gray-400 mt-0.5">{t(s.descKey)}</p>
+        </Link>
       ))}
     </div>
   );
@@ -183,25 +237,20 @@ function QuickStats() {
 // ── Alliance summary ──────────────────────────────
 const ALLIANCES = [
   {
-    name: "DMK Alliance",
+    name: "DMK-SPA (INDIA)",
     color: "#c0392b",
-    parties: ["DMK", "Congress", "VCK", "CPI", "CPM", "MDMK"],
+    parties: ["DMK", "Congress", "DMDK", "VCK", "CPI", "CPI(M)", "MDMK", "IUML", "MMK", "KMDK"],
     leader: "M.K. Stalin",
     seats2021: 159,
+    status: "Ruling alliance seeking re-election. ~165 DMK + allies. MNM supports from outside.",
   },
   {
-    name: "AIADMK Alliance",
+    name: "AIADMK-NDA",
     color: "#2d7a4f",
-    parties: ["AIADMK", "PMK", "TMC(M)"],
+    parties: ["AIADMK", "BJP", "PMK", "AMMK", "TMC(M)", "IJK"],
     leader: "Edappadi K. Palaniswami",
     seats2021: 75,
-  },
-  {
-    name: "NDA",
-    color: "#d35400",
-    parties: ["BJP", "AMMK", "DMDK"],
-    leader: "K. Annamalai",
-    seats2021: 0,
+    status: "AIADMK 178, BJP 27, PMK 18, AMMK 11 seats. Reunited April 2025.",
   },
   {
     name: "TVK",
@@ -209,6 +258,15 @@ const ALLIANCES = [
     parties: ["TVK"],
     leader: "Vijay",
     seats2021: 0,
+    status: "Going solo, all 234 seats. First election. Vijay contesting from Perambur.",
+  },
+  {
+    name: "NTK",
+    color: "#6c3483",
+    parties: ["NTK"],
+    leader: "Seeman",
+    seats2021: 0,
+    status: "Going solo, 5th time. 117 men + 117 women candidates. Seeman from Karaikudi.",
   },
 ];
 
@@ -229,7 +287,7 @@ export default function HomePage() {
   }, []);
 
   const countdownDates: CountdownTarget[] = [
-    { label: t("home.nominations"), date: new Date("2026-04-06"), daysLabel: t("home.days_away") },
+    { label: t("home.nomination"),  date: new Date("2026-03-30"), daysLabel: t("home.days_away") },
     { label: t("home.polling"),     date: new Date("2026-04-23"), daysLabel: t("home.days_away") },
     { label: t("home.results"),     date: new Date("2026-05-04"), daysLabel: t("home.days_away") },
   ];
@@ -238,86 +296,69 @@ export default function HomePage() {
     <div className="min-h-screen bg-cream">
       <Header active="home" />
 
-      {/* ── Hero with 4-leader background ── */}
-      <section className="relative overflow-hidden">
-        {/* 4-panel leader photos */}
-        <div className="absolute inset-0 grid grid-cols-4">
-          {[
-            { src: "/leaders/stalin.jpg", party: "DMK" },
-            { src: "/leaders/eps.jpg", party: "AIADMK" },
-            { src: "/leaders/vijay.jpg", party: "TVK" },
-            { src: "/leaders/seeman.jpg", party: "NTK" },
-          ].map((leader) => (
-            <div key={leader.party} className="relative overflow-hidden">
-              <div
-                className="absolute inset-0 bg-cover bg-top bg-no-repeat scale-110"
-                style={{ backgroundImage: `url('${leader.src}')` }}
-              />
+      {/* ── Hero — clean images + separate text ── */}
+      <section>
+        {/* 4 leader photos — 2x2 mobile, 4-col desktop, NO text overlay */}
+        <div className="grid grid-cols-2 md:grid-cols-4 h-[280px] sm:h-[320px] md:h-[420px]">
+          <div className="relative overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/leaders/stalin.jpg" alt="M.K. Stalin" className="absolute inset-0 w-full h-full object-cover object-[center_20%]" />
+          </div>
+          <div className="relative overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/leaders/eps.jpg" alt="Edappadi K. Palaniswami" className="absolute inset-0 w-full h-full object-cover object-[center_15%]" />
+          </div>
+          <div className="relative overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/leaders/vijay-tvk.jpg" alt="Vijay — TVK" className="absolute inset-0 w-full h-full object-cover object-[center_20%]" />
+          </div>
+          <div className="relative overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/leaders/seeman.jpg" alt="Seeman — NTK" className="absolute inset-0 w-full h-full object-cover object-[center_20%]" />
+          </div>
+        </div>
+
+        {/* Text strip — completely separate from images */}
+        <div className="bg-gradient-to-r from-gray-900 to-gray-800 px-4 md:px-6 py-3 md:py-5">
+          <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div>
+              <div className="inline-flex items-center gap-1.5 bg-white/10 text-white/90 px-2.5 py-0.5 rounded-full text-[10px] md:text-xs font-medium mb-1.5 border border-white/10">
+                <span className="relative flex h-1.5 w-1.5 md:h-2 md:w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 md:h-2 md:w-2 bg-green-400"></span>
+                </span>
+                {t("home.badge")}
+              </div>
+              <h1 className="text-lg sm:text-xl md:text-3xl font-extrabold text-white leading-snug tracking-tight">
+                {t("home.title")}{" "}
+                <span className="bg-gradient-to-r from-[#e8a87c] to-[#d35400] bg-clip-text text-transparent">
+                  {t("home.subtitle")}
+                </span>
+              </h1>
+              <p className="text-[11px] md:text-sm text-white/50 mt-0.5">
+                {t("home.tagline")}
+              </p>
             </div>
-          ))}
-        </div>
-        {/* Dark overlay for readability */}
-        <div className="absolute inset-0 bg-black/65" />
-        {/* Gradient overlay — darker at top and bottom */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/70" />
-        {/* Subtle vertical dividers between panels */}
-        <div className="absolute inset-0 grid grid-cols-4 pointer-events-none">
-          <div className="border-r border-white/5" />
-          <div className="border-r border-white/5" />
-          <div className="border-r border-white/5" />
-          <div />
-        </div>
-
-        {/* Content */}
-        <div className="relative max-w-6xl mx-auto px-4 pt-16 pb-20 text-center">
-          {/* Live badge */}
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white/90 px-4 py-1.5 rounded-full text-sm font-medium mb-6 border border-white/10">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-400"></span>
-            </span>
-            {t("home.badge")}
-          </div>
-
-          <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-4 leading-tight tracking-tight">
-            {t("home.title")}<br />
-            <span className="bg-gradient-to-r from-[#e8a87c] to-[#d35400] bg-clip-text text-transparent">
-              {t("home.subtitle")}
-            </span>
-          </h1>
-
-          <p className="text-lg md:text-xl text-white/70 mb-2 max-w-2xl mx-auto">
-            {t("home.tagline")}
-          </p>
-          {lang === "en" && (
-            <p className="text-base text-white/50 mb-10 font-tamil">
-              உங்கள் வாக்கு, உங்கள் உண்மை
-            </p>
-          )}
-          {lang === "ta" && <div className="mb-10" />}
-
-          <SearchBar constituencies={constituencies} />
-
-          <p className="mt-4 text-xs text-white/40">
-            {constituencies.length > 0
-              ? `${constituencies.length} ${t("home.search_hint")}`
-              : t("common.loading")}
-          </p>
-
-          {/* Countdown inside hero */}
-          <div className="flex flex-wrap gap-4 justify-center mt-10">
-            {countdownDates.map((d) => (
-              <CountdownCard key={d.label} target={d} />
-            ))}
+            <div className="flex flex-wrap gap-2 md:gap-3">
+              {countdownDates.map((d) => (
+                <CountdownCard key={d.label} target={d} />
+              ))}
+            </div>
           </div>
         </div>
+        <svg viewBox="0 0 1440 50" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full block -mt-1">
+          <path d="M0 50L48 46.7C96 43 192 37 288 33.3C384 30 480 30 576 33.3C672 37 768 43 864 43.3C960 43 1056 37 1152 33.3C1248 30 1344 30 1392 30L1440 30V50H0Z" fill="#faf9f6"/>
+        </svg>
+      </section>
 
-        {/* Wave divider */}
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
-            <path d="M0 80L48 74.7C96 69 192 59 288 53.3C384 48 480 48 576 53.3C672 59 768 69 864 69.3C960 69 1056 59 1152 53.3C1248 48 1344 48 1392 48L1440 48V80H1392C1344 80 1248 80 1152 80C1056 80 960 80 864 80C768 80 672 80 576 80C480 80 384 80 288 80C192 80 96 80 48 80H0Z" fill="#faf9f6"/>
-          </svg>
-        </div>
+      {/* ── Search bar — pulled out below hero for clean layout ── */}
+      <section className="max-w-3xl mx-auto px-4 -mt-2 mb-6">
+        <SearchBar constituencies={constituencies} />
+        <p className="mt-2 text-xs text-gray-400 text-center">
+          {constituencies.length > 0
+            ? `${constituencies.length} ${t("home.search_hint")}`
+            : t("common.loading")}
+        </p>
       </section>
 
       {/* ── Quick Stats ── */}
@@ -330,18 +371,19 @@ export default function HomePage() {
 
       {/* ── Explore Section ── */}
       <section className="max-w-6xl mx-auto px-4 pb-10">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Explore</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <h2 className="text-xl font-bold text-gray-900 mb-4">{t("home.explore")}</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-5 gap-4">
           {[
-            { href: "/districts", icon: "🗺️", label: "Districts", desc: "38 districts" },
-            { href: "/manifesto", icon: "📜", label: "Manifesto Audit", desc: "DMK 2021 promises" },
-            { href: "/compare", icon: "⚔️", label: "Compare", desc: "Side-by-side analysis" },
-            { href: "/news", icon: "📰", label: "News", desc: "Latest updates" },
+            { href: "/districts", icon: "🗺️", labelKey: "home.explore_districts", descKey: "home.explore_districts_desc" },
+            { href: "/parties", icon: "🏛️", labelKey: "home.explore_parties", descKey: "home.explore_parties_desc" },
+            { href: "/manifesto", icon: "📜", labelKey: "home.explore_manifesto", descKey: "home.explore_manifesto_desc" },
+            { href: "/compare", icon: "⚔️", labelKey: "home.explore_compare", descKey: "home.explore_compare_desc" },
+            { href: "/news", icon: "📰", labelKey: "home.explore_news", descKey: "home.explore_news_desc" },
           ].map((item) => (
             <Link key={item.href} href={item.href} className="card hover:shadow-lg hover:-translate-y-0.5 transition-all group">
               <p className="text-3xl mb-2">{item.icon}</p>
-              <p className="font-bold text-sm text-gray-900 group-hover:text-terracotta transition-colors">{item.label}</p>
-              <p className="text-xs text-gray-500">{item.desc}</p>
+              <p className="font-bold text-sm text-gray-900 group-hover:text-terracotta transition-colors">{t(item.labelKey)}</p>
+              <p className="text-xs text-gray-500">{t(item.descKey)}</p>
             </Link>
           ))}
         </div>
@@ -349,15 +391,17 @@ export default function HomePage() {
 
       {/* ── Alliance summary ── */}
       <section className="max-w-6xl mx-auto px-4 pb-10">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">2026 Alliance Map</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <h2 className="text-xl font-bold text-gray-900 mb-2">{t("home.alliance_title")}</h2>
+        <p className="text-sm text-gray-500 mb-4">{t("home.alliance_subtitle")}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {ALLIANCES.map((a) => (
             <div key={a.name} className="card border-l-4 hover:shadow-md transition-shadow" style={{ borderLeftColor: a.color }}>
               <p className="font-bold text-sm mb-1" style={{ color: a.color }}>{a.name}</p>
-              <p className="text-xs text-gray-500 mb-1">{a.leader}</p>
+              <p className="text-xs text-gray-600 font-medium mb-0.5">{a.leader}</p>
               {a.seats2021 > 0 && (
-                <p className="text-xs text-gray-400 mb-2">2021: {a.seats2021} seats</p>
+                <p className="text-xs text-gray-400 mb-1">2021: {a.seats2021} {t("home.alliance_seats")}</p>
               )}
+              <p className="text-[10px] text-gray-400 italic mb-2">{a.status}</p>
               <div className="flex flex-wrap gap-1">
                 {a.parties.map((p) => (
                   <span key={p} className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-[9px] font-medium">{p}</span>
@@ -368,6 +412,11 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── Opinion Poll ── */}
+      <section className="max-w-md mx-auto px-4 pb-10">
+        <OpinionPoll />
+      </section>
+
       {/* ── Quick Narrative Check ── */}
       <section className="max-w-6xl mx-auto px-4 pb-12">
         <div className="card border-l-4 border-l-terracotta">
@@ -376,9 +425,7 @@ export default function HomePage() {
             <div>
               <h2 className="text-lg font-bold text-gray-900">{t("fc.title")}</h2>
               <p className="text-sm text-gray-500">
-                {lang === "en"
-                  ? "Paste any political claim — our AI finds sources and gives a verdict in seconds"
-                  : "எந்தவொரு அரசியல் கூற்றையும் ஒட்டுங்கள் — எங்கள் AI ஆதாரங்களை கண்டறிந்து நொடிகளில் தீர்ப்பு வழங்கும்"}
+                {t("home.fc_tagline")}
               </p>
             </div>
           </div>
@@ -387,10 +434,7 @@ export default function HomePage() {
               type="text"
               value={claimInput}
               onChange={(e) => setClaimInput(e.target.value)}
-              placeholder={lang === "en"
-                ? `Try: "TVK has no political experience" or "DMK reduced power cuts"`
-                : `முயற்சி: "TVK-க்கு அரசியல் அனுபவம் இல்லை" அல்லது "DMK மின்வெட்டை குறைத்தது"`
-              }
+              placeholder={t("home.fc_placeholder")}
               className="flex-1 border border-gray-200 rounded-[9px] px-4 py-3 text-sm outline-none focus:border-terracotta"
             />
             <Link
@@ -402,16 +446,16 @@ export default function HomePage() {
           </div>
           <div className="flex flex-wrap gap-2 mt-3">
             {[
-              "TVK has no political experience",
-              "AIADMK built more roads than DMK",
-              "BJP has no influence in Tamil Nadu",
+              { key: "home.fc_example1" },
+              { key: "home.fc_example2" },
+              { key: "home.fc_example3" },
             ].map((eg) => (
               <button
-                key={eg}
-                onClick={() => setClaimInput(eg)}
+                key={eg.key}
+                onClick={() => setClaimInput(t(eg.key))}
                 className="text-xs text-gray-500 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-[9px] transition-colors"
               >
-                {eg}
+                {t(eg.key)}
               </button>
             ))}
           </div>
@@ -423,6 +467,9 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto px-4 text-center text-sm text-gray-500">
           <p className="font-medium text-gray-700 mb-1">tnelections.info</p>
           <p>{t("common.footer")}</p>
+          <div className="mt-3">
+            <VisitorTracker />
+          </div>
         </div>
       </footer>
     </div>

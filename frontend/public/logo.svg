@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
+  <!-- Ballot box -->
+  <rect x="6" y="14" width="28" height="22" rx="3" fill="#c84b11" opacity="0.9"/>
+  <rect x="14" y="10" width="12" height="8" rx="1" fill="#c84b11" opacity="0.7"/>
+  <!-- Ballot slot -->
+  <rect x="12" y="16" width="16" height="2.5" rx="1" fill="#faf9f6"/>
+  <!-- Ballot paper going in -->
+  <rect x="16" y="4" width="8" height="14" rx="1" fill="#faf9f6" stroke="#c84b11" stroke-width="0.8"/>
+  <!-- Checkmark on ballot -->
+  <path d="M18.5 9 L20 11 L23 7" stroke="#c84b11" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- TN text -->
+  <text x="20" y="30" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="800" font-size="8" fill="#faf9f6">TN</text>
+</svg>

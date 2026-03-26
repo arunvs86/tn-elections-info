@@ -10,6 +10,13 @@ export const metadata: Metadata = {
   title: "TN Elections 2026 — Know Your Candidates",
   description:
     "Voter intelligence platform for Tamil Nadu Elections 2026. Live AI investigation of candidates, fact-checking, election history since 2001.",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
   keywords: [
     "Tamil Nadu elections 2026",
     "TN elections",
