@@ -6,7 +6,7 @@ import { useLang } from "@/components/LanguageProvider";
 
 interface HeaderProps {
   /** Which nav link is currently active (highlighted) */
-  active?: "home" | "districts" | "factcheck" | "swing" | "chat" | "manifesto" | "news" | "results" | "parties";
+  active?: "home" | "find" | "districts" | "factcheck" | "swing" | "chat" | "manifesto" | "news" | "results" | "parties";
 }
 
 export default function Header({ active }: HeaderProps) {
@@ -14,6 +14,7 @@ export default function Header({ active }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const navLinks = [
+    { href: "/find-constituency", key: "nav.find", id: "find" },
     { href: "/districts", key: "nav.districts", id: "districts" },
     { href: "/parties", key: "nav.parties", id: "parties" },
     { href: "/fact-check", key: "nav.factcheck", id: "factcheck" },
