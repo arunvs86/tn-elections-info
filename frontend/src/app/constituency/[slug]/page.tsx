@@ -712,6 +712,138 @@ export default function ConstituencyPage() {
     (c) => c.criminal_cases_declared > 0
   ).length;
 
+  // ── Generate Voter Card (print-friendly) ──────────
+  function generateVoterCard() {
+    if (!constituency || sortedCandidates.length === 0) return;
+
+    const fmtCurrency = (n: number | null) => {
+      if (n == null) return "N/A";
+      if (n >= 10000000) return "\u20B9" + (n / 10000000).toFixed(2) + " Cr";
+      if (n >= 100000) return "\u20B9" + (n / 100000).toFixed(2) + " L";
+      return "\u20B9" + n.toLocaleString("en-IN");
+    };
+
+    const candidateRows = sortedCandidates
+      .map((c) => {
+        const totalAssets =
+          (c.assets_movable ?? 0) + (c.assets_immovable ?? 0);
+        const displayAssets =
+          totalAssets > 0 ? totalAssets : c.net_worth;
+        const criminalBadge =
+          c.criminal_cases_declared > 0
+            ? `<span style="color:#c0392b;font-weight:700;">${c.criminal_cases_declared} case${c.criminal_cases_declared > 1 ? "s" : ""}</span>`
+            : '<span style="color:#2d7a4f;">None</span>';
+        const winnerTag = c.is_winner
+          ? ' <span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:700;">WINNER 2021</span>'
+          : "";
+        return `
+          <tr style="border-bottom:1px solid #e5e7eb;">
+            <td style="padding:10px 8px;vertical-align:top;">
+              <strong style="font-size:14px;">${c.name}</strong>${winnerTag}<br/>
+              <span style="color:${partyColor(c.party)};font-weight:600;font-size:13px;">${c.party}</span>
+            </td>
+            <td style="padding:10px 8px;text-align:center;font-size:13px;">${c.age ?? "N/A"}</td>
+            <td style="padding:10px 8px;font-size:12px;">${c.education ?? "N/A"}</td>
+            <td style="padding:10px 8px;text-align:right;font-size:13px;">${fmtCurrency(displayAssets)}</td>
+            <td style="padding:10px 8px;text-align:center;font-size:13px;">${criminalBadge}</td>
+            <td style="padding:10px 8px;text-align:right;font-size:13px;">${c.votes_received != null ? c.votes_received.toLocaleString("en-IN") : "—"}${c.vote_share != null ? ` (${c.vote_share.toFixed(1)}%)` : ""}</td>
+          </tr>`;
+      })
+      .join("");
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Voter Card - ${constituencyName}</title>
+<style>
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .no-print { display: none !important; }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1f2937; background: #fff; padding: 24px; }
+  .header { text-align: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 3px solid #b8510d; }
+  .header h1 { font-size: 28px; color: #b8510d; margin-bottom: 4px; }
+  .header h2 { font-size: 16px; color: #6b7280; font-weight: 500; }
+  .meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding: 12px 16px; background: #fef7f0; border-radius: 8px; border: 1px solid #fed7aa; }
+  .meta-item { text-align: center; }
+  .meta-item .label { font-size: 10px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; }
+  .meta-item .value { font-size: 16px; font-weight: 700; color: #1f2937; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+  thead th { background: #f9fafb; padding: 10px 8px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280; border-bottom: 2px solid #e5e7eb; }
+  thead th.right { text-align: right; }
+  thead th.center { text-align: center; }
+  .footer { text-align: center; padding-top: 16px; border-top: 2px solid #e5e7eb; }
+  .footer p { font-size: 11px; color: #9ca3af; }
+  .footer .brand { font-size: 13px; font-weight: 700; color: #b8510d; }
+  .print-btn { display: block; margin: 0 auto 20px; padding: 10px 32px; background: #b8510d; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .print-btn:hover { background: #a33d0e; }
+</style>
+</head>
+<body>
+  <button class="print-btn no-print" onclick="window.print()">Print / Save as PDF</button>
+
+  <div class="header">
+    <p style="font-size:12px;color:#9ca3af;margin-bottom:4px;">KNOW BEFORE YOU VOTE</p>
+    <h1>${constituencyName}</h1>
+    <h2>${constituency.district} District, Tamil Nadu</h2>
+  </div>
+
+  <div class="meta">
+    <div class="meta-item">
+      <div class="label">Election Date</div>
+      <div class="value">April 23, 2026</div>
+    </div>
+    <div class="meta-item">
+      <div class="label">Registered Voters (2021)</div>
+      <div class="value">${constituency.total_voters_2021 ? constituency.total_voters_2021.toLocaleString("en-IN") : "N/A"}</div>
+    </div>
+    <div class="meta-item">
+      <div class="label">Turnout (2021)</div>
+      <div class="value">${constituency.turnout_2021 ? constituency.turnout_2021 + "%" : "N/A"}</div>
+    </div>
+    <div class="meta-item">
+      <div class="label">Candidates (2021)</div>
+      <div class="value">${sortedCandidates.length}</div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Candidate / Party</th>
+        <th class="center">Age</th>
+        <th>Education</th>
+        <th class="right">Total Assets</th>
+        <th class="center">Criminal Cases</th>
+        <th class="right">Votes (2021)</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${candidateRows}
+    </tbody>
+  </table>
+
+  <div class="footer">
+    <p class="brand">tnelections.info</p>
+    <p>Data sourced from Election Commission of India affidavits &amp; eCourts. Verify at eci.gov.in</p>
+    <p style="margin-top:4px;">Generated on ${new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</p>
+  </div>
+
+  <script>
+    window.onload = function() { setTimeout(function() { window.print(); }, 600); };
+  </script>
+</body>
+</html>`;
+
+    const w = window.open("", "_blank");
+    if (w) {
+      w.document.write(html);
+      w.document.close();
+    }
+  }
+
   return (
     <div className="min-h-screen bg-cream">
       <Header active="districts" />
@@ -1092,6 +1224,16 @@ export default function ConstituencyPage() {
                         {t("const.compare_top2")}
                       </Link>
                     )}
+                    <button
+                      onClick={generateVoterCard}
+                      title="Print / Save as PDF voter card"
+                      className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-600 hover:border-terracotta hover:text-terracotta transition-colors"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                      </svg>
+                      PDF Card
+                    </button>
                   </div>
                 </div>
                 {sortedCandidates.length === 0 ? (

@@ -296,17 +296,82 @@ function ordinal(n: number): string {
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
-// Criminal severity: Clean / Minor / Serious
-function criminalSeverity(cases: number): {
-  label: string;
-  color: string;
-  bg: string;
-} {
-  if (cases === 0)
-    return { label: "Clean Record", color: "#2d7a4f", bg: "bg-green-50" };
-  if (cases <= 2)
-    return { label: "Minor Cases", color: "#b8860b", bg: "bg-yellow-50" };
-  return { label: "Serious Cases", color: "#c0392b", bg: "bg-red-50" };
+// Criminal severity levels
+const SEVERITY_LEVELS = [
+  {
+    label: "Clean",       labelTa: "வழக்கில்லை",
+    desc: "No criminal cases declared or found in eCourts.",
+    descTa: "இவர் மீது எந்த கிரிமினல் வழக்கும் பதியப்படவில்லை.",
+    color: "#2d7a4f", light: "#d1fae5",
+  },
+  {
+    label: "Minor",       labelTa: "சிறிய வழக்கு",
+    desc: "1–2 cases on record. Mostly minor offences.",
+    descTa: "1–2 வழக்குகள் பதிவாகியுள்ளன. பெரும்பாலும் சிறிய குற்றங்கள்.",
+    color: "#b8860b", light: "#fef3c7",
+  },
+  {
+    label: "Serious",     labelTa: "தீவிர வழக்கு",
+    desc: "3–5 cases including serious charges — exercise caution.",
+    descTa: "3–5 வழக்குகள். தீவிர குற்றச்சாட்டுகள் உள்ளன — கவனமாக இருங்கள்.",
+    color: "#d35400", light: "#ffedd5",
+  },
+  {
+    label: "Grave",       labelTa: "கடுமையான வழக்கு",
+    desc: "6+ cases. Grave charges including violence or fraud.",
+    descTa: "6+ வழக்குகள். கொலை, மோசடி போன்ற கடுமையான குற்றங்கள்.",
+    color: "#c0392b", light: "#fee2e2",
+  },
+];
+
+function severityIndex(cases: number): number {
+  if (cases === 0) return 0;
+  if (cases <= 2) return 1;
+  if (cases <= 5) return 2;
+  return 3;
+}
+
+function criminalSeverity(cases: number): { label: string; color: string; bg: string } {
+  const idx = severityIndex(cases);
+  const lvl = SEVERITY_LEVELS[idx];
+  const bgMap = ["bg-green-50", "bg-yellow-50", "bg-orange-50", "bg-red-50"];
+  return { label: lvl.label, color: lvl.color, bg: bgMap[idx] };
+}
+
+// ── Criminal Severity Meter ─────────────────────────────
+function CriminalSeverityMeter({ cases }: { cases: number }) {
+  const idx = severityIndex(cases);
+  const active = SEVERITY_LEVELS[idx];
+
+  return (
+    <div>
+      {/* 4-segment bar */}
+      <div className="flex gap-1 my-3">
+        {SEVERITY_LEVELS.map((lvl, i) => (
+          <div key={i} className="flex-1 flex flex-col items-center gap-1">
+            <div
+              className="w-full h-2.5 rounded-full transition-all"
+              style={{
+                background: i <= idx ? lvl.color : "#e5e7eb",
+                opacity: i === idx ? 1 : i < idx ? 0.5 : 0.3,
+              }}
+            />
+            <span
+              className="text-[9px] font-medium leading-none"
+              style={{ color: i === idx ? lvl.color : "#9ca3af" }}
+            >
+              {lvl.label}
+            </span>
+          </div>
+        ))}
+      </div>
+      {/* Tamil description */}
+      <p className="text-xs leading-snug" style={{ color: active.color }}>
+        {active.descTa}
+      </p>
+      <p className="text-[11px] text-gray-400 mt-0.5">{active.desc}</p>
+    </div>
+  );
 }
 
 // ── Transparency Score ─────────────────────────────────
@@ -1038,19 +1103,14 @@ export default function CandidatePage() {
                 : "border-gray-100"
             }`}
           >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-bold text-gray-900 text-sm">
-                Criminal Record
-              </h2>
-              <span
-                className={`text-xs font-semibold px-2.5 py-1 rounded-full ${severity.bg}`}
-                style={{ color: severity.color }}
-              >
-                {severity.label}
-              </span>
-            </div>
-            {hasCriminal ? (
-              <div className="space-y-3">
+            <h2 className="font-bold text-gray-900 text-sm mb-1">
+              Criminal Record
+            </h2>
+            {/* Visual severity meter */}
+            <CriminalSeverityMeter cases={candidate.criminal_cases_declared} />
+
+            {hasCriminal && (
+              <div className="space-y-3 mt-3">
                 <div className="grid grid-cols-2 gap-3">
                   <StatBox
                     label="Self-Declared Cases"
@@ -1081,15 +1141,6 @@ export default function CandidatePage() {
                     </p>
                   </div>
                 )}
-              </div>
-            ) : (
-              <div className="bg-green-50 rounded-xl p-4 text-center">
-                <p className="text-green-700 font-semibold text-sm">
-                  No Criminal Cases
-                </p>
-                <p className="text-xs text-green-600 mt-0.5">
-                  No cases declared or found in eCourts
-                </p>
               </div>
             )}
           </div>

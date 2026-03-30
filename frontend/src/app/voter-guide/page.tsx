@@ -140,30 +140,54 @@ const steps: Step[] = [
     titleTa: "உங்கள் வாக்குச்சாவடியைக் கண்டறியுங்கள்",
     contentEn: (
       <div className="space-y-3">
-        <ul className="list-disc pl-5 space-y-1">
+        <Link
+          href="/booth-locator"
+          className="flex items-center gap-2 w-full px-4 py-3 rounded-xl text-white font-semibold text-sm"
+          style={{ background: "#c84b11" }}
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          Find Your Polling Booth →
+        </Link>
+        <ul className="list-disc pl-5 space-y-1 text-sm">
           <li>Your polling booth is printed on your <strong>voter ID card</strong> (EPIC)</li>
-          <li>You can also search for it on the CEO Tamil Nadu website</li>
+          <li>Search by EPIC number on the ECI voter portal</li>
+          <li>Or call Voter Helpline <strong>1950</strong> (free, 24 hours)</li>
           <li>
-            Use our{" "}
+            Use{" "}
             <Link href="/find-constituency" className="font-medium hover:underline" style={{ color: "#c84b11" }}>
               Find Your Constituency
             </Link>{" "}
-            tool to locate your constituency by PIN code or GPS
+            to locate your constituency by PIN code or GPS
           </li>
         </ul>
       </div>
     ),
     contentTa: (
       <div className="space-y-3">
-        <ul className="list-disc pl-5 space-y-1">
+        <Link
+          href="/booth-locator"
+          className="flex items-center gap-2 w-full px-4 py-3 rounded-xl text-white font-semibold text-sm"
+          style={{ background: "#c84b11" }}
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          வாக்குச் சாவடி கண்டறி →
+        </Link>
+        <ul className="list-disc pl-5 space-y-1 text-sm">
           <li>உங்கள் வாக்குச்சாவடி உங்கள் <strong>வாக்காளர் அடையாள அட்டையில்</strong> (EPIC) அச்சிடப்பட்டிருக்கும்</li>
-          <li>CEO தமிழ்நாடு இணையதளத்திலும் தேடலாம்</li>
+          <li>ECI இணையதளத்தில் EPIC எண் மூலம் தேடலாம்</li>
+          <li>வாக்காளர் உதவி எண் <strong>1950</strong> அழைக்கலாம் (இலவசம்)</li>
           <li>
             எங்கள்{" "}
             <Link href="/find-constituency" className="font-medium hover:underline" style={{ color: "#c84b11" }}>
               தொகுதி கண்டறி
             </Link>{" "}
-            கருவியை பயன்படுத்தி PIN குறியீடு அல்லது GPS மூலம் உங்கள் தொகுதியைக் கண்டறியுங்கள்
+            கருவியை பயன்படுத்தி PIN குறியீடு அல்லது GPS மூலம் தொகுதியைக் கண்டறியுங்கள்
           </li>
         </ul>
       </div>
