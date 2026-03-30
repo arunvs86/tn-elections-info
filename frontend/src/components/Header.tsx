@@ -11,44 +11,44 @@ interface HeaderProps {
 export default function Header({ active }: HeaderProps) {
   const { lang, setLang, t } = useLang();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [moreOpen, setMoreOpen] = useState(false);
-  const moreRef = useRef<HTMLDivElement>(null);
+  const [voterOpen, setVoterOpen] = useState(false);
+  const voterRef = useRef<HTMLDivElement>(null);
 
-  // Primary nav — always visible on desktop
-  const primaryLinks = [
-    { href: "/find-constituency", label: t("nav.find"), id: "find" },
-    { href: "/vote-calculator", label: "உங்கள் vote?", id: "vote-calculator" },
-    { href: "/pledge", label: "✊ Pledge", id: "pledge" },
+  // "For Voters" dropdown — action tools
+  const voterTools = [
+    { href: "/find-constituency", label: "🔍 " + t("nav.find"), id: "find" },
+    { href: "/vote-calculator", label: "🗳️ உங்கள் vote முக்கியமா?", id: "vote-calculator" },
+    { href: "/pledge", label: "✊ Thamizhan Pledge", id: "pledge" },
+    { href: "/voter-guide", label: "📋 " + t("nav.voterguide"), id: "voter-guide" },
+    { href: "/booth-locator", label: "📍 Booth Locator", id: "booth-locator" },
   ];
 
-  // Secondary nav — in "More" dropdown on desktop, listed in mobile menu
-  const moreLinks = [
+  // Direct nav links — research/info
+  const directLinks = [
     { href: "/districts", label: t("nav.districts"), id: "districts" },
     { href: "/parties", label: t("nav.parties"), id: "parties" },
     { href: "/swing-seats", label: t("nav.swing"), id: "swing" },
     { href: "/fact-check", label: t("nav.factcheck"), id: "factcheck" },
-    { href: "/voter-guide", label: t("nav.voterguide"), id: "voter-guide" },
-    { href: "/booth-locator", label: "Booth Locator", id: "booth-locator" },
+  ];
+
+  // Extra links — in mobile menu only
+  const extraLinks = [
     { href: "/manifesto", label: t("nav.manifesto"), id: "manifesto" },
     { href: "/news", label: t("nav.news"), id: "news" },
     { href: "/results", label: t("nav.results"), id: "results" },
   ];
 
-  // Close "More" dropdown on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
-      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
-        setMoreOpen(false);
+      if (voterRef.current && !voterRef.current.contains(e.target as Node)) {
+        setVoterOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const linkClass = (id: string) =>
-    active === id
-      ? "text-terracotta font-semibold"
-      : "text-gray-600 hover:text-terracotta transition-colors";
+  const isVoterActive = voterTools.some(l => l.id === active);
 
   return (
     <header className="border-b border-gray-200 bg-white/90 backdrop-blur-sm sticky top-0 z-40">
@@ -65,38 +65,33 @@ export default function Header({ active }: HeaderProps) {
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-5 text-sm font-medium flex-1 justify-center">
-          {primaryLinks.map(link => (
-            <Link key={link.id} href={link.href} className={linkClass(link.id)}>
-              {link.label}
-            </Link>
-          ))}
+        <nav className="hidden md:flex items-center gap-6 text-sm font-medium flex-1 justify-center">
 
-          {/* More dropdown */}
-          <div className="relative" ref={moreRef}>
+          {/* Voter Tools dropdown */}
+          <div className="relative" ref={voterRef}>
             <button
-              onClick={() => setMoreOpen(o => !o)}
-              className={`flex items-center gap-1 text-sm font-medium transition-colors ${
-                moreLinks.some(l => l.id === active)
-                  ? "text-terracotta font-semibold"
-                  : "text-gray-600 hover:text-terracotta"
+              onClick={() => setVoterOpen(o => !o)}
+              className={`flex items-center gap-1.5 text-sm font-medium transition-colors ${
+                isVoterActive ? "text-terracotta font-semibold" : "text-gray-600 hover:text-terracotta"
               }`}
             >
-              More
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"
-                className={`transition-transform ${moreOpen ? "rotate-180" : ""}`}>
+              🗳️ Voter Tools
+              <svg width="11" height="11" viewBox="0 0 12 12" fill="currentColor"
+                className={`transition-transform mt-px ${voterOpen ? "rotate-180" : ""}`}>
                 <path d="M6 8L1 3h10L6 8z" />
               </svg>
             </button>
-            {moreOpen && (
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-52 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden z-50">
-                {moreLinks.map(link => (
+            {voterOpen && (
+              <div className="absolute top-full left-0 mt-2 w-60 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden z-50">
+                {voterTools.map(link => (
                   <Link
                     key={link.id}
                     href={link.href}
-                    onClick={() => setMoreOpen(false)}
-                    className={`block px-4 py-2.5 text-sm hover:bg-orange-50 transition-colors ${
-                      active === link.id ? "text-terracotta font-semibold bg-orange-50" : "text-gray-700"
+                    onClick={() => setVoterOpen(false)}
+                    className={`flex items-center px-4 py-2.5 text-sm hover:bg-orange-50 transition-colors ${
+                      active === link.id
+                        ? "text-terracotta font-semibold bg-orange-50"
+                        : "text-gray-700"
                     }`}
                   >
                     {link.label}
@@ -105,6 +100,21 @@ export default function Header({ active }: HeaderProps) {
               </div>
             )}
           </div>
+
+          {/* Direct links */}
+          {directLinks.map(link => (
+            <Link
+              key={link.id}
+              href={link.href}
+              className={`transition-colors ${
+                active === link.id
+                  ? "text-terracotta font-semibold"
+                  : "text-gray-600 hover:text-terracotta"
+              }`}
+            >
+              {link.label}
+            </Link>
+          ))}
         </nav>
 
         {/* Right: lang toggle + hamburger */}
@@ -115,7 +125,6 @@ export default function Header({ active }: HeaderProps) {
           >
             {lang === "en" ? "தமிழ்" : "English"}
           </button>
-
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="md:hidden w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
@@ -137,12 +146,26 @@ export default function Header({ active }: HeaderProps) {
       {/* Mobile dropdown */}
       {menuOpen && (
         <div className="md:hidden border-t border-gray-100 bg-white max-h-[calc(100vh-60px)] overflow-y-auto">
-          <nav className="max-w-6xl mx-auto px-4 py-3 flex flex-col gap-0">
+          <nav className="max-w-6xl mx-auto px-4 py-2 flex flex-col">
             <Link href="/" onClick={() => setMenuOpen(false)}
-              className={`py-2.5 text-sm font-medium border-b border-gray-50 ${active === "home" ? "text-terracotta" : "text-gray-700"}`}>
-              🏠 {t("nav.home")}
+              className="py-2.5 text-sm font-medium border-b border-gray-50 text-gray-700">
+              🏠 Home
             </Link>
-            {[...primaryLinks, ...moreLinks].map(link => (
+
+            {/* Voter tools section */}
+            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mt-3 mb-1 px-0.5">Voter Tools</p>
+            {voterTools.map(link => (
+              <Link key={link.id} href={link.href} onClick={() => setMenuOpen(false)}
+                className={`py-2.5 text-sm font-medium border-b border-gray-50 ${
+                  active === link.id ? "text-terracotta font-semibold" : "text-gray-700"
+                }`}>
+                {link.label}
+              </Link>
+            ))}
+
+            {/* Research section */}
+            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mt-3 mb-1 px-0.5">Research</p>
+            {[...directLinks, ...extraLinks].map(link => (
               <Link key={link.id} href={link.href} onClick={() => setMenuOpen(false)}
                 className={`py-2.5 text-sm font-medium border-b border-gray-50 last:border-0 ${
                   active === link.id ? "text-terracotta font-semibold" : "text-gray-700"
