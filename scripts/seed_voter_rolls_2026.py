@@ -269,7 +269,7 @@ VOTER_ROLLS = [
 def get_all_constituencies() -> list:
     r = httpx.get(
         f"{SUPABASE_URL}/rest/v1/constituencies",
-        params={"select": "id,name,assembly_no"},
+        params={"select": "id,name"},
         headers=HEADERS,
         timeout=30.0,
     )
@@ -287,19 +287,14 @@ def main():
     constituencies = get_all_constituencies()
     print(f"  Found {len(constituencies)} constituencies")
 
-    # Build lookup: normalized_name -> id, and assembly_no -> id
+    # Build lookup: normalized_name -> id (name matching only)
     name_to_id = {normalize(c["name"]): c["id"] for c in constituencies}
-    ac_to_id = {}
-    for c in constituencies:
-        if c.get("assembly_no"):
-            ac_to_id[int(c["assembly_no"])] = c["id"]
 
     updated = 0
     not_found = []
 
     for (ac_no, name, male, female, third, total) in VOTER_ROLLS:
-        # Try AC number first, then name
-        con_id = ac_to_id.get(ac_no) or name_to_id.get(normalize(name))
+        con_id = name_to_id.get(normalize(name))
 
         if not con_id:
             not_found.append(f"AC {ac_no}: {name}")
