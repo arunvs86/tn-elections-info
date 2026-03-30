@@ -148,10 +148,6 @@ def trigger_vapi_call(
                 "maxTokens": 150,
                 "temperature": 0.7,
             },
-            "transcriber": {
-                "provider": "deepgram",
-                "language": "ta",
-            },
             "endCallMessage": "வணக்கம்! Vote போட மறக்காதீர்கள்!",
             "endCallPhrases": ["சரி", "ok", "bye", "நன்றி", "போய்விடுகிறேன்"],
             "maxDurationSeconds": 60,
