@@ -112,7 +112,7 @@ export default function PledgePage() {
   }
 
   const whatsappText = encodeURIComponent(
-    `நான் Thamizhan. நான் April 23 vote போடுவேன்.\n\nUngal thalai ezuthu.. ungal viralil..\n\nஉங்களும் pledge பண்ணுங்கள் → https://tnelections.info/pledge`
+    `நான் Thamizhan. நான் April 23 vote போடுவேன்.\n\nUngal thalai ezuthu.. ungal viralil..\n\n pledge பண்ணுங்கள் → https://tnelections.info/pledge`
   );
 
   return (
@@ -350,7 +350,7 @@ export default function PledgePage() {
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(
-                    `நான் Thamizhan. நான் April 23 vote போடுவேன்.\n\nUngal thalai ezuthu.. ungal viralil..\n\nஉங்களும் → tnelections.info/pledge`
+                    `நான் Thamizhan. நான் April 23 vote போடுவேன்.\n\nUngal thalai ezuthu.. ungal viralil..\n\n → tnelections.info/pledge`
                   );
                 }}
                 className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors"

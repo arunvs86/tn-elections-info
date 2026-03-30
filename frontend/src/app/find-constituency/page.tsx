@@ -285,17 +285,61 @@ export default function FindConstituencyPage() {
           </div>
         )}
 
-        {/* ECI link */}
-        <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-center">
-          <p className="text-xs text-blue-700 mb-1">{t("find.eci_note")}</p>
-          <a
-            href="https://electoralsearch.eci.gov.in/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm font-semibold text-blue-600 hover:underline"
-          >
-            {t("find.eci_link")} →
-          </a>
+        {/* Find Your Polling Booth */}
+        <div className="bg-[#FFF8F0] border border-[#E8D5C4] rounded-[14px] px-5 py-5 mb-6">
+          <h3 className="font-bold text-lg text-gray-900 mb-4 flex items-center gap-2">
+            <span className="text-xl">🗳️</span> Find Your Polling Booth
+          </h3>
+
+          <div className="space-y-3 mb-4">
+            <a
+              href="https://electoralsearch.eci.gov.in/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full bg-terracotta text-white text-center py-3 rounded-[14px] font-semibold text-sm hover:bg-[#a33d0e] transition-colors"
+            >
+              Search on ECI Website →
+            </a>
+            <a
+              href="https://www.elections.tn.gov.in/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full bg-white border border-terracotta/30 text-terracotta text-center py-3 rounded-[14px] font-semibold text-sm hover:bg-terracotta/5 transition-colors"
+            >
+              CEO Tamil Nadu →
+            </a>
+          </div>
+
+          <div className="bg-white/70 border border-[#E8D5C4] rounded-[14px] px-4 py-3">
+            <p className="text-xs text-gray-600 leading-relaxed">
+              <span className="font-semibold text-gray-700">Tip:</span> Your booth number is printed on your Voter ID card (EPIC). Look for &quot;Part No&quot; and &quot;Polling Station&quot;.
+            </p>
+          </div>
+        </div>
+
+        {/* What to Carry */}
+        <div className="bg-[#FFF8F0] border border-[#E8D5C4] rounded-[14px] px-5 py-5">
+          <h3 className="font-bold text-lg text-gray-900 mb-4 flex items-center gap-2">
+            <span className="text-xl">📋</span> What to Carry
+          </h3>
+          <ul className="space-y-2.5 text-sm">
+            <li className="flex items-start gap-2">
+              <span className="text-green-600 mt-0.5">✅</span>
+              <span className="text-gray-700"><span className="font-semibold">Voter ID (EPIC)</span> — primary ID</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-green-600 mt-0.5">✅</span>
+              <span className="text-gray-700"><span className="font-semibold">Any photo ID:</span> Aadhaar, PAN, Passport, Driving License</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-red-500 mt-0.5">❌</span>
+              <span className="text-gray-700"><span className="font-semibold">Mobile phones</span> NOT allowed inside booth</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-amber-500 mt-0.5">⏰</span>
+              <span className="text-gray-700"><span className="font-semibold">Voting hours:</span> 7 AM – 6 PM, April 23</span>
+            </li>
+          </ul>
         </div>
       </div>
     </div>

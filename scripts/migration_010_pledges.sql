@@ -38,6 +38,12 @@ CREATE POLICY "Anyone can read pledges"
   TO anon, authenticated
   USING (true);
 
+-- Explicit grants for anon (required alongside RLS policies)
+GRANT INSERT ON pledges TO anon;
+GRANT SELECT ON pledges TO anon;
+GRANT INSERT ON pledges TO authenticated;
+GRANT SELECT ON pledges TO authenticated;
+
 -- ── Helper function: get pledge count ───────────────────────────────
 CREATE OR REPLACE FUNCTION get_pledge_count()
 RETURNS INTEGER

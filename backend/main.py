@@ -19,6 +19,7 @@ from agents.graph import election_graph
 from agents.chat_agent import handle_chat
 from agents.summary_agent import generate_candidate_summary
 from agents.briefing_agent import generate_briefing, get_latest_briefing
+from agents.thamizhan_agent import trigger_vapi_call, call_all_pledgers, get_pledge_stats, send_whatsapp_reminder
 from tools.db_tools import save_messages
 
 app = FastAPI(title="TN Elections API", version="2.0.0")
@@ -142,4 +143,74 @@ def api_latest_briefing():
     result = get_latest_briefing()
     if not result:
         raise HTTPException(status_code=404, detail="No briefings found")
+    return result
+
+
+# ── Thamizhan Phone Agent ──────────────────────────────────────────────────
+
+class SingleCallRequest(BaseModel):
+    phone: str
+    name: str
+    constituency_name: str = ""
+    non_voters: int | None = None
+    margin: int | None = None
+    call_type: str = "apr22"  # "apr22" | "apr23"
+
+
+@app.post("/api/thamizhan/call-single")
+def thamizhan_call_single(req: SingleCallRequest):
+    """Trigger a single Vapi call to one pledger."""
+    result = trigger_vapi_call(
+        phone=req.phone,
+        name=req.name,
+        constituency_name=req.constituency_name,
+        non_voters=req.non_voters,
+        margin=req.margin,
+        call_type=req.call_type,
+    )
+    if not result["success"]:
+        raise HTTPException(status_code=502, detail=result["error"])
+    return result
+
+
+class BatchCallRequest(BaseModel):
+    call_type: str = "apr22"  # "apr22" | "apr23"
+
+
+@app.post("/api/thamizhan/call-all")
+def thamizhan_call_all(req: BatchCallRequest):
+    """
+    Trigger Vapi calls to ALL pending pledgers with phone numbers.
+    Safe to call multiple times — skips already-called rows.
+    """
+    result = call_all_pledgers(call_type=req.call_type)
+    if not result.get("success"):
+        raise HTTPException(status_code=500, detail=result.get("error", "Unknown error"))
+    return result
+
+
+@app.get("/api/thamizhan/stats")
+def thamizhan_stats():
+    """Return pledge counts and call progress."""
+    return get_pledge_stats()
+
+
+class WhatsAppRequest(BaseModel):
+    phone: str
+    name: str
+    constituency_name: str = ""
+    call_type: str = "apr22"
+
+
+@app.post("/api/thamizhan/whatsapp-single")
+def thamizhan_whatsapp_single(req: WhatsAppRequest):
+    """Send a single WhatsApp reminder (requires Twilio approved sender)."""
+    result = send_whatsapp_reminder(
+        phone=req.phone,
+        name=req.name,
+        constituency_name=req.constituency_name,
+        call_type=req.call_type,
+    )
+    if not result["success"]:
+        raise HTTPException(status_code=502, detail=result["error"])
     return result
