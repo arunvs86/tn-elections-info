@@ -18,6 +18,10 @@ interface Constituency {
   is_swing_seat: boolean;
   current_mla: string | null;
   current_mla_party: string | null;
+  voters_total_2026: number | null;
+  voters_male_2026: number | null;
+  voters_female_2026: number | null;
+  voters_third_gender_2026: number | null;
 }
 
 interface Candidate {
@@ -1021,6 +1025,72 @@ export default function ConstituencyPage() {
                       </div>
                     );
                   })()}
+
+                {/* 2026 Voter Roll — SIR data */}
+                {constituency?.voters_total_2026 && (() => {
+                  const total = constituency.voters_total_2026!;
+                  const male = constituency.voters_male_2026 ?? 0;
+                  const female = constituency.voters_female_2026 ?? 0;
+                  const third = constituency.voters_third_gender_2026 ?? 0;
+                  const malePct = Math.round((male / total) * 100);
+                  const femalePct = Math.round((female / total) * 100);
+                  const prev = constituency.total_voters_2021;
+                  const diff = prev ? total - prev : null;
+                  return (
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-bold text-gray-900 text-sm">
+                          🗳️ 2026 Voter Roll <span className="text-xs font-normal text-gray-400 ml-1">(Final, 23 Feb 2026)</span>
+                        </h3>
+                        {diff !== null && (
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${diff >= 0 ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
+                            {diff >= 0 ? "+" : ""}{fmt(diff)} vs 2021
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Total */}
+                      <p className="text-3xl font-bold text-terracotta mb-1">{fmt(total)}</p>
+                      <p className="text-xs text-gray-500 mb-4">Total registered voters</p>
+
+                      {/* Gender bar */}
+                      <div className="space-y-2">
+                        <div className="flex rounded-full overflow-hidden h-4">
+                          <div
+                            className="bg-blue-400 transition-all"
+                            style={{ width: `${malePct}%` }}
+                            title={`Male: ${fmt(male)}`}
+                          />
+                          <div
+                            className="bg-pink-400 transition-all"
+                            style={{ width: `${femalePct}%` }}
+                            title={`Female: ${fmt(female)}`}
+                          />
+                        </div>
+                        <div className="flex justify-between text-xs text-gray-600">
+                          <span className="flex items-center gap-1">
+                            <span className="w-2.5 h-2.5 rounded-full bg-blue-400 inline-block" />
+                            Male — {fmt(male)} ({malePct}%)
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <span className="w-2.5 h-2.5 rounded-full bg-pink-400 inline-block" />
+                            Female — {fmt(female)} ({femalePct}%)
+                          </span>
+                        </div>
+                        {third > 0 && (
+                          <p className="text-xs text-gray-400">+ {third} third gender voters</p>
+                        )}
+                      </div>
+
+                      {/* Female majority flag */}
+                      {female > male && (
+                        <p className="mt-3 text-xs font-semibold text-pink-600 bg-pink-50 rounded-lg px-3 py-1.5">
+                          Women outnumber men by {fmt(female - male)} — female voter turnout will be decisive
+                        </p>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* Constituency Poll */}
                 {constituency && candidates.length > 0 && (
