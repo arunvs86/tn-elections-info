@@ -233,6 +233,58 @@ function fmtCurrency(n: number | null): string {
   return `₹${n.toLocaleString("en-IN")}`;
 }
 
+// ── Crorepati Calculator Component ──
+function CrorepatiCalculator({ netWorth }: { netWorth: number }) {
+  const [monthlyIncome, setMonthlyIncome] = useState(25000);
+  const annualIncome = monthlyIncome * 12;
+  const yearsToEarn = annualIncome > 0 ? Math.round(netWorth / annualIncome) : 0;
+
+  return (
+    <div
+      className="rounded-2xl border border-orange-100 shadow-sm p-5"
+      style={{ background: "#faf9f6", borderRadius: 14 }}
+    >
+      <h2 className="font-bold text-gray-900 text-sm mb-3 flex items-center gap-2">
+        <span>💰</span> Crorepati Calculator
+      </h2>
+      <div className="flex flex-wrap items-center gap-2 mb-3">
+        <label className="text-xs text-gray-600 whitespace-nowrap">
+          Enter your monthly income ₹
+        </label>
+        <input
+          type="number"
+          min={1000}
+          step={1000}
+          value={monthlyIncome}
+          onChange={(e) => setMonthlyIncome(Math.max(1, Number(e.target.value)))}
+          className="w-28 px-2 py-1 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-300 text-right"
+        />
+      </div>
+      {annualIncome > 0 && (
+        <div className="space-y-2">
+          <p className="text-sm text-gray-700">
+            At {fmtCurrency(monthlyIncome)}/month, it would take you{" "}
+            <span className="font-bold" style={{ color: "#c0392b" }}>
+              {yearsToEarn.toLocaleString("en-IN")} years
+            </span>{" "}
+            to earn what this candidate declared.
+          </p>
+          <p className="text-sm text-gray-700">
+            This candidate has{" "}
+            <span className="font-bold" style={{ color: "#c0392b" }}>
+              {yearsToEarn.toLocaleString("en-IN")} years
+            </span>{" "}
+            of your salary in declared assets alone.
+          </p>
+          <p className="text-[11px] text-gray-400 mt-1">
+            Based on declared net worth of {fmtCurrency(netWorth)}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function slugify(name: string): string {
   return name.toLowerCase().replace(/\s+/g, "-");
 }
@@ -893,6 +945,11 @@ export default function CandidatePage() {
               </p>
             )}
           </div>
+
+          {/* ── Crorepati Calculator ── */}
+          {candidate.net_worth != null && candidate.net_worth > 0 && (
+            <CrorepatiCalculator netWorth={candidate.net_worth} />
+          )}
 
           {/* ── Assets Over Time (4.8) ── */}
           {historicalAssets.length > 1 && (

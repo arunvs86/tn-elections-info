@@ -336,6 +336,243 @@ function AgentFeed({ messages }: { messages: AgentMessage[] }) {
   );
 }
 
+// ── Constituency Poll ─────────────────────────────────
+function getFingerprint(): string {
+  const raw = [
+    navigator.language,
+    screen.width,
+    screen.height,
+    screen.colorDepth,
+    Intl.DateTimeFormat().resolvedOptions().timeZone,
+    navigator.hardwareConcurrency || 0,
+  ].join("|");
+  let hash = 0;
+  for (let i = 0; i < raw.length; i++) {
+    const char = raw.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash |= 0;
+  }
+  return "fp_" + Math.abs(hash).toString(36);
+}
+
+interface PollCandidate {
+  name: string;
+  party: string;
+  votes: number;
+}
+
+function ConstituencyPoll({
+  constituencyId,
+  constituencyName,
+  candidates,
+}: {
+  constituencyId: number;
+  constituencyName: string;
+  candidates: Candidate[];
+}) {
+  const [results, setResults] = useState<PollCandidate[]>([]);
+  const [totalVotes, setTotalVotes] = useState(0);
+  const [hasVoted, setHasVoted] = useState(false);
+  const [selectedCandidate, setSelectedCandidate] = useState<string | null>(null);
+  const [voting, setVoting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Top candidates (by votes or first N) to show as poll options
+  const topCandidates = candidates.slice(0, 6);
+
+  const storageKey = `tn_cpoll_${constituencyId}`;
+
+  useEffect(() => {
+    const fp = getFingerprint();
+    const voted = localStorage.getItem(storageKey);
+    if (voted) {
+      setHasVoted(true);
+      setSelectedCandidate(voted);
+    }
+
+    fetchResults();
+
+    // Also check Supabase
+    supabase
+      .from("constituency_polls")
+      .select("candidate_name")
+      .eq("constituency_id", constituencyId)
+      .eq("fingerprint", fp)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setHasVoted(true);
+          setSelectedCandidate(data.candidate_name);
+          localStorage.setItem(storageKey, data.candidate_name);
+        }
+      });
+  }, [constituencyId, storageKey]);
+
+  async function fetchResults() {
+    const { data } = await supabase
+      .from("constituency_polls")
+      .select("candidate_name, party")
+      .eq("constituency_id", constituencyId);
+
+    if (data) {
+      const counts: Record<string, { party: string; votes: number }> = {};
+      data.forEach((v) => {
+        if (!counts[v.candidate_name]) {
+          counts[v.candidate_name] = { party: v.party, votes: 0 };
+        }
+        counts[v.candidate_name].votes += 1;
+      });
+      const total = data.length;
+      setTotalVotes(total);
+      setResults(
+        Object.entries(counts)
+          .map(([name, info]) => ({ name, party: info.party, votes: info.votes }))
+          .sort((a, b) => b.votes - a.votes)
+      );
+    }
+  }
+
+  async function handleVote(candidateName: string, party: string) {
+    if (hasVoted || voting) return;
+    setVoting(true);
+    setError(null);
+
+    const fp = getFingerprint();
+
+    const { error: insertError } = await supabase
+      .from("constituency_polls")
+      .insert({
+        constituency_id: constituencyId,
+        candidate_name: candidateName,
+        party,
+        fingerprint: fp,
+      });
+
+    if (insertError) {
+      if (insertError.code === "23505") {
+        setHasVoted(true);
+        localStorage.setItem(storageKey, candidateName);
+      } else {
+        setError(insertError.message || "Unknown error");
+      }
+      setVoting(false);
+      return;
+    }
+
+    setHasVoted(true);
+    setSelectedCandidate(candidateName);
+    localStorage.setItem(storageKey, candidateName);
+    setVoting(false);
+    fetchResults();
+  }
+
+  if (topCandidates.length === 0) return null;
+
+  const maxVotes = Math.max(...results.map((r) => r.votes), 1);
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+      <div className="flex items-center gap-2 mb-1">
+        <span className="text-lg">🗳️</span>
+        <h3 className="font-bold text-sm text-gray-900">
+          Who will win in {constituencyName}?
+        </h3>
+      </div>
+      <p className="text-[10px] text-gray-400 mb-3">One vote per device. Anonymous &amp; instant.</p>
+
+      {!hasVoted ? (
+        <div className="space-y-1.5">
+          {topCandidates.map((c) => {
+            const color = partyColor(c.party);
+            return (
+              <button
+                key={c.name}
+                onClick={() => handleVote(c.name, c.party)}
+                disabled={voting}
+                className="w-full text-left px-3 py-2.5 rounded-xl border-2 transition-all hover:shadow-md active:scale-[0.98] disabled:opacity-50"
+                style={{
+                  borderColor: color + "40",
+                  background: color + "08",
+                }}
+              >
+                <span className="font-semibold text-sm" style={{ color }}>
+                  {c.name}
+                </span>
+                <span className="text-xs text-gray-400 ml-2">{c.party}</span>
+              </button>
+            );
+          })}
+          {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+        </div>
+      ) : (
+        <div className="space-y-2.5">
+          {results.map((r) => {
+            const color = partyColor(r.party);
+            const pct = totalVotes > 0 ? Math.round((r.votes / totalVotes) * 1000) / 10 : 0;
+            const isSelected = selectedCandidate === r.name;
+            return (
+              <div key={r.name}>
+                <div className="flex items-center justify-between mb-0.5">
+                  <span
+                    className={`text-xs font-medium truncate ${isSelected ? "font-bold" : ""}`}
+                    style={{ color }}
+                  >
+                    {r.name} ({r.party}) {isSelected && " \u2713"}
+                  </span>
+                  <span className="text-xs font-bold ml-2 flex-shrink-0" style={{ color }}>
+                    {pct}%
+                  </span>
+                </div>
+                <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-700 ease-out"
+                    style={{
+                      width: `${Math.max((r.votes / maxVotes) * 100, 3)}%`,
+                      backgroundColor: color,
+                      opacity: isSelected ? 1 : 0.7,
+                    }}
+                  />
+                </div>
+                <p className="text-[10px] text-gray-400 mt-0.5">
+                  {r.votes.toLocaleString()} vote{r.votes !== 1 ? "s" : ""}
+                </p>
+              </div>
+            );
+          })}
+          {/* Also show top candidates that have 0 poll votes */}
+          {topCandidates
+            .filter((c) => !results.find((r) => r.name === c.name))
+            .map((c) => {
+              const color = partyColor(c.party);
+              return (
+                <div key={c.name}>
+                  <div className="flex items-center justify-between mb-0.5">
+                    <span className="text-xs font-medium text-gray-400 truncate">
+                      {c.name} ({c.party})
+                    </span>
+                    <span className="text-xs font-bold text-gray-300 ml-2">0%</span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-2.5">
+                    <div
+                      className="h-2.5 rounded-full"
+                      style={{ width: "3%", backgroundColor: color, opacity: 0.3 }}
+                    />
+                  </div>
+                  <p className="text-[10px] text-gray-400 mt-0.5">0 votes</p>
+                </div>
+              );
+            })}
+          <div className="pt-2 border-t border-gray-100">
+            <p className="text-[10px] text-gray-500 text-center">
+              Total votes: <span className="font-bold text-gray-700">{totalVotes.toLocaleString()}</span>
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Page ───────────────────────────────────────────────
 export default function ConstituencyPage() {
   const { t } = useLang();
@@ -588,6 +825,78 @@ export default function ConstituencyPage() {
                   <div className="bg-white rounded-2xl border border-gray-100 p-5 text-center text-sm text-gray-400">
                     {t("const.no_results")}
                   </div>
+                )}
+
+                {/* Non-Voters Impact */}
+                {constituency &&
+                  electionResult &&
+                  constituency.total_voters_2021 != null &&
+                  electionResult.total_votes > 0 &&
+                  electionResult.margin > 0 &&
+                  constituency.total_voters_2021 - electionResult.total_votes > 0 && (() => {
+                    const nonVoters = constituency.total_voters_2021! - electionResult.total_votes;
+                    const marginMultiple = Math.floor(nonVoters / electionResult.margin);
+                    return (
+                      <div
+                        style={{
+                          background: "#FDF6EE",
+                          borderRadius: 14,
+                          border: "1px solid #E8D5C4",
+                          padding: "20px",
+                        }}
+                      >
+                        <h3
+                          className="font-bold text-sm mb-3"
+                          style={{ color: "#5A3E2B" }}
+                        >
+                          Non-Voters Impact
+                        </h3>
+                        <p
+                          className="text-3xl font-extrabold leading-tight"
+                          style={{ color: "#B8510D" }}
+                        >
+                          {fmt(nonVoters)}
+                        </p>
+                        <p className="text-sm text-gray-600 mt-1">
+                          people didn&apos;t vote
+                        </p>
+                        <div
+                          className="my-3"
+                          style={{
+                            height: 1,
+                            background: "#E8D5C4",
+                          }}
+                        />
+                        <p className="text-xs text-gray-500">
+                          Winning margin was only{" "}
+                          <strong style={{ color: "#B8510D" }}>
+                            {fmt(electionResult.margin)}
+                          </strong>{" "}
+                          votes
+                        </p>
+                        {marginMultiple > 0 && (
+                          <p className="text-sm font-semibold mt-2" style={{ color: "#5A3E2B" }}>
+                            Non-voters could have changed the result{" "}
+                            <span
+                              className="text-lg font-extrabold"
+                              style={{ color: "#B8510D" }}
+                            >
+                              {marginMultiple}x
+                            </span>{" "}
+                            over
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })()}
+
+                {/* Constituency Poll */}
+                {constituency && candidates.length > 0 && (
+                  <ConstituencyPoll
+                    constituencyId={constituency.id}
+                    constituencyName={constituencyName}
+                    candidates={sortedCandidates}
+                  />
                 )}
 
                 {/* Stats */}
