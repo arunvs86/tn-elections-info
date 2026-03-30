@@ -23,6 +23,7 @@ const dict: Record<string, DictEntry> = {
   "nav.chat": { en: "Ask TN Elections", ta: "தேர்தல் உதவி" },
   "nav.back_home": { en: "Home", ta: "முகப்பு" },
   "nav.voterguide": { en: "Voter Guide", ta: "வாக்காளர் வழிகாட்டி" },
+  "nav.votecalc": { en: "Will My Vote Matter?", ta: "என் vote முக்கியமா?" },
 
   // ── Homepage ────────────────────────────────────
   "home.badge": { en: "AI agents investigating candidates live", ta: "AI செயலிகள் வேட்பாளர்களை நேரடியாக ஆராய்கின்றன" },

@@ -23,6 +23,7 @@ export default function Header({ active }: HeaderProps) {
     { href: "/news", key: "nav.news", id: "news" },
     { href: "/results", key: "nav.results", id: "results" },
     { href: "/voter-guide", key: "nav.voterguide", id: "voter-guide" },
+    { href: "/vote-calculator", key: "nav.votecalc", id: "vote-calculator" },
   ];
 
   return (
