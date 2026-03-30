@@ -270,6 +270,74 @@ const ALLIANCES = [
   },
 ];
 
+// ── Thamizhan Pledge Widget ───────────────────────
+function ThamizhanPledge() {
+  const { lang } = useLang();
+  const isTa = lang === "ta";
+  const [count, setCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    supabase
+      .from("pledges")
+      .select("id", { count: "exact", head: true })
+      .then(({ count }) => { if (count != null) setCount(count); });
+  }, []);
+
+  return (
+    <section className="max-w-md mx-auto px-4 pb-10">
+      <div
+        className="rounded-2xl overflow-hidden shadow-sm"
+        style={{ background: "linear-gradient(135deg, #c84b11 0%, #7a2800 100%)" }}
+      >
+        {/* Top */}
+        <div className="px-6 pt-6 pb-4 text-center">
+          <div
+            className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-2xl mx-auto mb-3"
+            style={{
+              background: "rgba(255,255,255,0.15)",
+              fontFamily: "'Noto Serif Tamil', serif",
+            }}
+          >
+            த
+          </div>
+          <p className="text-white font-extrabold text-xl leading-snug">
+            உங்கள் தலை எழுத்து..
+          </p>
+          <p className="text-orange-200 font-extrabold text-xl leading-snug">
+            உங்கள் விரலில்.
+          </p>
+          <p className="text-white/70 text-xs mt-2">
+            {isTa
+              ? "Thamizhan April 22 & 23 உங்களை vote-க்கு அழைப்பான்"
+              : "Thamizhan will call you on Apr 22 & 23 to remind you to vote"}
+          </p>
+        </div>
+
+        {/* Counter */}
+        <div className="bg-white/10 mx-4 rounded-xl px-4 py-3 text-center mb-4">
+          <p className="text-white font-extrabold text-3xl">
+            {count != null ? count.toLocaleString("en-IN") : "—"}
+          </p>
+          <p className="text-white/70 text-xs mt-0.5">
+            {isTa ? "தமிழர்கள் உறுதி கொடுத்தனர்" : "Thamizhan-s have pledged"}
+          </p>
+        </div>
+
+        {/* CTA */}
+        <div className="px-4 pb-5">
+          <Link
+            href="/pledge"
+            className="block w-full py-3.5 rounded-xl bg-white text-center font-bold text-sm transition-opacity hover:opacity-90"
+            style={{ color: "#c84b11" }}
+          >
+            {isTa ? "நான் Thamizhan — நான் vote போடுவேன் →" : "I am Thamizhan — I will vote →"}
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ── Main Page ─────────────────────────────────────
 export default function HomePage() {
   const { lang, t } = useLang();
@@ -416,6 +484,9 @@ export default function HomePage() {
       <section className="max-w-md mx-auto px-4 pb-10">
         <OpinionPoll />
       </section>
+
+      {/* ── Thamizhan Pledge Widget ── */}
+      <ThamizhanPledge />
 
       {/* ── Quick Narrative Check ── */}
       <section className="max-w-6xl mx-auto px-4 pb-12">
