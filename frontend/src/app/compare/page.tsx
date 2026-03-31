@@ -439,6 +439,31 @@ function CompareContent() {
   const [rightConst, setRightConst] = useState<ConstituencyRow | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Allegations
+  interface Allegation { title: string; summary: string; source_url: string; source_name: string; severity: string; }
+  const [leftAllegations, setLeftAllegations] = useState<Allegation[]>([]);
+  const [rightAllegations, setRightAllegations] = useState<Allegation[]>([]);
+  const [allegationsLoading, setAllegationsLoading] = useState(false);
+
+  async function fetchAllegationsForBoth(l: CandidateRow, r: CandidateRow, lConst: string, rConst: string) {
+    setAllegationsLoading(true);
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "";
+    const call = (name: string, party: string, constName: string) =>
+      fetch(`${backendUrl}/api/candidate-allegations`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, party, constituency: constName }),
+      }).then(r => r.ok ? r.json() : { allegations: [] }).catch(() => ({ allegations: [] }));
+
+    const [ld, rd] = await Promise.all([
+      call(l.name, l.party, lConst),
+      call(r.name, r.party, rConst),
+    ]);
+    setLeftAllegations(ld.allegations || []);
+    setRightAllegations(rd.allegations || []);
+    setAllegationsLoading(false);
+  }
+
   // Load candidates from URL params on mount
   useEffect(() => {
     if (!idsParam) return;
@@ -522,6 +547,14 @@ function CompareContent() {
   const rightColor = right ? partyColor(right.party) : "#888";
 
   const bothSelected = left && right;
+
+  // Auto-fetch allegations when both candidates + constituencies are ready
+  useEffect(() => {
+    if (left && right && leftConst && rightConst) {
+      fetchAllegationsForBoth(left, right, leftConst.name, rightConst.name);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [left?.id, right?.id, leftConst?.id, rightConst?.id]);
 
   return (
     <div className="min-h-screen bg-cream">
@@ -944,6 +977,54 @@ function CompareContent() {
                       />
                     </div>
                   )}
+
+                {/* Allegations */}
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                  <h2 className="font-bold text-gray-900 text-base mb-4">
+                    Allegations & News
+                  </h2>
+                  {allegationsLoading ? (
+                    <p className="text-sm text-gray-400 animate-pulse text-center py-4">Searching news...</p>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      {[
+                        { candidate: left, allegations: leftAllegations, color: leftColor },
+                        { candidate: right, allegations: rightAllegations, color: rightColor },
+                      ].map(({ candidate, allegations, color }) => (
+                        <div key={candidate.id}>
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="text-sm font-bold truncate" style={{ color }}>{candidate.name}</span>
+                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${allegations.length === 0 ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"}`}>
+                              {allegations.length === 0 ? "Clean" : `${allegations.length} found`}
+                            </span>
+                          </div>
+                          {allegations.length === 0 ? (
+                            <p className="text-xs text-gray-400">No allegations or controversies found.</p>
+                          ) : (
+                            <ul className="space-y-2.5">
+                              {allegations.slice(0, 4).map((a, i) => {
+                                const sev = a.severity;
+                                const sevColor = sev === "serious" ? "#dc2626" : sev === "moderate" ? "#d97706" : "#6b7280";
+                                return (
+                                  <li key={i} className="border-l-2 pl-2.5" style={{ borderColor: sevColor }}>
+                                    <a href={a.source_url} target="_blank" rel="noopener noreferrer"
+                                      className="text-xs font-semibold text-gray-800 hover:text-terracotta line-clamp-2 leading-tight">
+                                      {a.title}
+                                    </a>
+                                    <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-2">{a.summary}</p>
+                                    <span className="text-[10px] font-semibold mt-0.5 inline-block" style={{ color: sevColor }}>
+                                      {sev} · {a.source_name}
+                                    </span>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
                 {/* Quick Verdict */}
                 <QuickVerdict left={left} right={right} leftColor={leftColor} rightColor={rightColor} />
