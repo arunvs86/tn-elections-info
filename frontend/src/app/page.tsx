@@ -270,6 +270,67 @@ const ALLIANCES = [
   },
 ];
 
+// ── Vote Calculator Card ──────────────────────────
+function VoteCalculatorCard() {
+  const { lang } = useLang();
+  const isTa = lang === "ta";
+
+  const examples = [
+    { name: "Saidapet", nonVoters: "1,19,183", margin: "29,408", multiplier: 4 },
+    { name: "Sholinghur", nonVoters: "92,450", margin: "8,231", multiplier: 11 },
+    { name: "Harbour", nonVoters: "41,203", margin: "3,912", multiplier: 10 },
+  ];
+
+  return (
+    <section className="max-w-md mx-auto px-4 pb-10">
+      <Link href="/vote-calculator" className="block group">
+        <div className="rounded-2xl overflow-hidden border border-orange-100 shadow-sm hover:shadow-md transition-shadow"
+          style={{ background: "#fff8f5" }}>
+          <div className="px-5 pt-5 pb-2">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "#c84b11" }}>
+                {isTa ? "உங்கள் vote முக்கியமா?" : "Will Your Vote Matter?"}
+              </span>
+              <span className="text-xs text-gray-400 group-hover:text-terracotta transition-colors">
+                {isTa ? "கணக்கிடு →" : "Calculate →"}
+              </span>
+            </div>
+            <p className="text-sm text-gray-600 mb-4">
+              {isTa
+                ? "உங்கள் தொகுதியில் vote போடாதவர்கள் எத்தனை பேர்?"
+                : "See how many didn't vote in your constituency — and by how much they outnumbered the winner's margin."}
+            </p>
+
+            {/* Example rows */}
+            <div className="space-y-2 mb-4">
+              {examples.map(ex => (
+                <div key={ex.name} className="bg-white rounded-xl px-3 py-2.5 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold text-gray-800">{ex.name}</p>
+                    <p className="text-[11px] text-gray-400">{ex.nonVoters} didn&apos;t vote · margin {ex.margin}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-extrabold" style={{ color: "#c84b11" }}>{ex.multiplier}x</p>
+                    <p className="text-[10px] text-gray-400">non-voters</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div className="px-5 pb-5">
+            <div className="w-full py-3 rounded-xl text-center text-sm font-bold text-white transition-opacity group-hover:opacity-90"
+              style={{ background: "linear-gradient(135deg, #c84b11 0%, #7a2800 100%)" }}>
+              {isTa ? "உங்கள் தொகுதியை கண்டுபிடி →" : "Check your constituency →"}
+            </div>
+          </div>
+        </div>
+      </Link>
+    </section>
+  );
+}
+
 // ── Thamizhan Pledge Widget ───────────────────────
 function ThamizhanPledge() {
   const { lang } = useLang();
@@ -484,6 +545,9 @@ export default function HomePage() {
       <section className="max-w-md mx-auto px-4 pb-10">
         <OpinionPoll />
       </section>
+
+      {/* ── Vote Calculator Card ── */}
+      <VoteCalculatorCard />
 
       {/* ── Thamizhan Pledge Widget ── */}
       <ThamizhanPledge />
