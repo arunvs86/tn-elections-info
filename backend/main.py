@@ -19,7 +19,7 @@ from agents.graph import election_graph
 from agents.chat_agent import handle_chat
 from agents.summary_agent import generate_candidate_summary
 from agents.briefing_agent import generate_briefing, get_latest_briefing
-from agents.thamizhan_agent import trigger_vapi_call, call_all_pledgers, get_pledge_stats, send_whatsapp_reminder
+from agents.thamizhan_agent import trigger_vapi_call, call_all_pledgers, get_pledge_stats, send_whatsapp_reminder, send_sms_reminder, sms_all_pledgers
 from tools.db_tools import save_messages
 
 app = FastAPI(title="TN Elections API", version="2.0.0")
@@ -204,7 +204,7 @@ class WhatsAppRequest(BaseModel):
 
 @app.post("/api/thamizhan/whatsapp-single")
 def thamizhan_whatsapp_single(req: WhatsAppRequest):
-    """Send a single WhatsApp reminder (requires Twilio approved sender)."""
+    """Send a single WhatsApp reminder (requires Twilio WhatsApp-enabled number)."""
     result = send_whatsapp_reminder(
         phone=req.phone,
         name=req.name,
@@ -213,4 +213,31 @@ def thamizhan_whatsapp_single(req: WhatsAppRequest):
     )
     if not result["success"]:
         raise HTTPException(status_code=502, detail=result["error"])
+    return result
+
+
+@app.post("/api/thamizhan/sms-single")
+def thamizhan_sms_single(req: WhatsAppRequest):
+    """Send a single SMS reminder via Twilio. Works immediately, no WhatsApp approval needed."""
+    result = send_sms_reminder(
+        phone=req.phone,
+        name=req.name,
+        constituency_name=req.constituency_name,
+        call_type=req.call_type,
+    )
+    if not result["success"]:
+        raise HTTPException(status_code=502, detail=result["error"])
+    return result
+
+
+@app.post("/api/thamizhan/sms-all")
+def thamizhan_sms_all(req: BatchCallRequest):
+    """
+    Send SMS reminders to ALL pending pledgers with phone numbers.
+    Safe to call multiple times — skips already-sent rows.
+    Use call_type='apr22' (eve) or 'apr23' (election day).
+    """
+    result = sms_all_pledgers(call_type=req.call_type)
+    if not result.get("success"):
+        raise HTTPException(status_code=500, detail=result.get("error", "Unknown error"))
     return result

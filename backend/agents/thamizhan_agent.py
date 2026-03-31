@@ -173,60 +173,147 @@ def trigger_vapi_call(
         return {"success": False, "call_id": None, "error": str(e)}
 
 
-# ── WhatsApp via Twilio ─────────────────────────────────────────────────────
+# ── SMS / WhatsApp via Twilio ────────────────────────────────────────────────
 
-def send_whatsapp_reminder(
-    phone: str,
-    name: str,
-    constituency_name: str,
-    call_type: str = "apr22",
-) -> dict:
-    """
-    Send WhatsApp reminder via Twilio.
-    Requires approved WhatsApp sender — activate when ready.
-    """
-    if not phone.startswith("+"):
-        phone = "+91" + phone.lstrip("0")
-
+def _sms_body(name: str, constituency_name: str, call_type: str) -> str:
+    const_line = f"{constituency_name} " if constituency_name else ""
     if call_type == "apr22":
-        body = (
-            f"வணக்கம் {name}! நான் Thamizhan. 🗳️\n\n"
-            f"நாளை April 23 — தமிழ்நாடு தேர்தல் நாள்.\n"
-            f"{constituency_name}-ல் உங்கள் vote மிகவும் முக்கியம்!\n\n"
-            f"காலை polling booth திறக்கும் போதே போய் vote போடுங்கள்.\n\n"
-            f"*உங்கள் தலை எழுத்து.. உங்கள் விரலில்.* ✊\n"
-            f"— tnelections.info"
+        return (
+            f"வணக்கம் {name}! நாளை April 23 தமிழ்நாடு தேர்தல் நாள். "
+            f"{const_line}polling booth-க்கு காலையிலேயே போய் vote போடுங்கள். "
+            f"உங்கள் தலை எழுத்து.. உங்கள் விரலில். — tnelections.info"
         )
     else:
-        body = (
-            f"வணக்கம் {name}! நான் Thamizhan. 🗳️\n\n"
-            f"இன்று April 23 — தேர்தல் நாள்!\n"
-            f"இப்பொழுதே {constituency_name} polling booth-க்கு செல்லுங்கள்.\n\n"
-            f"*உங்கள் தலை எழுத்து.. உங்கள் விரலில்.* ✊\n"
-            f"— tnelections.info"
+        return (
+            f"வணக்கம் {name}! இன்று April 23 தேர்தல் நாள். "
+            f"இப்பொழுதே {const_line}polling booth-க்கு செல்லுங்கள். "
+            f"Polls open: 7AM–6PM. உங்கள் தலை எழுத்து.. உங்கள் விரலில். — tnelections.info"
         )
 
-    try:
-        import base64
-        credentials = base64.b64encode(
-            f"{TWILIO_ACCOUNT_SID}:{TWILIO_AUTH_TOKEN}".encode()
-        ).decode()
 
+def _twilio_send(to_number: str, body: str, use_whatsapp: bool = False) -> dict:
+    """Send SMS or WhatsApp via Twilio REST API."""
+    if not TWILIO_ACCOUNT_SID or not TWILIO_AUTH_TOKEN or not TWILIO_FROM_NUMBER:
+        return {"success": False, "error": "Twilio credentials not configured"}
+
+    import base64
+    credentials = base64.b64encode(
+        f"{TWILIO_ACCOUNT_SID}:{TWILIO_AUTH_TOKEN}".encode()
+    ).decode()
+
+    from_num = TWILIO_FROM_NUMBER.replace(" ", "")
+    if use_whatsapp:
+        from_field = f"whatsapp:{from_num}"
+        to_field = f"whatsapp:{to_number}"
+    else:
+        from_field = from_num
+        to_field = to_number
+
+    try:
         r = httpx.post(
             f"https://api.twilio.com/2010-04-01/Accounts/{TWILIO_ACCOUNT_SID}/Messages.json",
-            data={
-                "From": f"whatsapp:{TWILIO_FROM_NUMBER.replace(' ', '')}",
-                "To": f"whatsapp:{phone}",
-                "Body": body,
-            },
+            data={"From": from_field, "To": to_field, "Body": body},
             headers={"Authorization": f"Basic {credentials}"},
             timeout=15.0,
         )
         r.raise_for_status()
-        data = r.json()
-        return {"success": True, "message_sid": data.get("sid"), "error": None}
+        return {"success": True, "sid": r.json().get("sid"), "error": None}
+    except httpx.HTTPStatusError as e:
+        return {"success": False, "sid": None, "error": f"{e.response.status_code}: {e.response.text[:200]}"}
     except Exception as e:
-        return {"success": False, "message_sid": None, "error": str(e)}
+        return {"success": False, "sid": None, "error": str(e)}
+
+
+def send_sms_reminder(
+    phone: str,
+    name: str,
+    constituency_name: str = "",
+    call_type: str = "apr22",
+) -> dict:
+    """Send SMS reminder via Twilio. Works immediately, no approval needed."""
+    if not phone.startswith("+"):
+        phone = "+91" + phone.lstrip("0")
+    body = _sms_body(name, constituency_name, call_type)
+    return _twilio_send(phone, body, use_whatsapp=False)
+
+
+def send_whatsapp_reminder(
+    phone: str,
+    name: str,
+    constituency_name: str = "",
+    call_type: str = "apr22",
+) -> dict:
+    """
+    Send WhatsApp reminder via Twilio.
+    Requires Twilio WhatsApp-enabled number (sandbox or approved business sender).
+    For testing: use sandbox (+14155238886), recipients must first text 'join <word>'.
+    """
+    if not phone.startswith("+"):
+        phone = "+91" + phone.lstrip("0")
+    body = _sms_body(name, constituency_name, call_type)
+    return _twilio_send(phone, body, use_whatsapp=True)
+
+
+def sms_all_pledgers(call_type: str = "apr22") -> dict:
+    """
+    Send SMS reminders to ALL pledgers with phone numbers where sms status is pending.
+    Safe to call multiple times — skips already-sent rows.
+    """
+    col_status = f"sms_{call_type}_status"
+
+    try:
+        rows = rest_get("pledges", {
+            "select": "id,name,phone,constituency_name",
+            f"{col_status}": "eq.pending",
+            "phone": "not.is.null",
+        })
+    except Exception as e:
+        return {"success": False, "error": f"DB fetch failed: {e}", "sent": 0, "failed": 0}
+
+    sent = 0
+    failed = 0
+    errors = []
+
+    for row in rows:
+        phone = row.get("phone", "").strip()
+        if not phone:
+            continue
+
+        result = send_sms_reminder(
+            phone=phone,
+            name=row.get("name", "வாக்காளர்"),
+            constituency_name=row.get("constituency_name", ""),
+            call_type=call_type,
+        )
+
+        status = "sent" if result["success"] else "failed"
+        try:
+            httpx.patch(
+                f"{SUPABASE_URL}/rest/v1/pledges",
+                params={"id": f"eq.{row['id']}"},
+                json={col_status: status, f"sms_{call_type}_at": "now()"},
+                headers=_sb_headers(),
+                timeout=10.0,
+            )
+        except Exception:
+            pass
+
+        if result["success"]:
+            sent += 1
+        else:
+            failed += 1
+            errors.append({"phone": phone[-4:], "error": result["error"]})
+
+        time.sleep(0.1)  # avoid Twilio rate limits
+
+    return {
+        "success": True,
+        "call_type": call_type,
+        "total_queued": len(rows),
+        "sent": sent,
+        "failed": failed,
+        "errors": errors[:10],
+    }
 
 
 # ── Batch caller ────────────────────────────────────────────────────────────

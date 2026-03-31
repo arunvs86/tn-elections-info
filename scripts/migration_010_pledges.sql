@@ -9,7 +9,13 @@ CREATE TABLE IF NOT EXISTS pledges (
   constituency_name TEXT,                      -- denormalised for easy display
   created_at      TIMESTAMPTZ DEFAULT NOW(),
 
-  -- Call tracking for Thamizhan phone agent
+  -- SMS tracking (primary reminder channel)
+  sms_apr22_status   TEXT DEFAULT 'pending',   -- pending | sent | failed
+  sms_apr22_at       TIMESTAMPTZ,
+  sms_apr23_status   TEXT DEFAULT 'pending',   -- pending | sent | failed
+  sms_apr23_at       TIMESTAMPTZ,
+
+  -- Call tracking (optional Vapi phone calls)
   call_apr22_status  TEXT DEFAULT 'pending',   -- pending | called | failed | skipped
   call_apr22_at      TIMESTAMPTZ,
   call_apr23_status  TEXT DEFAULT 'pending',   -- pending | called | failed | skipped
