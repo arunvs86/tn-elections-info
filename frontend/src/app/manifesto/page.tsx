@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import Header from "@/components/Header";
+import { useLang } from "@/components/LanguageProvider";
 
 // ── Types ──────────────────────────────────────────────
 interface ManifestoPromise {
@@ -12,74 +13,64 @@ interface ManifestoPromise {
   promise_text: string;
   promise_text_tamil: string | null;
   category: string | null;
-  // Scores (used for upcoming elections only)
+  is_flagship: boolean | null;
   fiscal_score: number | null;
   specificity_score: number | null;
   past_delivery_score: number | null;
   overall_score: number | null;
   believability_label: string | null;
   ai_reasoning: string | null;
-  // Delivery status (used for past elections only)
   status: "kept" | "partially_kept" | "broken" | "pending" | null;
   evidence: string | null;
   evidence_ta: string | null;
   source_url: string | null;
 }
 
-// ── Helpers ────────────────────────────────────────────
+// ── Helpers ─────────────────────────────────────────────
 function partyColor(party: string): string {
   const p = (party || "").toUpperCase();
-  if (p.includes("DMK") && !p.includes("AIADMK") && !p.includes("ADMK")) return "#c0392b";
-  if (p.includes("AIADMK") || p === "ADMK") return "#2d7a4f";
-  if (p.includes("TVK")) return "#1a5276";
-  if (p.includes("BJP")) return "#d35400";
+  if (p === "DMK") return "#c0392b";
+  if (p === "AIADMK") return "#2d7a4f";
   return "#888";
 }
 
-function statusConfig(status: string | null) {
+const PARTY_BG: Record<string, string> = {
+  DMK: "bg-red-50 border-red-200",
+  AIADMK: "bg-green-50 border-green-200",
+};
+
+const PARTY_BADGE: Record<string, string> = {
+  DMK: "bg-red-600 text-white",
+  AIADMK: "bg-green-700 text-white",
+};
+
+function statusConfig(status: string | null, t: (k: string) => string) {
   switch (status) {
-    case "kept":
-      return { label: "Kept", labelTa: "நிறைவேற்றப்பட்டது", bg: "bg-green-100", text: "text-green-700", dot: "bg-green-500", icon: "✅" };
-    case "partially_kept":
-      return { label: "Partially Kept", labelTa: "ஓரளவு நிறைவேற்றம்", bg: "bg-yellow-100", text: "text-yellow-700", dot: "bg-yellow-500", icon: "⚠️" };
-    case "broken":
-      return { label: "Broken", labelTa: "நிறைவேற்றப்படவில்லை", bg: "bg-red-100", text: "text-red-700", dot: "bg-red-500", icon: "❌" };
-    case "pending":
-      return { label: "Pending", labelTa: "நிலுவையில்", bg: "bg-gray-100", text: "text-gray-500", dot: "bg-gray-400", icon: "⏳" };
-    default:
-      return { label: "Unknown", labelTa: "தெரியவில்லை", bg: "bg-gray-100", text: "text-gray-400", dot: "bg-gray-300", icon: "❓" };
+    case "kept":          return { label: t("status.kept"),    bg: "bg-green-100",  text: "text-green-700",  icon: "✓" };
+    case "partially_kept":return { label: t("status.partial"), bg: "bg-yellow-100", text: "text-yellow-700", icon: "~" };
+    case "broken":        return { label: t("status.broken"),  bg: "bg-red-100",    text: "text-red-700",    icon: "✗" };
+    case "pending":       return { label: t("status.pending"), bg: "bg-gray-100",   text: "text-gray-500",   icon: "·" };
+    default:              return { label: t("status.unknown"), bg: "bg-gray-100",   text: "text-gray-400",   icon: "·" };
   }
 }
 
-function scoreBg(score: number | null): string {
-  if (score == null) return "bg-gray-100";
-  if (score >= 7) return "bg-green-100";
-  if (score >= 4) return "bg-yellow-100";
-  return "bg-red-100";
-}
+const CATEGORY_KEYS = [
+  "cash_benefits", "agriculture", "women", "education", "healthcare",
+  "employment", "infrastructure", "housing", "fisheries", "labour",
+  "social_welfare", "culture_language", "environment", "sports", "governance", "other",
+] as const;
 
-function scoreText(score: number | null): string {
-  if (score == null) return "text-gray-400";
-  if (score >= 7) return "text-green-700";
-  if (score >= 4) return "text-yellow-700";
-  return "text-red-700";
-}
+const CATEGORIES_ORDER = [...CATEGORY_KEYS];
 
-const CATEGORIES_ORDER = [
-  "welfare", "education", "healthcare", "women", "agriculture",
-  "infrastructure", "economy", "governance", "law_and_order",
-  "transport", "housing", "environment", "labour", "culture",
-  "minorities", "fisheries", "youth", "sports", "tourism", "other",
-];
-
-// ── Page ───────────────────────────────────────────────
 export default function ManifestoPage() {
+  const { t, lang } = useLang();
   const [promises, setPromises] = useState<ManifestoPromise[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [expandedId, setExpandedId] = useState<number | null>(null);
-  const [tab, setTab] = useState<"audit" | "upcoming">("audit");
+  const [tab, setTab] = useState<"audit" | "upcoming">("upcoming");
+  const [compareMode, setCompareMode] = useState<"side-by-side" | "list">("side-by-side");
 
   useEffect(() => {
     async function fetchData() {
@@ -87,43 +78,46 @@ export default function ManifestoPage() {
         .from("manifesto_promises")
         .select("*")
         .order("category", { ascending: true });
-
       if (data) setPromises(data);
       setLoading(false);
     }
     fetchData();
   }, []);
 
-  // Split data
+  // Split
   const pastPromises = promises.filter((p) => p.election_year <= 2021);
   const upcomingPromises = promises.filter((p) => p.election_year >= 2026);
-
-  // Separate verified (has evidence) from unverified
   const verifiedPromises = pastPromises.filter((p) => p.evidence && p.evidence !== "Verification pending");
   const unverifiedPromises = pastPromises.filter((p) => !p.evidence || p.evidence === "Verification pending");
 
-  // Currently showing
-  const currentPromises = tab === "audit" ? verifiedPromises : upcomingPromises;
+  const dmkPromises = upcomingPromises.filter((p) => p.party === "DMK");
+  const aiadmkPromises = upcomingPromises.filter((p) => p.party === "AIADMK");
 
-  // Categories for current view
-  const categories = CATEGORIES_ORDER.filter((cat) =>
-    currentPromises.some((p) => p.category === cat)
+  // Categories present in 2026 data
+  const categories2026 = CATEGORIES_ORDER.filter((cat) =>
+    upcomingPromises.some((p) => p.category === cat)
+  );
+  const categoriesAudit = CATEGORIES_ORDER.filter((cat) =>
+    verifiedPromises.some((p) => p.category === cat)
   );
 
-  // Filter
-  const filtered = currentPromises.filter((p) => {
+  // Filtered for 2026
+  const filteredDMK = dmkPromises.filter((p) =>
+    selectedCategory === "all" || p.category === selectedCategory
+  );
+  const filteredAIADMK = aiadmkPromises.filter((p) =>
+    selectedCategory === "all" || p.category === selectedCategory
+  );
+
+  // Audit filter
+  const currentPromises = verifiedPromises;
+  const filteredAudit = currentPromises.filter((p) => {
     if (selectedCategory !== "all" && p.category !== selectedCategory) return false;
-    if (tab === "audit" && selectedStatus !== "all" && p.status !== selectedStatus) return false;
+    if (selectedStatus !== "all" && p.status !== selectedStatus) return false;
     return true;
   });
 
-  // Group by category for display
-  const groupedByCategory = categories.reduce((acc, cat) => {
-    acc[cat] = filtered.filter((p) => p.category === cat);
-    return acc;
-  }, {} as Record<string, ManifestoPromise[]>);
-
-  // Stats for audit (verified promises only)
+  // Audit stats
   const auditStats = {
     total: verifiedPromises.length,
     kept: verifiedPromises.filter((p) => p.status === "kept").length,
@@ -131,27 +125,32 @@ export default function ManifestoPage() {
     broken: verifiedPromises.filter((p) => p.status === "broken").length,
     pending: verifiedPromises.filter((p) => p.status === "pending" || !p.status).length,
   };
-
-  const keptPct = auditStats.total > 0 ? ((auditStats.kept / auditStats.total) * 100).toFixed(0) : "0";
+  const keptPct    = auditStats.total > 0 ? ((auditStats.kept    / auditStats.total) * 100).toFixed(0) : "0";
   const partialPct = auditStats.total > 0 ? ((auditStats.partial / auditStats.total) * 100).toFixed(0) : "0";
-  const brokenPct = auditStats.total > 0 ? ((auditStats.broken / auditStats.total) * 100).toFixed(0) : "0";
+  const brokenPct  = auditStats.total > 0 ? ((auditStats.broken  / auditStats.total) * 100).toFixed(0) : "0";
   const pendingPct = auditStats.total > 0 ? ((auditStats.pending / auditStats.total) * 100).toFixed(0) : "0";
 
   return (
     <div className="min-h-screen bg-cream">
       <Header active="manifesto" />
 
-      <main className="max-w-5xl mx-auto px-4 py-8">
-        {/* Page Title */}
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-1">
-          Manifesto Tracker
-        </h1>
-        <p className="text-sm text-gray-500 mb-6">
-          Did they keep their promises? Track delivery of election manifestos.
-        </p>
+      <main className="max-w-6xl mx-auto px-4 py-8">
+        {/* Title */}
+        <h1 className="text-3xl font-extrabold text-gray-900 mb-1">{t("manifesto.title")}</h1>
+        <p className="text-sm text-gray-500 mb-6">{t("manifesto.subtitle")}</p>
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => { setTab("upcoming"); setSelectedCategory("all"); }}
+            className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              tab === "upcoming"
+                ? "bg-terracotta text-white shadow-md"
+                : "bg-white border border-gray-200 text-gray-600 hover:border-terracotta"
+            }`}
+          >
+            {t("manifesto.tab_2026")}
+          </button>
           <button
             onClick={() => { setTab("audit"); setSelectedCategory("all"); setSelectedStatus("all"); }}
             className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
@@ -160,243 +159,357 @@ export default function ManifestoPage() {
                 : "bg-white border border-gray-200 text-gray-600 hover:border-terracotta"
             }`}
           >
-            2021 Delivery Audit
-          </button>
-          <button
-            onClick={() => { setTab("upcoming"); setSelectedCategory("all"); setSelectedStatus("all"); }}
-            className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-              tab === "upcoming"
-                ? "bg-terracotta text-white shadow-md"
-                : "bg-white border border-gray-200 text-gray-600 hover:border-terracotta"
-            }`}
-          >
-            2026 Manifestos
+            {t("manifesto.tab_audit")}
           </button>
         </div>
 
         {loading ? (
           <div className="flex items-center justify-center h-64">
-            <p className="text-gray-400 animate-pulse">Loading manifesto data...</p>
+            <p className="text-gray-400 animate-pulse">{t("manifesto.loading")}</p>
           </div>
-        ) : tab === "audit" ? (
-          /* ═══════════════════════════════════════════════════
-             2021 DELIVERY AUDIT — Did DMK keep their promises?
-             ═══════════════════════════════════════════════════ */
-          <div className="space-y-6">
-            {/* Summary scorecard */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-xs"
-                  style={{ background: partyColor("DMK") }}
-                >
-                  DMK
-                </div>
-                <div>
-                  <h2 className="font-bold text-gray-900">DMK 2021 Manifesto — Delivery Report Card</h2>
-                  <p className="text-xs text-gray-500">{auditStats.total} major promises verified with news sources</p>
-                </div>
-              </div>
+        ) : tab === "upcoming" ? (
+          /* ══════════════════════════════════════════════════
+             2026 MANIFESTOS — Side-by-side comparison
+             ══════════════════════════════════════════════════ */
+          <div className="space-y-5">
 
-              {/* Progress bar */}
-              <div className="w-full h-8 rounded-full overflow-hidden flex bg-gray-100 mb-3">
-                {auditStats.kept > 0 && (
+            {/* Party header cards */}
+            <div className="grid grid-cols-2 gap-4">
+              {(["DMK", "AIADMK"] as const).map((party) => {
+                const arr = party === "DMK" ? dmkPromises : aiadmkPromises;
+                const flagships = arr.filter((p) => p.is_flagship);
+                return (
                   <div
-                    className="h-full bg-green-500 flex items-center justify-center text-white text-xs font-bold"
-                    style={{ width: `${keptPct}%` }}
+                    key={party}
+                    className={`rounded-2xl border p-4 ${PARTY_BG[party]}`}
                   >
-                    {Number(keptPct) > 5 ? `${keptPct}%` : ""}
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${PARTY_BADGE[party]}`}>
+                        {party}
+                      </span>
+                      <span className="text-xs text-gray-500">{arr.length} {t("manifesto.promises_reviewed")}</span>
+                    </div>
+                    <div className="space-y-1">
+                      {flagships.slice(0, 3).map((p) => {
+                        const txt = (lang === "ta" && p.promise_text_tamil) ? p.promise_text_tamil : p.promise_text;
+                        return (
+                          <p key={p.id} className="text-xs text-gray-700 leading-snug">
+                            {txt.length > 90 ? txt.slice(0, 90) + "…" : txt}
+                          </p>
+                        );
+                      })}
+                    </div>
                   </div>
-                )}
-                {auditStats.partial > 0 && (
-                  <div
-                    className="h-full bg-yellow-500 flex items-center justify-center text-white text-xs font-bold"
-                    style={{ width: `${partialPct}%` }}
-                  >
-                    {Number(partialPct) > 5 ? `${partialPct}%` : ""}
-                  </div>
-                )}
-                {auditStats.broken > 0 && (
-                  <div
-                    className="h-full bg-red-500 flex items-center justify-center text-white text-xs font-bold"
-                    style={{ width: `${brokenPct}%` }}
-                  >
-                    {Number(brokenPct) > 5 ? `${brokenPct}%` : ""}
-                  </div>
-                )}
-                {auditStats.pending > 0 && (
-                  <div
-                    className="h-full bg-gray-300 flex items-center justify-center text-gray-600 text-xs font-bold"
-                    style={{ width: `${pendingPct}%` }}
-                  >
-                    {Number(pendingPct) > 5 ? `${pendingPct}%` : ""}
-                  </div>
-                )}
-              </div>
+                );
+              })}
+            </div>
 
-              {/* Legend + counts */}
-              <div className="grid grid-cols-4 gap-3">
+            {/* Controls */}
+            <div className="flex items-center gap-3 flex-wrap">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-terracotta"
+              >
+                <option value="all">{t("manifesto.all_categories")}</option>
+                {categories2026.map((cat) => (
+                  <option key={cat} value={cat}>{t(`cat.${cat}`)}</option>
+                ))}
+              </select>
+
+              <div className="flex gap-1 ml-auto bg-gray-100 rounded-lg p-1">
                 <button
-                  onClick={() => setSelectedStatus(selectedStatus === "kept" ? "all" : "kept")}
-                  className={`text-center p-3 rounded-xl transition-all ${selectedStatus === "kept" ? "ring-2 ring-green-400 bg-green-50" : "bg-gray-50 hover:bg-green-50"}`}
+                  onClick={() => setCompareMode("side-by-side")}
+                  className={`text-xs px-3 py-1.5 rounded-md font-medium transition-all ${
+                    compareMode === "side-by-side" ? "bg-white shadow text-gray-900" : "text-gray-500"
+                  }`}
                 >
-                  <p className="text-2xl font-extrabold text-green-600">{auditStats.kept}</p>
-                  <p className="text-xs text-gray-500">✅ Kept</p>
+                  {t("manifesto.side_by_side")}
                 </button>
                 <button
-                  onClick={() => setSelectedStatus(selectedStatus === "partially_kept" ? "all" : "partially_kept")}
-                  className={`text-center p-3 rounded-xl transition-all ${selectedStatus === "partially_kept" ? "ring-2 ring-yellow-400 bg-yellow-50" : "bg-gray-50 hover:bg-yellow-50"}`}
+                  onClick={() => setCompareMode("list")}
+                  className={`text-xs px-3 py-1.5 rounded-md font-medium transition-all ${
+                    compareMode === "list" ? "bg-white shadow text-gray-900" : "text-gray-500"
+                  }`}
                 >
-                  <p className="text-2xl font-extrabold text-yellow-600">{auditStats.partial}</p>
-                  <p className="text-xs text-gray-500">⚠️ Partial</p>
-                </button>
-                <button
-                  onClick={() => setSelectedStatus(selectedStatus === "broken" ? "all" : "broken")}
-                  className={`text-center p-3 rounded-xl transition-all ${selectedStatus === "broken" ? "ring-2 ring-red-400 bg-red-50" : "bg-gray-50 hover:bg-red-50"}`}
-                >
-                  <p className="text-2xl font-extrabold text-red-600">{auditStats.broken}</p>
-                  <p className="text-xs text-gray-500">❌ Broken</p>
-                </button>
-                <button
-                  onClick={() => setSelectedStatus(selectedStatus === "pending" ? "all" : "pending")}
-                  className={`text-center p-3 rounded-xl transition-all ${selectedStatus === "pending" ? "ring-2 ring-gray-400 bg-gray-100" : "bg-gray-50 hover:bg-gray-100"}`}
-                >
-                  <p className="text-2xl font-extrabold text-gray-500">{auditStats.pending}</p>
-                  <p className="text-xs text-gray-500">⏳ Pending</p>
+                  {t("manifesto.all_promises")}
                 </button>
               </div>
             </div>
 
-            {/* Category filter */}
+            {compareMode === "side-by-side" ? (
+              /* ── Side-by-side view ── */
+              <div className="space-y-6">
+                {(selectedCategory === "all" ? categories2026 : [selectedCategory]).map((cat) => {
+                  const dmkCat = filteredDMK.filter((p) => p.category === cat);
+                  const aiCat  = filteredAIADMK.filter((p) => p.category === cat);
+                  if (dmkCat.length === 0 && aiCat.length === 0) return null;
+                  return (
+                    <div key={cat} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                      {/* Category header */}
+                      <div className="px-5 py-3 bg-gray-50 border-b border-gray-100 flex items-center gap-2">
+                        <h3 className="font-bold text-gray-800 text-sm">{t(`cat.${cat}`)}</h3>
+                      </div>
+
+                      {/* 2-col grid */}
+                      <div className="grid grid-cols-2 divide-x divide-gray-100">
+                        {/* DMK column */}
+                        <div className="p-4 space-y-3">
+                          <div className="flex items-center gap-1.5 mb-2">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-600 text-white">DMK</span>
+                            <span className="text-xs text-gray-400">{dmkCat.length} promises</span>
+                          </div>
+                          {dmkCat.length === 0 ? (
+                            <p className="text-xs text-gray-300 italic">{t("manifesto.no_promises")}</p>
+                          ) : dmkCat.map((p) => (
+                            <PromiseCard key={p.id} p={p} expandedId={expandedId} setExpandedId={setExpandedId} t={t} lang={lang} />
+                          ))}
+                        </div>
+
+                        {/* AIADMK column */}
+                        <div className="p-4 space-y-3">
+                          <div className="flex items-center gap-1.5 mb-2">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-700 text-white">AIADMK</span>
+                            <span className="text-xs text-gray-400">{aiCat.length} promises</span>
+                          </div>
+                          {aiCat.length === 0 ? (
+                            <p className="text-xs text-gray-300 italic">{t("manifesto.no_promises")}</p>
+                          ) : aiCat.map((p) => (
+                            <PromiseCard key={p.id} p={p} expandedId={expandedId} setExpandedId={setExpandedId} t={t} lang={lang} />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              /* ── List view (all promises) ── */
+              <div className="space-y-3">
+                {[...filteredDMK, ...filteredAIADMK]
+                  .sort((a, b) => (a.category || "").localeCompare(b.category || ""))
+                  .map((p) => (
+                    <div
+                      key={p.id}
+                      className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition-all"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className="w-10 h-10 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0 mt-0.5"
+                          style={{ background: partyColor(p.party) }}
+                        >
+                          {p.party.slice(0, 3)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap mb-1">
+                            <span className="text-xs font-bold" style={{ color: partyColor(p.party) }}>
+                              {p.party}
+                            </span>
+                            {p.category && (
+                              <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
+                                {t(`cat.${p.category}`)}
+                              </span>
+                            )}
+                            {p.is_flagship && (
+                              <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-semibold">
+                                {t("manifesto.flagship")}
+                              </span>
+                            )}
+                            {p.believability_label && (() => {
+                              const bc = believabilityConfig(p.believability_label);
+                              return (
+                                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${bc.bg} ${bc.text}`}>
+                                  {t(`bel.${p.believability_label.toLowerCase().replace(" ", "_")}`)}
+                                </span>
+                              );
+                            })()}
+                          </div>
+                          <p className="text-sm text-gray-800">{(lang === "ta" && p.promise_text_tamil) ? p.promise_text_tamil : p.promise_text}</p>
+                          {p.promise_text_tamil && lang !== "ta" && (
+                            <p className="text-xs text-gray-400 mt-0.5">{p.promise_text_tamil}</p>
+                          )}
+                          {p.ai_reasoning && (
+                            <button
+                              onClick={() => setExpandedId(expandedId === p.id ? null : p.id)}
+                              className="text-xs text-terracotta hover:underline mt-2"
+                            >
+                              {expandedId === p.id ? t("manifesto.hide") : t("manifesto.our_take")}
+                            </button>
+                          )}
+                          {expandedId === p.id && p.ai_reasoning && (
+                            <div className="mt-2 bg-gray-50 rounded-xl p-3 text-xs text-gray-600 leading-relaxed">
+                              {p.ai_reasoning}
+                            </div>
+                          )}
+                        </div>
+                        {p.overall_score != null && (
+                          <ScoreCircle score={p.overall_score} />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+
+            {/* Full manifesto note */}
+            <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs text-gray-600 flex flex-col sm:flex-row gap-3">
+              <span className="font-medium text-gray-700">{t("manifesto.pdf_note")}</span>
+              <div className="flex gap-4">
+                <span>
+                  {t("manifesto.dmk_chapters")} —{" "}
+                  <a href="https://www.dmk.in" target="_blank" rel="noopener noreferrer" className="text-red-600 underline font-medium">
+                    {t("manifesto.dmk_pdf_link")}
+                  </a>
+                </span>
+                <span>
+                  {t("manifesto.ai_chapters")} —{" "}
+                  <a href="https://www.aiadmk.com" target="_blank" rel="noopener noreferrer" className="text-green-700 underline font-medium">
+                    {t("manifesto.ai_pdf_link")}
+                  </a>
+                </span>
+              </div>
+            </div>
+
+            {/* Disclaimer */}
+            <div className="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 text-xs text-amber-800">
+              <strong>{t("manifesto.score_note")}</strong> {t("manifesto.score_desc")}
+            </div>
+          </div>
+        ) : (
+          /* ══════════════════════════════════════════════════
+             2021 DELIVERY AUDIT
+             ══════════════════════════════════════════════════ */
+          <div className="space-y-6">
+            {/* Scorecard */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-xs bg-red-600">
+                  DMK
+                </div>
+                <div>
+                  <h2 className="font-bold text-gray-900">{t("manifesto.audit_title")}</h2>
+                  <p className="text-xs text-gray-500">{auditStats.total} {t("manifesto.audit_checked")}</p>
+                </div>
+              </div>
+              <div className="w-full h-8 rounded-full overflow-hidden flex bg-gray-100 mb-3">
+                {auditStats.kept    > 0 && <div className="h-full bg-green-500  flex items-center justify-center text-white text-xs font-bold" style={{ width: `${keptPct}%`    }}>{Number(keptPct)    > 5 ? `${keptPct}%`    : ""}</div>}
+                {auditStats.partial > 0 && <div className="h-full bg-yellow-500 flex items-center justify-center text-white text-xs font-bold" style={{ width: `${partialPct}%` }}>{Number(partialPct) > 5 ? `${partialPct}%` : ""}</div>}
+                {auditStats.broken  > 0 && <div className="h-full bg-red-500    flex items-center justify-center text-white text-xs font-bold" style={{ width: `${brokenPct}%`  }}>{Number(brokenPct)  > 5 ? `${brokenPct}%`  : ""}</div>}
+                {auditStats.pending > 0 && <div className="h-full bg-gray-300   flex items-center justify-center text-gray-600 text-xs font-bold" style={{ width: `${pendingPct}%` }}>{Number(pendingPct)  > 5 ? `${pendingPct}%` : ""}</div>}
+              </div>
+              <div className="grid grid-cols-4 gap-3">
+                {(["kept", "partially_kept", "broken", "pending"] as const).map((s) => {
+                  const sc = statusConfig(s, t);
+                  const count = s === "kept" ? auditStats.kept : s === "partially_kept" ? auditStats.partial : s === "broken" ? auditStats.broken : auditStats.pending;
+                  return (
+                    <button
+                      key={s}
+                      onClick={() => setSelectedStatus(selectedStatus === s ? "all" : s)}
+                      className={`text-center p-3 rounded-xl transition-all ${selectedStatus === s ? `ring-2 ring-offset-1 ${sc.bg}` : "bg-gray-50 hover:bg-gray-100"}`}
+                    >
+                      <p className={`text-2xl font-extrabold ${sc.text}`}>{count}</p>
+                      <p className="text-xs text-gray-500">{sc.icon} {sc.label}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Filters */}
             <div className="flex items-center gap-3">
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
                 className="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-terracotta"
               >
-                <option value="all">All Categories ({filtered.length})</option>
-                {categories.map((cat) => (
+                <option value="all">{t("manifesto.all_categories")} ({filteredAudit.length})</option>
+                {categoriesAudit.map((cat) => (
                   <option key={cat} value={cat}>
-                    {cat.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())} ({currentPromises.filter((p) => p.category === cat).length})
+                    {t(`cat.${cat}`)} ({currentPromises.filter((p) => p.category === cat).length})
                   </option>
                 ))}
               </select>
-              <span className="text-xs text-gray-400 ml-auto">
-                Showing {filtered.length} of {verifiedPromises.length} verified
-              </span>
+              <span className="text-xs text-gray-400 ml-auto">{t("manifesto.showing")} {filteredAudit.length} {t("manifesto.of")} {verifiedPromises.length} {t("manifesto.verified")}</span>
             </div>
 
-            {/* Promise list grouped by category */}
-            {/* Methodology note */}
             <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-xs text-blue-700">
-              <strong>Methodology:</strong> Each promise was verified using news reports from The Hindu, The New Indian Express, The News Minute, India Today, PRS Legislative Research, and official government sources.
-              {unverifiedPromises.length > 0 && (
-                <span className="ml-1">
-                  {unverifiedPromises.length} additional manifesto promises are listed below but have not yet been independently verified.
-                </span>
-              )}
+              {t("manifesto.method")}
+              {unverifiedPromises.length > 0 && <span className="ml-1"> {unverifiedPromises.length} {t("manifesto.still_verifying")}</span>}
             </div>
 
-            {Object.entries(groupedByCategory).map(([category, catPromises]) => {
-              if (catPromises.length === 0) return null;
-              return (
-                <div key={category} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                  <div className="px-5 py-3 bg-gray-50 border-b border-gray-100">
-                    <h3 className="font-semibold text-gray-800 text-sm">
-                      {category.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
-                    </h3>
-                    <p className="text-xs text-gray-400">{catPromises.length} promises</p>
-                  </div>
-                  <div className="divide-y divide-gray-50">
-                    {catPromises.map((p) => {
-                      const sc = statusConfig(p.status);
-                      const isExpanded = expandedId === p.id;
-                      return (
-                        <div key={p.id} className="px-5 py-4 hover:bg-gray-50/50 transition-colors">
-                          <div className="flex items-start gap-3">
-                            {/* Status icon */}
-                            <span className="text-lg flex-shrink-0 mt-0.5">{sc.icon}</span>
-
-                            <div className="flex-1 min-w-0">
-                              {/* Status badge */}
-                              <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full mb-1.5 ${sc.bg} ${sc.text}`}>
-                                {sc.label}
-                              </span>
-
-                              {/* Promise text */}
-                              <p className="text-sm text-gray-800">{p.promise_text}</p>
-                              {p.promise_text_tamil && (
-                                <p className="text-xs text-gray-400 mt-0.5">{p.promise_text_tamil}</p>
-                              )}
-
-                              {/* Evidence */}
-                              {p.evidence && (
-                                <button
-                                  onClick={() => setExpandedId(isExpanded ? null : p.id)}
-                                  className="text-xs text-terracotta hover:underline mt-2"
-                                >
-                                  {isExpanded ? "Hide evidence" : "Show evidence"}
-                                </button>
-                              )}
-                              {isExpanded && p.evidence && (
-                                <div className="mt-2 bg-gray-50 rounded-xl p-3 text-xs text-gray-600 leading-relaxed">
-                                  <p>{p.evidence}</p>
-                                  {p.evidence_ta && (
-                                    <p className="mt-1 text-gray-400">{p.evidence_ta}</p>
-                                  )}
-                                  {p.source_url && (
-                                    <a
-                                      href={p.source_url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="inline-flex items-center gap-1.5 mt-2 text-terracotta hover:underline font-semibold"
-                                    >
-                                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                                      {(() => {
-                                        try { return new URL(p.source_url).hostname.replace("www.", ""); } catch { return "Source"; }
-                                      })()}
-                                    </a>
-                                  )}
-                                </div>
-                              )}
+            {/* Promises grouped by category */}
+            {categoriesAudit
+              .filter((cat) => selectedCategory === "all" || cat === selectedCategory)
+              .map((cat) => {
+                const catItems = filteredAudit.filter((p) => p.category === cat);
+                if (catItems.length === 0) return null;
+                return (
+                  <div key={cat} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                    <div className="px-5 py-3 bg-gray-50 border-b border-gray-100 flex items-center gap-2">
+                      <h3 className="font-semibold text-gray-800 text-sm">{t(`cat.${cat}`)}</h3>
+                      <span className="text-xs text-gray-400 ml-1">{catItems.length} {t("manifesto.promises")}</span>
+                    </div>
+                    <div className="divide-y divide-gray-50">
+                      {catItems.map((p) => {
+                        const sc = statusConfig(p.status, t);
+                        const isExp = expandedId === p.id;
+                        return (
+                          <div key={p.id} className="px-5 py-4 hover:bg-gray-50/50 transition-colors">
+                            <div className="flex items-start gap-3">
+                              <span className="text-lg flex-shrink-0 mt-0.5">{sc.icon}</span>
+                              <div className="flex-1 min-w-0">
+                                <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full mb-1.5 ${sc.bg} ${sc.text}`}>{sc.label}</span>
+                                <p className="text-sm text-gray-800">{(lang === "ta" && p.promise_text_tamil) ? p.promise_text_tamil : p.promise_text}</p>
+                                {p.promise_text_tamil && lang !== "ta" && <p className="text-xs text-gray-400 mt-0.5">{p.promise_text_tamil}</p>}
+                                {p.evidence && (
+                                  <button onClick={() => setExpandedId(isExp ? null : p.id)} className="text-xs text-terracotta hover:underline mt-2">
+                                    {isExp ? t("manifesto.hide_evidence") : t("manifesto.show_evidence")}
+                                  </button>
+                                )}
+                                {isExp && p.evidence && (
+                                  <div className="mt-2 bg-gray-50 rounded-xl p-3 text-xs text-gray-600 leading-relaxed">
+                                    <p>{p.evidence}</p>
+                                    {p.evidence_ta && <p className="mt-1 text-gray-400">{p.evidence_ta}</p>}
+                                    {p.source_url && (
+                                      <a href={p.source_url} target="_blank" rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-1.5 mt-2 text-terracotta hover:underline font-semibold">
+                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                        </svg>
+                                        {(() => { try { return new URL(p.source_url).hostname.replace("www.", ""); } catch { return "Source"; } })()}
+                                      </a>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
 
-            {/* ── Unverified promises (collapsible) ── */}
+            {/* Unverified */}
             {unverifiedPromises.length > 0 && (
               <details className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <summary className="px-5 py-4 cursor-pointer hover:bg-gray-50 transition-colors">
-                  <div className="inline-flex items-center gap-2">
-                    <span className="text-sm font-semibold text-gray-600">
-                      Other Manifesto Promises
-                    </span>
-                    <span className="text-[10px] bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full font-semibold">
-                      {unverifiedPromises.length} unverified
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-400 mt-1 ml-0">
-                    These promises from the DMK 2021 manifesto have not yet been independently verified with news sources.
-                  </p>
+                  <span className="text-sm font-semibold text-gray-600 inline-flex items-center gap-2">
+                    {t("manifesto.other_promises")}
+                    <span className="text-[10px] bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full font-semibold">{unverifiedPromises.length} {t("manifesto.unverified")}</span>
+                  </span>
                 </summary>
                 <div className="divide-y divide-gray-50 border-t border-gray-100">
                   {unverifiedPromises.map((p) => (
                     <div key={p.id} className="px-5 py-3 flex items-start gap-3">
-                      <span className="text-gray-300 text-sm mt-0.5">&#x25CB;</span>
+                      <span className="text-gray-300 text-sm mt-0.5">○</span>
                       <div>
-                        <p className="text-sm text-gray-500">{p.promise_text}</p>
-                        {p.promise_text_tamil && (
-                          <p className="text-xs text-gray-300 mt-0.5">{p.promise_text_tamil}</p>
-                        )}
+                        <p className="text-sm text-gray-500">{(lang === "ta" && p.promise_text_tamil) ? p.promise_text_tamil : p.promise_text}</p>
+                        {p.promise_text_tamil && lang !== "ta" && <p className="text-xs text-gray-300 mt-0.5">{p.promise_text_tamil}</p>}
                         {p.category && (
                           <span className="inline-block text-[10px] bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded mt-1">
-                            {p.category.replace(/_/g, " ")}
+                            {t(`cat.${p.category}`)}
                           </span>
                         )}
                       </div>
@@ -406,157 +519,98 @@ export default function ManifestoPage() {
               </details>
             )}
           </div>
-        ) : (
-          /* ═══════════════════════════════════════════════════
-             2026 UPCOMING MANIFESTOS — Score & Analyse
-             ═══════════════════════════════════════════════════ */
-          <div className="space-y-6">
-            {upcomingPromises.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
-                <p className="text-4xl mb-3">📋</p>
-                <h3 className="font-bold text-gray-900 text-lg mb-2">
-                  2026 Manifestos — Coming Soon
-                </h3>
-                <p className="text-sm text-gray-500 max-w-md mx-auto">
-                  Party manifestos will be analysed and scored once they are officially released.
-                  Each promise will be rated on fiscal feasibility, specificity, and believability.
-                </p>
-                <div className="flex justify-center gap-6 mt-6 text-xs text-gray-500">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-green-500" />
-                    High feasibility
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-yellow-500" />
-                    Moderate
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-red-500" />
-                    Low feasibility
-                  </span>
-                </div>
-              </div>
-            ) : (
-              /* When 2026 manifestos are available, show scored view */
-              <>
-                <div className="flex items-center gap-3 mb-4">
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-terracotta"
-                  >
-                    <option value="all">All Categories</option>
-                    {categories.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
-                      </option>
-                    ))}
-                  </select>
-                  <span className="text-xs text-gray-400 ml-auto">
-                    {filtered.length} promises
-                  </span>
-                </div>
-
-                <div className="space-y-3">
-                  {filtered.map((p) => {
-                    const isExpanded = expandedId === p.id;
-                    return (
-                      <div
-                        key={p.id}
-                        className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 transition-all hover:shadow-md"
-                      >
-                        <div className="flex items-start gap-3">
-                          <div
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0 mt-0.5"
-                            style={{ background: partyColor(p.party) }}
-                          >
-                            {p.party.slice(0, 3)}
-                          </div>
-
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap mb-1">
-                              <span className="text-xs font-semibold" style={{ color: partyColor(p.party) }}>
-                                {p.party}
-                              </span>
-                              {p.category && (
-                                <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
-                                  {p.category.replace(/_/g, " ")}
-                                </span>
-                              )}
-                              {p.believability_label && (
-                                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
-                                  p.believability_label === "Very Likely" ? "bg-green-100 text-green-700" :
-                                  p.believability_label === "Likely" ? "bg-green-50 text-green-600" :
-                                  p.believability_label === "Unlikely" ? "bg-red-100 text-red-700" :
-                                  "bg-yellow-100 text-yellow-700"
-                                }`}>
-                                  {p.believability_label}
-                                </span>
-                              )}
-                            </div>
-
-                            <p className="text-sm text-gray-700">{p.promise_text}</p>
-                            {p.promise_text_tamil && (
-                              <p className="text-xs text-gray-400 mt-0.5">{p.promise_text_tamil}</p>
-                            )}
-
-                            <div className="flex gap-2 mt-2 flex-wrap">
-                              {p.fiscal_score != null && (
-                                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${scoreBg(p.fiscal_score)} ${scoreText(p.fiscal_score)}`}>
-                                  Fiscal: {p.fiscal_score}/10
-                                </span>
-                              )}
-                              {p.specificity_score != null && (
-                                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${scoreBg(p.specificity_score)} ${scoreText(p.specificity_score)}`}>
-                                  Specificity: {p.specificity_score}/10
-                                </span>
-                              )}
-                            </div>
-
-                            {p.ai_reasoning && (
-                              <button
-                                onClick={() => setExpandedId(isExpanded ? null : p.id)}
-                                className="text-xs text-terracotta hover:underline mt-2"
-                              >
-                                {isExpanded ? "Hide reasoning" : "Show AI reasoning"}
-                              </button>
-                            )}
-                            {isExpanded && p.ai_reasoning && (
-                              <div className="mt-2 bg-gray-50 rounded-xl p-3 text-xs text-gray-600 leading-relaxed">
-                                {p.ai_reasoning}
-                              </div>
-                            )}
-                          </div>
-
-                          {p.overall_score != null && (
-                            <div className="flex-shrink-0 w-12 h-12 rounded-full border-4 flex items-center justify-center"
-                              style={{
-                                borderColor: p.overall_score >= 7 ? "#2d7a4f" : p.overall_score >= 4 ? "#b8860b" : "#c0392b",
-                              }}
-                            >
-                              <span className="text-sm font-bold" style={{
-                                color: p.overall_score >= 7 ? "#2d7a4f" : p.overall_score >= 4 ? "#b8860b" : "#c0392b",
-                              }}>
-                                {p.overall_score}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-          </div>
         )}
       </main>
 
       <footer className="border-t border-gray-200 bg-white py-6 mt-8">
-        <div className="max-w-5xl mx-auto px-4 text-center text-sm text-gray-500">
-          <p>Data from Election Commission of India · Tamil Nadu Elections 2026</p>
+        <div className="max-w-6xl mx-auto px-4 text-center text-sm text-gray-500">
+          <p>{t("manifesto.footer")}</p>
         </div>
       </footer>
+    </div>
+  );
+}
+
+// ── Sub-components ───────────────────────────────────────
+
+function believabilityConfig(label: string | null) {
+  switch (label) {
+    case "Very Likely":  return { text: "text-green-700",  bg: "bg-green-50"  };
+    case "Likely":       return { text: "text-blue-700",   bg: "bg-blue-50"   };
+    case "Uncertain":    return { text: "text-yellow-700", bg: "bg-yellow-50" };
+    case "Unlikely":     return { text: "text-red-700",    bg: "bg-red-50"    };
+    default:             return { text: "text-gray-500",   bg: "bg-gray-50"   };
+  }
+}
+
+function ScoreCircle({ score }: { score: number }) {
+  const color = score >= 7 ? "#2d7a4f" : score >= 5 ? "#b8860b" : "#c0392b";
+  return (
+    <div className="flex-shrink-0 w-11 h-11 rounded-full border-4 flex items-center justify-center" style={{ borderColor: color }}>
+      <span className="text-sm font-bold" style={{ color }}>{score}</span>
+    </div>
+  );
+}
+
+function PromiseCard({
+  p,
+  expandedId,
+  setExpandedId,
+  t,
+  lang,
+}: {
+  p: ManifestoPromise;
+  expandedId: number | null;
+  setExpandedId: (id: number | null) => void;
+  t: (key: string) => string;
+  lang: string;
+}) {
+  const isExp = expandedId === p.id;
+  const bc = believabilityConfig(p.believability_label);
+
+  return (
+    <div className={`rounded-xl border p-3 ${p.is_flagship ? "border-amber-200 bg-amber-50/50" : "border-gray-100 bg-gray-50/50"}`}>
+      {/* Badges row */}
+      <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
+        {p.is_flagship && (
+          <span className="text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">{t("manifesto.flagship")}</span>
+        )}
+        {p.believability_label && (
+          <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${bc.bg} ${bc.text}`}>
+            {t(`bel.${p.believability_label.toLowerCase().replace(" ", "_")}`)}
+          </span>
+        )}
+        {p.overall_score != null && (
+          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ml-auto ${
+            p.overall_score >= 7 ? "bg-green-100 text-green-700" :
+            p.overall_score >= 5 ? "bg-yellow-100 text-yellow-700" :
+            "bg-red-100 text-red-700"
+          }`}>
+            {p.overall_score}/10
+          </span>
+        )}
+      </div>
+
+      {/* Promise text */}
+      <p className="text-xs text-gray-800 leading-relaxed">{(lang === "ta" && p.promise_text_tamil) ? p.promise_text_tamil : p.promise_text}</p>
+      {p.promise_text_tamil && lang !== "ta" && (
+        <p className="text-[10px] text-gray-400 mt-0.5 leading-relaxed">{p.promise_text_tamil}</p>
+      )}
+
+      {/* Analysis toggle */}
+      {p.ai_reasoning && (
+        <button
+          onClick={() => setExpandedId(isExp ? null : p.id)}
+          className="text-[10px] text-terracotta hover:underline mt-1.5 block"
+        >
+          {isExp ? t("manifesto.hide") : t("manifesto.our_take")}
+        </button>
+      )}
+      {isExp && p.ai_reasoning && (
+        <div className="mt-2 bg-white rounded-lg p-2.5 text-[10px] text-gray-600 leading-relaxed border border-gray-100">
+          {p.ai_reasoning}
+        </div>
+      )}
     </div>
   );
 }
