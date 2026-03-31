@@ -21,6 +21,11 @@ interface ComparisonData {
   candidates: CandidateCard[];
 }
 
+interface SourceLink {
+  title: string;
+  url: string;
+}
+
 interface ChatMessage {
   id: string;
   role: "user" | "assistant";
@@ -30,6 +35,7 @@ interface ChatMessage {
   candidates?: CandidateCard[];
   comparison?: ComparisonData;
   suggestions?: string[];
+  sources?: SourceLink[];
 }
 
 // ── Helpers ────────────────────────────────────────────
@@ -367,6 +373,7 @@ export default function ChatWidget() {
         candidates: data.candidates || undefined,
         comparison: data.comparison || undefined,
         suggestions: data.suggestions || undefined,
+        sources: data.sources || undefined,
       };
 
       setMessages((prev) => [...prev, assistantMsg]);
@@ -566,6 +573,25 @@ export default function ChatWidget() {
                         </tr>
                       </tbody>
                     </table>
+                  </div>
+                )}
+
+                {/* Web source links */}
+                {msg.sources && msg.sources.length > 0 && (
+                  <div className="mt-2 border-t border-gray-100 pt-2 space-y-1">
+                    <p className="text-[10px] text-gray-400 uppercase tracking-wide">Sources</p>
+                    {msg.sources.map((s, i) => (
+                      <a
+                        key={i}
+                        href={s.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-[11px] text-terracotta hover:underline truncate"
+                      >
+                        <span>↗</span>
+                        <span className="truncate">{s.title}</span>
+                      </a>
+                    ))}
                   </div>
                 )}
 

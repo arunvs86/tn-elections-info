@@ -1,10 +1,49 @@
 """
 Chat agent: Natural language → intent routing → Supabase query → rich response.
+Falls back to Tavily web search when DB has no answer.
 Powers the "Ask TN Elections" chatbot.
 """
 import os
 import json
+import httpx
 from tools.db_tools import rest_get
+
+_TAVILY_URL = "https://api.tavily.com/search"
+
+
+def _tavily_search(query: str, max_results: int = 5) -> list[dict]:
+    api_key = os.getenv("TAVILY_API_KEY", "")
+    if not api_key:
+        return []
+    try:
+        r = httpx.post(
+            _TAVILY_URL,
+            json={
+                "api_key": api_key,
+                "query": f"Tamil Nadu elections 2026 {query}",
+                "max_results": max_results,
+                "search_depth": "basic",
+                "include_answer": True,
+            },
+            timeout=15.0,
+        )
+        r.raise_for_status()
+        data = r.json()
+        results = data.get("results", [])
+        answer = data.get("answer", "")
+        return {
+            "answer": answer,
+            "results": [
+                {
+                    "title": item.get("title", ""),
+                    "url": item.get("url", ""),
+                    "content": item.get("content", "")[:400],
+                }
+                for item in results
+            ],
+        }
+    except Exception:
+        return {"answer": "", "results": []}
 
 
 def _claude_call(system: str, user: str) -> str:
@@ -251,8 +290,8 @@ def query_swing_seats(district: str = "") -> dict:
     return {"found": True, "seats": seats[:15]}
 
 
-def generate_response(message: str, intent: dict, data: dict, context: list) -> dict:
-    """Use Claude to generate a natural language response from the data."""
+def generate_response(message: str, intent: dict, data: dict, context: list, web_data: dict = None) -> dict:
+    """Use Claude to generate a natural language response from DB data and/or web results."""
     system = """You are the TN Elections 2026 chatbot assistant. You answer questions about Tamil Nadu elections.
 Rules:
 - Be concise — 2-4 sentences max for text response
@@ -262,19 +301,26 @@ Rules:
 - Never make up data — only use what's provided
 - For winners, mention their party and vote share
 - Be neutral — no party bias
+- If answering from web search results, mention the source briefly
 - If data not found, say so honestly and suggest alternatives
 Return ONLY the text response, no JSON."""
 
-    data_str = json.dumps(data, default=str, indent=2)[:3000]  # Trim to fit context
+    data_str = json.dumps(data, default=str, indent=2)[:2000]
     context_str = "\n".join(
         [f"{m.get('role','user')}: {m.get('text','')}" for m in (context or [])[-3:]]
     )
 
+    web_str = ""
+    if web_data and (web_data.get("answer") or web_data.get("results")):
+        web_str = f"\nWeb search results:\nDirect answer: {web_data.get('answer', '')}\n"
+        for r in web_data.get("results", [])[:3]:
+            web_str += f"- {r['title']}: {r['content'][:200]} ({r['url']})\n"
+
     user_prompt = f"""User question: {message}
 Intent: {json.dumps(intent)}
-Data from database:
+Data from election database:
 {data_str}
-
+{web_str}
 Previous conversation:
 {context_str}
 
@@ -283,7 +329,21 @@ Generate a helpful, concise response."""
     try:
         response_text = _claude_call(system, user_prompt)
     except Exception:
-        response_text = "I'm having trouble processing that right now. Please try again."
+        # Claude credits unavailable — serve raw web answer if available
+        if web_data and web_data.get("answer"):
+            response_text = web_data["answer"]
+        elif web_data and web_data.get("results"):
+            top = web_data["results"][0]
+            response_text = f"{top['content'][:300]}... [Read more]({top['url']})"
+        else:
+            response_text = "I'm having trouble processing that right now. Please try again."
+
+    # Build source links from web results
+    sources = []
+    if web_data and web_data.get("results"):
+        for r in web_data["results"][:3]:
+            if r.get("url") and r.get("title"):
+                sources.append({"title": r["title"][:60], "url": r["url"]})
 
     # Build suggestion chips based on intent and data
     suggestions = _generate_suggestions(intent, data)
@@ -301,6 +361,7 @@ Generate a helpful, concise response."""
         "candidates": candidates[:5] if candidates else None,
         "comparison": comparison,
         "suggestions": suggestions,
+        "sources": sources if sources else None,
     }
 
 
@@ -416,10 +477,14 @@ def handle_chat(message: str, context: list) -> dict:
         data = query_swing_seats(district)
 
     elif intent_type == "factcheck":
-        # Delegate to the existing fact-check pipeline
         data = {"found": True, "note": "Use the Narrative Check page for detailed fact-checking with source citations."}
 
-    # Step 3: Generate natural language response
-    result = generate_response(message, intent, data, context)
+    # Step 3: Web search fallback — if DB had nothing, search the web
+    web_data = None
+    if not data.get("found", False) or intent_type == "general":
+        web_data = _tavily_search(message, max_results=5)
+
+    # Step 4: Generate natural language response
+    result = generate_response(message, intent, data, context, web_data)
 
     return result

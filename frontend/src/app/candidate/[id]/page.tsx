@@ -664,7 +664,11 @@ export default function CandidatePage() {
       });
       if (res.ok) {
         const data = await res.json();
-        setAiSummary(data.summary_ta || data.summary_en || "Summary not available.");
+        if (data.error === "credits_unavailable") {
+          setAiSummary("__credits_unavailable__");
+        } else {
+          setAiSummary(data.summary_ta || data.summary_en || "");
+        }
       }
     } catch {
       // Silently fail — section will show fallback
@@ -687,22 +691,10 @@ export default function CandidatePage() {
         const data = await res.json();
         setAllegations(data.allegations || []);
       } else {
-        setAllegations([{
-          title: "Could not fetch allegations",
-          summary: "The AI search service is currently unavailable. Please try again later.",
-          source_url: null,
-          source_name: null,
-          severity: "minor",
-        }]);
+        setAllegations([]);
       }
     } catch {
-      setAllegations([{
-        title: "Service unavailable",
-        summary: "Could not connect to the backend. Allegations will be available once the API is deployed.",
-        source_url: null,
-        source_name: null,
-        severity: "minor",
-      }]);
+      setAllegations([]);
     }
     setAllegationsLoading(false);
   }
@@ -1314,6 +1306,10 @@ export default function CandidatePage() {
                 ))}
                 <p className="text-xs text-gray-400 mt-2 text-center">Generating summary with sources...</p>
               </div>
+            ) : aiSummary === "__credits_unavailable__" ? (
+              <p className="text-sm text-gray-400 text-center py-4">
+                AI summary will be available shortly. Check back after April 6.
+              </p>
             ) : aiSummary ? (
               <div className="space-y-2">
                 {aiSummary.split("\n").filter(Boolean).map((line, i) => (

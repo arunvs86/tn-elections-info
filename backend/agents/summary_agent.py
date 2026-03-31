@@ -29,7 +29,12 @@ def _claude_call(system: str, user: str, max_tokens: int = 1500) -> str:
 
 
 def generate_candidate_summary(candidate_id: int) -> dict:
-    """Generate a 5-bullet Tamil summary for a candidate. Returns {summary_ta, summary_en}."""
+    """
+    Generate a 5-bullet Tamil summary for a candidate.
+    Returns cached summary immediately if available.
+    Falls back gracefully if Claude credits are unavailable.
+    Returns {summary_ta, summary_en, cached}
+    """
 
     # Fetch candidate data
     rows = rest_get("candidates", {
@@ -37,7 +42,14 @@ def generate_candidate_summary(candidate_id: int) -> dict:
         "select": "*",
     })
     if not rows:
-        return {"summary_ta": "", "summary_en": "Candidate not found"}
+        return {"summary_ta": "", "summary_en": "Candidate not found", "cached": False}
+
+    c = rows[0]
+
+    # Return cached summary immediately if it exists
+    cached = c.get("ai_summary_ta", "")
+    if cached and len(cached.strip()) > 20:
+        return {"summary_ta": cached, "summary_en": "", "cached": True}
 
     c = rows[0]
 
@@ -97,7 +109,24 @@ Rules:
 - Do NOT add any header or footer — just the 5 bullets
 - For asset amounts: convert to Crores (கோடி) or Lakhs (லட்சம்) for readability"""
 
-    summary_ta = _claude_call(system_prompt, data_text)
+    try:
+        summary_ta = _claude_call(system_prompt, data_text)
+    except Exception as e:
+        err = str(e)
+        # Credit exhausted or auth error — return a structured fallback
+        if "credit" in err.lower() or "529" in err or "overloaded" in err.lower() or "401" in err:
+            return {
+                "summary_ta": "",
+                "summary_en": "",
+                "cached": False,
+                "error": "credits_unavailable",
+            }
+        return {
+            "summary_ta": "",
+            "summary_en": "",
+            "cached": False,
+            "error": "generation_failed",
+        }
 
     # Cache the summary back to the candidate record
     try:
@@ -117,4 +146,4 @@ Rules:
     except Exception:
         pass  # caching failure is non-critical
 
-    return {"summary_ta": summary_ta, "summary_en": ""}
+    return {"summary_ta": summary_ta, "summary_en": "", "cached": False}
