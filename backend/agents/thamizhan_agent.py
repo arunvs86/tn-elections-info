@@ -19,6 +19,9 @@ TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "")
 TWILIO_FROM_NUMBER = os.getenv("TWILIO_FROM_NUMBER", "")
 
+MSG91_AUTH_KEY = os.getenv("MSG91_AUTH_KEY", "")
+MSG91_SENDER_ID = os.getenv("MSG91_SENDER_ID", "TNELEC")  # 6-char sender ID
+
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY", "")
 
@@ -224,16 +227,53 @@ def _twilio_send(to_number: str, body: str, use_whatsapp: bool = False) -> dict:
         return {"success": False, "sid": None, "error": str(e)}
 
 
+def _msg91_send(phone: str, body: str) -> dict:
+    """Send SMS via MSG91 — works for Indian numbers, DLT-compliant."""
+    if not MSG91_AUTH_KEY:
+        return {"success": False, "error": "MSG91_AUTH_KEY not configured"}
+
+    # Ensure 91XXXXXXXXXX format (no +)
+    number = phone.lstrip("+")
+    if not number.startswith("91"):
+        number = "91" + number.lstrip("0")
+
+    try:
+        r = httpx.post(
+            "https://api.msg91.com/api/v5/flow/",
+            json={
+                "template_id": os.getenv("MSG91_TEMPLATE_ID", ""),
+                "short_url": "0",
+                "recipients": [{"mobiles": number, "name": "", "body": body}],
+            },
+            headers={
+                "authkey": MSG91_AUTH_KEY,
+                "Content-Type": "application/json",
+            },
+            timeout=15.0,
+        )
+        data = r.json()
+        if data.get("type") == "success":
+            return {"success": True, "sid": data.get("request_id"), "error": None}
+        return {"success": False, "sid": None, "error": str(data)}
+    except Exception as e:
+        return {"success": False, "sid": None, "error": str(e)}
+
+
 def send_sms_reminder(
     phone: str,
     name: str,
     constituency_name: str = "",
     call_type: str = "apr22",
 ) -> dict:
-    """Send SMS reminder via Twilio. Works immediately, no approval needed."""
+    """Send SMS reminder. Uses MSG91 for India (DLT-compliant), falls back to Twilio."""
     if not phone.startswith("+"):
         phone = "+91" + phone.lstrip("0")
     body = _sms_body(name, constituency_name, call_type)
+
+    # Prefer MSG91 for Indian numbers (bypasses DLT blocking)
+    if MSG91_AUTH_KEY and (phone.startswith("+91") or not phone.startswith("+")):
+        return _msg91_send(phone, body)
+
     return _twilio_send(phone, body, use_whatsapp=False)
 
 
