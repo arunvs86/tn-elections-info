@@ -131,10 +131,10 @@ function StatRow({
   showBar?: boolean;
 }) {
   return (
-    <div className="py-3 border-b border-gray-50 last:border-0">
-      <p className="text-xs text-gray-400 text-center mb-1.5">{label}</p>
+    <div className="py-4 border-b border-gray-50 last:border-0">
+      <p className="text-sm font-semibold text-gray-500 text-center mb-2">{label}</p>
       <div className="flex items-center">
-        <span className="flex-1 text-right text-sm font-semibold text-gray-800 pr-3">
+        <span className="flex-1 text-right text-base font-bold text-gray-900 pr-3">
           {leftDisplay}
         </span>
         {showBar ? (
@@ -147,11 +147,11 @@ function StatRow({
             />
           </div>
         ) : (
-          <div className="w-40 sm:w-56 flex-shrink-0 text-center text-xs text-gray-300">
+          <div className="w-40 sm:w-56 flex-shrink-0 text-center text-sm text-gray-300 font-medium">
             vs
           </div>
         )}
-        <span className="flex-1 text-left text-sm font-semibold text-gray-800 pl-3">
+        <span className="flex-1 text-left text-base font-bold text-gray-900 pl-3">
           {rightDisplay}
         </span>
       </div>
@@ -400,24 +400,24 @@ function QuickVerdict({
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-      <h2 className="font-bold text-gray-900 text-sm mb-3">
+      <h2 className="font-bold text-gray-900 text-base mb-4">
         Quick Verdict
       </h2>
       <div className="space-y-2">
         {verdicts.map((v, i) => (
-          <div key={i} className="flex items-center gap-3 py-1.5">
-            <span className="text-xs text-gray-400 w-36 flex-shrink-0">{v.label}</span>
+          <div key={i} className="flex items-center gap-3 py-2">
+            <span className="text-sm text-gray-500 font-medium w-40 flex-shrink-0">{v.label}</span>
             {v.winner === "tie" ? (
-              <span className="text-xs text-gray-500 font-medium">{v.detail}</span>
+              <span className="text-sm text-gray-600 font-semibold">{v.detail}</span>
             ) : (
               <div className="flex items-center gap-2">
                 <span
-                  className="text-xs font-bold px-2 py-0.5 rounded-full text-white"
+                  className="text-sm font-bold px-3 py-1 rounded-full text-white"
                   style={{ background: v.winner === "left" ? leftColor : rightColor }}
                 >
                   {v.winner === "left" ? left.name.split(" ")[0] : right.name.split(" ")[0]}
                 </span>
-                <span className="text-xs text-gray-500">{v.detail}</span>
+                <span className="text-sm text-gray-500 font-medium">{v.detail}</span>
               </div>
             )}
           </div>
@@ -629,20 +629,20 @@ function CompareContent() {
                         {left.name.charAt(0)}
                       </div>
                       <div className="min-w-0">
-                        <p className="font-bold text-gray-900 group-hover:text-terracotta transition-colors truncate">
+                        <p className="text-lg font-extrabold text-gray-900 group-hover:text-terracotta transition-colors truncate">
                           {left.name}
                         </p>
-                        <p className="text-sm font-medium" style={{ color: leftColor }}>
+                        <p className="text-base font-semibold" style={{ color: leftColor }}>
                           {left.party}
                         </p>
-                        <div className="flex gap-2 mt-0.5">
+                        <div className="flex gap-2 mt-1">
                           {left.is_winner && (
-                            <span className="text-xs bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded-full">
+                            <span className="text-xs font-bold bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">
                               Winner
                             </span>
                           )}
                           {left.is_incumbent && (
-                            <span className="text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full">
+                            <span className="text-xs font-bold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">
                               Incumbent
                             </span>
                           )}
@@ -652,8 +652,8 @@ function CompareContent() {
 
                     {/* VS badge */}
                     <div className="flex-shrink-0 mx-4">
-                      <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                        <span className="text-sm font-bold text-gray-400">
+                      <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                        <span className="text-base font-extrabold text-gray-400">
                           VS
                         </span>
                       </div>
@@ -665,20 +665,20 @@ function CompareContent() {
                       className="flex items-center gap-3 group flex-1 justify-end text-right"
                     >
                       <div className="min-w-0">
-                        <p className="font-bold text-gray-900 group-hover:text-terracotta transition-colors truncate">
+                        <p className="text-lg font-extrabold text-gray-900 group-hover:text-terracotta transition-colors truncate">
                           {right.name}
                         </p>
-                        <p className="text-sm font-medium" style={{ color: rightColor }}>
+                        <p className="text-base font-semibold" style={{ color: rightColor }}>
                           {right.party}
                         </p>
-                        <div className="flex gap-2 justify-end mt-0.5">
+                        <div className="flex gap-2 justify-end mt-1">
                           {right.is_winner && (
-                            <span className="text-xs bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded-full">
+                            <span className="text-xs font-bold bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">
                               Winner
                             </span>
                           )}
                           {right.is_incumbent && (
-                            <span className="text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full">
+                            <span className="text-xs font-bold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">
                               Incumbent
                             </span>
                           )}
@@ -696,7 +696,7 @@ function CompareContent() {
 
                 {/* Election Performance */}
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                  <h2 className="font-bold text-gray-900 text-sm mb-3">
+                  <h2 className="font-bold text-gray-900 text-base mb-4">
                     Election Performance (2021)
                   </h2>
 
@@ -731,7 +731,7 @@ function CompareContent() {
 
                 {/* Profile */}
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                  <h2 className="font-bold text-gray-900 text-sm mb-3">
+                  <h2 className="font-bold text-gray-900 text-base mb-4">
                     Profile
                   </h2>
 
@@ -760,7 +760,7 @@ function CompareContent() {
 
                 {/* Assets */}
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                  <h2 className="font-bold text-gray-900 text-sm mb-3">
+                  <h2 className="font-bold text-gray-900 text-base mb-4">
                     Declared Assets
                   </h2>
 
@@ -807,7 +807,7 @@ function CompareContent() {
 
                 {/* Criminal Record */}
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                  <h2 className="font-bold text-gray-900 text-sm mb-3">
+                  <h2 className="font-bold text-gray-900 text-base mb-4">
                     Criminal Record
                   </h2>
 
@@ -860,7 +860,7 @@ function CompareContent() {
                 {/* Constituency Context (cross-constituency compare) */}
                 {leftConst && rightConst && (
                   <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                    <h2 className="font-bold text-gray-900 text-sm mb-3">
+                    <h2 className="font-bold text-gray-900 text-base mb-4">
                       Constituency Context
                     </h2>
 
@@ -903,7 +903,7 @@ function CompareContent() {
                   (left.assembly_attendance_pct != null ||
                     right.assembly_attendance_pct != null) && (
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                      <h2 className="font-bold text-gray-900 text-sm mb-3">
+                      <h2 className="font-bold text-gray-900 text-base mb-4">
                         Assembly Attendance
                       </h2>
 

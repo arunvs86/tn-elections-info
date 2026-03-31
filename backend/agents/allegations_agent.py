@@ -130,8 +130,26 @@ def fetch_allegations(name: str, party: str, constituency: str) -> dict:
     if not all_results:
         return {"allegations": [], "source": "none", "ai_classified": False}
 
+    # Build name tokens for relevance check — significant words only (≥4 chars)
+    name_tokens = [
+        t.lower() for t in name.replace(".", " ").split()
+        if len(t) >= 4
+    ]
+
+    def is_relevant(result: dict) -> bool:
+        """Return True only if the result is genuinely about this candidate."""
+        combined = (result["title"] + " " + result["content"]).lower()
+        # At least one significant name token must appear in the result
+        return any(token in combined for token in name_tokens)
+
+    # Filter all results for relevance BEFORE passing to Claude or fallback
+    relevant_results = [r for r in all_results if is_relevant(r)]
+
+    if not relevant_results:
+        return {"allegations": [], "source": "none", "ai_classified": False}
+
     # Try Claude classification
-    classifications = _claude_classify(name, party, all_results)
+    classifications = _claude_classify(name, party, relevant_results)
 
     allegations = []
 
@@ -141,8 +159,8 @@ def fetch_allegations(name: str, party: str, constituency: str) -> dict:
             if not item.get("is_allegation", False):
                 continue
             idx = item.get("index", 0) - 1
-            if 0 <= idx < len(all_results):
-                result = all_results[idx]
+            if 0 <= idx < len(relevant_results):
+                result = relevant_results[idx]
                 allegations.append({
                     "title": item.get("title", result["title"][:80]),
                     "summary": item.get("summary", result["content"][:200]),
@@ -152,24 +170,31 @@ def fetch_allegations(name: str, party: str, constituency: str) -> dict:
                 })
         return {"allegations": allegations[:6], "source": "web", "ai_classified": True}
     else:
-        # Claude unavailable — return raw Tavily results as-is
-        # Filter out obviously irrelevant results using simple keyword check
+        # Claude unavailable — only show results that:
+        # 1. Are about this candidate (already filtered above)
+        # 2. Contain controversy/allegation keywords
         controversy_keywords = [
             "allege", "accuse", "arrest", "case", "scam", "corrupt", "contro",
             "charge", "raid", "probe", "fraud", "complaint", "fir", "crime",
-            "resign", "scandal", "money", "bribe", "caught"
+            "resign", "scandal", "bribe", "caught", "convicted", "bail"
         ]
-        for r in all_results[:8]:
+        for r in relevant_results[:8]:
             combined = (r["title"] + " " + r["content"]).lower()
-            has_keyword = any(kw in combined for kw in controversy_keywords)
-            severity = "serious" if any(kw in combined for kw in ["arrest", "fir", "raid", "prison", "convicted"]) else \
-                       "moderate" if any(kw in combined for kw in ["corrupt", "scam", "fraud", "bribe"]) else "minor"
+            has_controversy = any(kw in combined for kw in controversy_keywords)
+            # Without Claude, only show results that are clearly about controversies
+            if not has_controversy:
+                continue
+            severity = (
+                "serious" if any(kw in combined for kw in ["arrest", "fir", "raid", "prison", "convicted", "bail"])
+                else "moderate" if any(kw in combined for kw in ["corrupt", "scam", "fraud", "bribe", "complaint"])
+                else "minor"
+            )
             allegations.append({
                 "title": r["title"][:80],
                 "summary": r["content"][:200],
                 "source_url": r["url"],
                 "source_name": _extract_source_name(r["url"]),
-                "severity": severity if has_keyword else "minor",
+                "severity": severity,
             })
 
         return {"allegations": allegations[:6], "source": "web", "ai_classified": False}

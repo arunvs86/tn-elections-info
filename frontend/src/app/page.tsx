@@ -51,9 +51,11 @@ function partyColor(party: string | null): string {
 
 // ── Countdown card ────────────────────────────────
 function CountdownCard({ target }: { target: CountdownTarget }) {
-  const [time, setTime] = useState(getTimeLeft(target.date));
+  const [time, setTime] = useState<ReturnType<typeof getTimeLeft>>(null);
 
   useEffect(() => {
+    // Only compute client-side to avoid SSR hydration mismatch
+    setTime(getTimeLeft(target.date));
     const id = setInterval(() => setTime(getTimeLeft(target.date)), 60_000);
     return () => clearInterval(id);
   }, [target.date]);
@@ -380,7 +382,7 @@ function ThamizhanPledge() {
             {count != null ? count.toLocaleString("en-IN") : "—"}
           </p>
           <p className="text-white/70 text-xs mt-0.5">
-            {isTa ? "தமிழர்கள் உறுதி கொடுத்தனர்" : "Thamizhan-s have pledged"}
+            {isTa ? " உறுதி கொடுத்தனர்" : " have pledged"}
           </p>
         </div>
 
@@ -391,7 +393,7 @@ function ThamizhanPledge() {
             className="block w-full py-3.5 rounded-xl bg-white text-center font-bold text-sm transition-opacity hover:opacity-90"
             style={{ color: "#c84b11" }}
           >
-            {isTa ? "நான் Thamizhan — நான் vote போடுவேன் →" : "I am Thamizhan — I will vote →"}
+            {isTa ? "நான் vote போடுவேன் →" : "I will vote →"}
           </Link>
         </div>
       </div>
@@ -425,29 +427,20 @@ export default function HomePage() {
     <div className="min-h-screen bg-cream">
       <Header active="home" />
 
-      {/* ── Hero — clean images + separate text ── */}
+      {/* ── Hero — TN Assembly photo banner ── */}
       <section>
-        {/* 4 leader photos — 2x2 mobile, 4-col desktop, NO text overlay */}
-        <div className="grid grid-cols-2 md:grid-cols-4 h-[280px] sm:h-[320px] md:h-[420px]">
-          <div className="relative overflow-hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/leaders/stalin.jpg" alt="M.K. Stalin" className="absolute inset-0 w-full h-full object-cover object-[center_20%]" />
-          </div>
-          <div className="relative overflow-hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/leaders/eps.jpg" alt="Edappadi K. Palaniswami" className="absolute inset-0 w-full h-full object-cover object-[center_15%]" />
-          </div>
-          <div className="relative overflow-hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/leaders/vijay-tvk.jpg" alt="Vijay — TVK" className="absolute inset-0 w-full h-full object-cover object-[center_20%]" />
-          </div>
-          <div className="relative overflow-hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/leaders/seeman.jpg" alt="Seeman — NTK" className="absolute inset-0 w-full h-full object-cover object-[center_20%]" />
-          </div>
+        <div className="relative overflow-hidden h-[240px] sm:h-[320px] md:h-[420px] lg:h-[500px]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/hero-bg.jpg"
+            alt="Tamil Nadu Elections 2026"
+            className="absolute inset-0 w-full h-full object-cover object-top"
+          />
+          {/* Dark overlay */}
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(10,20,40,0.2) 0%, rgba(10,20,40,0.6) 100%)" }} />
         </div>
 
-        {/* Text strip — completely separate from images */}
+        {/* Text strip */}
         <div className="bg-gradient-to-r from-gray-900 to-gray-800 px-4 md:px-6 py-3 md:py-5">
           <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div>
@@ -597,16 +590,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Footer ── */}
-      <footer className="border-t border-gray-200 bg-white py-8 mt-4">
-        <div className="max-w-6xl mx-auto px-4 text-center text-sm text-gray-500">
-          <p className="font-medium text-gray-700 mb-1">tnelections.info</p>
-          <p>{t("common.footer")}</p>
-          <div className="mt-3">
-            <VisitorTracker />
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

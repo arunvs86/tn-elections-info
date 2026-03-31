@@ -3,6 +3,7 @@ import Script from "next/script";
 import "./globals.css";
 import { LanguageProvider } from "@/components/LanguageProvider";
 import ChatWidget from "@/components/ChatWidget";
+import Footer from "@/components/Footer";
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
@@ -76,6 +77,7 @@ export default function RootLayout({
       <body className="bg-cream font-sans antialiased">
         <LanguageProvider>
           {children}
+          <Footer />
           <ChatWidget />
         </LanguageProvider>
       </body>

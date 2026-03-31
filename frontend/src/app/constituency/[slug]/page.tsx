@@ -132,6 +132,13 @@ function fmt(n: number | null): string {
   return n.toLocaleString("en-IN");
 }
 
+function fmtCurrency(n: number | null): string {
+  if (n == null || n === 0) return "";
+  if (n >= 10000000) return "₹" + (n / 10000000).toFixed(1) + " Cr";
+  if (n >= 100000) return "₹" + (n / 100000).toFixed(1) + " L";
+  return "₹" + n.toLocaleString("en-IN");
+}
+
 // ── Components ─────────────────────────────────────────
 
 function ElectionResultCard({ result }: { result: ElectionResult }) {
@@ -141,85 +148,58 @@ function ElectionResultCard({ result }: { result: ElectionResult }) {
   const winShare = result.winner_vote_share ?? 0;
   const runnerVotes = result.runner_up_votes ?? (result.winner_votes - result.margin);
   const runShare =
-    result.total_votes > 0
-      ? (runnerVotes / result.total_votes) * 100
-      : 0;
+    result.total_votes > 0 ? (runnerVotes / result.total_votes) * 100 : 0;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-bold text-gray-900">{t("const.result_2021")}</h3>
-        <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-          {t("const.turnout")} {result.turnout?.toFixed(1)}%
-        </span>
-      </div>
-
-      {/* Winner */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <span
-            className="w-3 h-3 rounded-full"
-            style={{ background: winnerColor }}
-          />
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      {/* Winner hero strip */}
+      <div className="px-5 pt-4 pb-3" style={{ borderLeft: `4px solid ${winnerColor}` }}>
+        <div className="flex items-start justify-between gap-2">
           <div>
-            <p className="font-semibold text-gray-900 text-sm">
-              {result.winner_name}
-            </p>
-            <p className="text-xs font-medium" style={{ color: winnerColor }}>
-              {result.winner_party}
-            </p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">{t("const.result_2021")} · Won</p>
+            <p className="text-lg font-extrabold text-gray-900 leading-tight">{result.winner_name}</p>
+            <p className="text-sm font-semibold mt-0.5" style={{ color: winnerColor }}>{result.winner_party}</p>
+          </div>
+          <div className="text-right flex-shrink-0">
+            <p className="text-2xl font-extrabold text-gray-900">{fmt(result.winner_votes)}</p>
+            <p className="text-xs text-gray-500">{winShare.toFixed(1)}% vote share</p>
           </div>
         </div>
-        <div className="text-right">
-          <p className="font-bold text-gray-900">
-            {fmt(result.winner_votes)}
-          </p>
-          <p className="text-xs text-gray-500">{winShare.toFixed(1)}%</p>
+        <div className="w-full bg-gray-100 rounded-full h-1.5 mt-3">
+          <div className="h-1.5 rounded-full" style={{ width: `${winShare}%`, background: winnerColor }} />
         </div>
       </div>
-      <div className="w-full bg-gray-100 rounded-full h-2 mb-4">
-        <div
-          className="h-2 rounded-full transition-all"
-          style={{ width: `${winShare}%`, background: winnerColor }}
-        />
-      </div>
+
+      <div className="border-t border-gray-100 mx-5" />
 
       {/* Runner-up */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <span
-            className="w-3 h-3 rounded-full"
-            style={{ background: runnerColor }}
-          />
+      <div className="px-5 pt-3 pb-3" style={{ borderLeft: `4px solid ${runnerColor}` }}>
+        <div className="flex items-start justify-between gap-2">
           <div>
-            <p className="font-medium text-gray-700 text-sm">
-              {result.runner_up_name}
-            </p>
-            <p className="text-xs font-medium" style={{ color: runnerColor }}>
-              {result.runner_up_party}
-            </p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Runner-up</p>
+            <p className="text-sm font-semibold text-gray-700">{result.runner_up_name}</p>
+            <p className="text-xs font-medium mt-0.5" style={{ color: runnerColor }}>{result.runner_up_party}</p>
+          </div>
+          <div className="text-right flex-shrink-0">
+            <p className="text-base font-bold text-gray-700">{fmt(runnerVotes)}</p>
+            <p className="text-xs text-gray-500">{runShare.toFixed(1)}%</p>
           </div>
         </div>
-        <div className="text-right">
-          <p className="font-semibold text-gray-700">{fmt(runnerVotes)}</p>
-          <p className="text-xs text-gray-500">{runShare.toFixed(1)}%</p>
+        <div className="w-full bg-gray-100 rounded-full h-1 mt-3">
+          <div className="h-1 rounded-full" style={{ width: `${runShare}%`, background: runnerColor }} />
         </div>
       </div>
-      <div className="w-full bg-gray-100 rounded-full h-2 mb-4">
-        <div
-          className="h-2 rounded-full"
-          style={{ width: `${runShare}%`, background: runnerColor }}
-        />
-      </div>
 
-      <div className="flex justify-between text-xs text-gray-500 border-t border-gray-100 pt-3">
-        <span>
-          {t("const.margin")}{" "}
-          <strong className="text-gray-700">{fmt(result.margin)}</strong>
+      {/* Footer stats */}
+      <div className="flex justify-between items-center text-xs px-5 py-3 bg-gray-50 border-t border-gray-100">
+        <span className="text-gray-500">
+          Margin: <strong className="text-gray-800">{fmt(result.margin)}</strong>
         </span>
-        <span>
-          {t("const.total_votes")}{" "}
-          <strong className="text-gray-700">{fmt(result.total_votes)}</strong>
+        <span className="text-gray-500">
+          Turnout: <strong className="text-gray-800">{result.turnout?.toFixed(1)}%</strong>
+        </span>
+        <span className="text-gray-500">
+          Total: <strong className="text-gray-800">{fmt(result.total_votes)}</strong>
         </span>
       </div>
     </div>
@@ -229,92 +209,68 @@ function ElectionResultCard({ result }: { result: ElectionResult }) {
 function CandidateCard({ c }: { c: Candidate }) {
   const { t } = useLang();
   const color = partyColor(c.party);
+  const netWorth = c.net_worth ?? ((c.assets_movable ?? 0) + (c.assets_immovable ?? 0));
+
   return (
-    <div
-      className={`bg-white rounded-2xl border shadow-sm p-4 relative hover:shadow-md hover:border-gray-200 transition-all group ${
-        c.is_winner
-          ? "border-yellow-400 ring-1 ring-yellow-200"
-          : "border-gray-100"
-      }`}
-    >
-      {c.is_winner && (
-        <span className="absolute top-3 right-3 text-xs bg-yellow-100 text-yellow-700 font-semibold px-2 py-0.5 rounded-full">
-          {t("const.winner")}
-        </span>
-      )}
-      {c.is_incumbent && !c.is_winner && (
-        <span className="absolute top-3 right-3 text-xs bg-blue-50 text-blue-600 font-semibold px-2 py-0.5 rounded-full">
-          {t("const.incumbent")}
-        </span>
-      )}
-
-      <div className="flex items-center gap-2 mb-3">
-        <div
-          className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
-          style={{ background: color }}
-        >
-          {c.name.charAt(0)}
+    <Link href={`/candidate/${c.id}`}>
+      <div
+        className={`bg-white rounded-2xl border shadow-sm overflow-hidden hover:shadow-md transition-all group cursor-pointer ${
+          c.is_winner ? "border-gray-200" : "border-gray-100"
+        }`}
+        style={{ borderTop: `3px solid ${color}` }}
+      >
+        {/* Header row */}
+        <div className="p-4 pb-3">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="font-bold text-gray-900 text-sm leading-tight">{c.name}</p>
+                {c.is_winner && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white" style={{ background: color }}>
+                    WINNER
+                  </span>
+                )}
+              </div>
+              <p className="text-xs font-semibold mt-0.5" style={{ color }}>{c.party}</p>
+            </div>
+            {c.votes_received != null && (
+              <div className="text-right flex-shrink-0">
+                <p className="text-sm font-bold text-gray-900">{fmt(c.votes_received)}</p>
+                {c.vote_share != null && (
+                  <p className="text-[10px] text-gray-400">{c.vote_share.toFixed(1)}%</p>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-        <div className="min-w-0">
-          <p className="font-semibold text-gray-900 text-sm truncate">
-            {c.name}
-          </p>
-          <p className="text-xs font-medium" style={{ color }}>
-            {c.party}
-          </p>
-        </div>
-      </div>
 
-      <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-gray-500">
-        {c.age && (
-          <span>
-            {t("const.age")} <strong className="text-gray-700">{c.age}</strong>
-          </span>
-        )}
-        {c.education && (
-          <span className="truncate">
-            {t("const.edu")} <strong className="text-gray-700">{c.education}</strong>
-          </span>
-        )}
-        {c.votes_received != null && (
-          <span>
-            {t("const.votes_label")}{" "}
-            <strong className="text-gray-700">
-              {fmt(c.votes_received)}
-            </strong>
-          </span>
-        )}
+        {/* Vote share bar */}
         {c.vote_share != null && (
-          <span>
-            {t("const.share")}{" "}
-            <strong className="text-gray-700">
-              {c.vote_share.toFixed(1)}%
-            </strong>
-          </span>
+          <div className="px-4 pb-3">
+            <div className="w-full bg-gray-100 rounded-full h-1">
+              <div className="h-1 rounded-full" style={{ width: `${Math.min(c.vote_share, 100)}%`, background: color }} />
+            </div>
+          </div>
         )}
-      </div>
 
-      {c.criminal_cases_declared > 0 && (
-        <div className="mt-2 flex items-center gap-1 text-xs text-red-600 bg-red-50 rounded-lg px-2 py-1">
-          <span>{c.criminal_cases_declared} {t("const.criminal_cases_declared")}</span>
+        {/* Footer: wealth + criminal + score */}
+        <div className="px-4 py-2.5 bg-gray-50 border-t border-gray-100 flex items-center justify-between gap-2 flex-wrap">
+          {netWorth > 0 && (
+            <span className="text-[11px] text-gray-600 font-medium">{fmtCurrency(netWorth)}</span>
+          )}
+          {c.criminal_cases_declared > 0 ? (
+            <span className="text-[11px] font-semibold text-red-600 bg-red-50 rounded px-1.5 py-0.5">
+              {c.criminal_cases_declared} case{c.criminal_cases_declared > 1 ? "s" : ""}
+            </span>
+          ) : (
+            <span className="text-[11px] font-medium text-green-700">Clean record</span>
+          )}
+          <span className="text-[11px] text-gray-400 group-hover:text-terracotta transition-colors ml-auto">
+            View →
+          </span>
         </div>
-      )}
-
-      <div className="mt-2 flex items-center justify-between">
-        <span
-          className="text-xs font-semibold px-2 py-0.5 rounded-full"
-          style={{
-            color: scoreColor(candidateScore(c)),
-            background: `${scoreColor(candidateScore(c))}15`,
-          }}
-        >
-          {candidateScore(c)}/100
-        </span>
-        <p className="text-xs text-gray-400 group-hover:text-terracotta transition-colors">
-          {t("const.view_profile")} →
-        </p>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -899,7 +855,7 @@ export default function ConstituencyPage() {
           <>
             {/* ── Page title ── */}
             <div className="mb-6">
-              <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap mb-2">
                 <h1 className="text-3xl font-extrabold text-gray-900">
                   {constituencyName}
                 </h1>
@@ -907,20 +863,47 @@ export default function ConstituencyPage() {
                   href={`/districts/${slugify(constituency.district)}`}
                   className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full hover:text-terracotta transition-colors"
                 >
-                  {constituency.district} {t("const.district")}
+                  {constituency.district}
                 </Link>
                 {constituency.is_swing_seat && (
                   <span className="text-sm text-yellow-700 bg-yellow-100 px-3 py-1 rounded-full font-semibold">
-                    {t("const.swing_seat")}
+                    Swing Seat
                   </span>
                 )}
               </div>
-              {constituency.total_voters_2021 && (
-                <p className="text-sm text-gray-500 mt-1">
-                  {fmt(constituency.total_voters_2021)} {t("const.registered_voters")}
-                  (2021) · {constituency.turnout_2021}% {t("const.turnout_label")}
-                </p>
-              )}
+              {/* Stat chips */}
+              <div className="flex flex-wrap gap-2 mt-2">
+                {constituency.total_voters_2021 && (
+                  <div className="bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-xs">
+                    <span className="text-gray-400">Voters (2021) </span>
+                    <span className="font-bold text-gray-800">{fmt(constituency.total_voters_2021)}</span>
+                  </div>
+                )}
+                {constituency.turnout_2021 && (
+                  <div className="bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-xs">
+                    <span className="text-gray-400">Turnout </span>
+                    <span className="font-bold text-gray-800">{constituency.turnout_2021}%</span>
+                  </div>
+                )}
+                {electionResult && (
+                  <div className="bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-xs">
+                    <span className="text-gray-400">Margin </span>
+                    <span className="font-bold text-gray-800">{fmt(electionResult.margin)}</span>
+                  </div>
+                )}
+                {candidates.length > 0 && (
+                  <div className="bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-xs">
+                    <span className="text-gray-400">Candidates </span>
+                    <span className="font-bold text-gray-800">{candidates.length}</span>
+                  </div>
+                )}
+                {casesCount > 0 && (
+                  <div className="bg-red-50 border border-red-100 rounded-lg px-3 py-1.5 text-xs">
+                    <span className="text-red-400">With cases </span>
+                    <span className="font-bold text-red-700">{casesCount}</span>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* ── 2026 Election Banner ── */}
@@ -1092,8 +1075,8 @@ export default function ConstituencyPage() {
                   );
                 })()}
 
-                {/* Constituency Poll */}
-                {constituency && candidates.length > 0 && (
+                {/* Constituency Poll — only for 2026 elections */}
+                {constituency && candidates.length > 0 && selectedYear === 2026 && (
                   <ConstituencyPoll
                     constituencyId={constituency.id}
                     constituencyName={constituencyName}
@@ -1313,11 +1296,11 @@ export default function ConstituencyPage() {
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {sortedCandidates.map((c) => (
-                      <div key={c.id} className="relative">
-                        {/* Compare checkbox */}
+                      <div key={c.id} className="flex items-start gap-2">
+                        {/* Compare checkbox — sits outside the card so it never overlaps content */}
                         <button
                           onClick={() => toggleCompare(c.id)}
-                          className={`absolute top-3 left-3 z-10 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                          className={`mt-3 flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
                             compareIds.has(c.id)
                               ? "bg-terracotta border-terracotta text-white"
                               : "border-gray-300 bg-white hover:border-terracotta"
@@ -1327,9 +1310,9 @@ export default function ConstituencyPage() {
                             <span className="text-xs font-bold">✓</span>
                           )}
                         </button>
-                        <Link href={`/candidate/${c.id}`} className="block pl-0">
+                        <div className="flex-1 min-w-0">
                           <CandidateCard c={c} />
-                        </Link>
+                        </div>
                       </div>
                     ))}
                   </div>

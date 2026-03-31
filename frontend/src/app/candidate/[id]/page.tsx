@@ -170,12 +170,6 @@ interface Promise {
   evidence_url: string | null;
 }
 
-interface HistoricalAsset {
-  election_year: number;
-  net_worth: number | null;
-  assets_movable: number | null;
-  assets_immovable: number | null;
-}
 
 interface Allegation {
   title: string;
@@ -383,11 +377,11 @@ interface ScoreBreakdown {
   mismatchPenalty: number; // 0 or -15
   assetDisclosure: number; // max 25
   affidavit: number;       // max 15
-  electoral: number;       // max 25
+  allegations: number;     // max 25
   total: number;           // 0–100
 }
 
-function computeTransparencyScore(c: Candidate): ScoreBreakdown {
+function computeTransparencyScore(c: Candidate, allegationsCount = 0): ScoreBreakdown {
   // 1. Criminal record (max 35)
   const cases = c.criminal_cases_declared;
   let criminal = 35;
@@ -408,18 +402,18 @@ function computeTransparencyScore(c: Candidate): ScoreBreakdown {
   // 4. Affidavit filed (max 15)
   const affidavit = c.affidavit_url ? 15 : 0;
 
-  // 5. Electoral record (max 25)
-  let electoral = 0;
-  if (c.is_winner) electoral += 15;
-  if (c.vote_share != null && c.vote_share > 30) electoral += 10;
-  else if (c.vote_share != null && c.vote_share > 15) electoral += 5;
+  // 5. Allegations (max 25) — fewer news allegations = higher score
+  let allegations = 25;
+  if (allegationsCount >= 5) allegations = 0;
+  else if (allegationsCount >= 3) allegations = 10;
+  else if (allegationsCount >= 1) allegations = 18;
 
   const total = Math.max(
     0,
-    Math.min(100, criminal + mismatchPenalty + assetDisclosure + affidavit + electoral)
+    Math.min(100, criminal + mismatchPenalty + assetDisclosure + affidavit + allegations)
   );
 
-  return { criminal, mismatchPenalty, assetDisclosure, affidavit, electoral, total };
+  return { criminal, mismatchPenalty, assetDisclosure, affidavit, allegations, total };
 }
 
 function scoreColor(score: number): string {
@@ -570,7 +564,6 @@ export default function CandidatePage() {
   const [rivals, setRivals] = useState<Rival[]>([]);
   const [criminalCases, setCriminalCases] = useState<CriminalCase[]>([]);
   const [promises, setPromises] = useState<Promise[]>([]);
-  const [historicalAssets, setHistoricalAssets] = useState<HistoricalAsset[]>([]);
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -628,15 +621,10 @@ export default function CandidatePage() {
       // Load cached AI summary if available
       if (candData.ai_summary_ta) setAiSummary(candData.ai_summary_ta);
 
-      // Fetch historical assets (same name, different years)
-      const { data: histData } = await supabase
-        .from("candidates")
-        .select("election_year, net_worth, assets_movable, assets_immovable")
-        .eq("name", candData.name)
-        .not("net_worth", "is", null)
-        .order("election_year", { ascending: true });
-
-      if (histData && histData.length > 0) setHistoricalAssets(histData);
+      // Cross-year wealth growth: skipped for now.
+      // Requires a manual candidate_cross_year_links table to handle
+      // name transliteration differences and party/constituency changes.
+      // Will be built post-launch.
 
       setLoading(false);
 
@@ -755,8 +743,8 @@ export default function CandidatePage() {
   // Criminal severity
   const severity = criminalSeverity(candidate.criminal_cases_declared);
 
-  // Transparency score
-  const score = computeTransparencyScore(candidate);
+  // Transparency score (allegations count passed in for live scoring)
+  const score = computeTransparencyScore(candidate, allegations.length);
   // Note: showBreakdown state is declared above with other useState hooks
 
   return (
@@ -798,14 +786,17 @@ export default function CandidatePage() {
         </p>
 
         {/* ── Candidate header ── */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
+          {/* Party color accent bar */}
+          <div className="h-1.5 w-full" style={{ background: color }} />
+          <div className="p-6">
           <div className="flex flex-col sm:flex-row items-start gap-4">
             {/* Avatar */}
             <div
-              className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold flex-shrink-0"
+              className="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-2xl font-bold flex-shrink-0"
               style={{ background: color }}
             >
-              {candidate.name.charAt(0)}
+              {candidate.name.charAt(0).toUpperCase()}
             </div>
 
             <div className="flex-1 min-w-0">
@@ -814,8 +805,8 @@ export default function CandidatePage() {
                   {candidate.name}
                 </h1>
                 {candidate.is_winner && (
-                  <span className="text-xs bg-yellow-100 text-yellow-700 font-semibold px-2.5 py-1 rounded-full">
-                    Winner {candidate.election_year}
+                  <span className="text-xs font-bold px-3 py-1 rounded-full text-white" style={{ background: color }}>
+                    Won {candidate.election_year}
                   </span>
                 )}
                 {candidate.is_incumbent && (
@@ -904,7 +895,7 @@ export default function CandidatePage() {
                 <ScoreRow label="Criminal Record" points={score.criminal} max={35} />
                 <ScoreRow label="Asset Disclosure" points={score.assetDisclosure} max={25} />
                 <ScoreRow label="Affidavit Filed" points={score.affidavit} max={15} />
-                <ScoreRow label="Electoral Record" points={score.electoral} max={25} />
+                <ScoreRow label="Allegations" points={score.allegations} max={25} />
                 {score.mismatchPenalty < 0 && (
                   <ScoreRow label="Mismatch Penalty" points={score.mismatchPenalty} max={0} />
                 )}
@@ -914,42 +905,55 @@ export default function CandidatePage() {
               </p>
             </div>
           )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* ── Election performance ── */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-            <h2 className="font-bold text-gray-900 text-sm mb-4">
-              Election Performance ({candidate.election_year})
-            </h2>
-            <div className="grid grid-cols-2 gap-3">
-              <StatBox
-                label="Votes Received"
-                value={fmt(candidate.votes_received)}
-              />
-              <StatBox
-                label="Vote Share"
-                value={
-                  candidate.vote_share != null
-                    ? `${candidate.vote_share.toFixed(1)}%`
-                    : "—"
-                }
-              />
-              <StatBox
-                label="Margin"
-                value={fmt(candidate.margin)}
-                color={
-                  candidate.is_winner ? "#2d7a4f" : "#c0392b"
-                }
-              />
-              <StatBox
-                label="Result"
-                value={candidate.is_winner ? "Won" : "Lost"}
-                color={
-                  candidate.is_winner ? "#2d7a4f" : "#c0392b"
-                }
-              />
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            {/* Result banner */}
+            <div
+              className="px-5 py-3 flex items-center justify-between"
+              style={{ background: candidate.is_winner ? "#f0fdf4" : "#fef2f2", borderBottom: `2px solid ${candidate.is_winner ? "#bbf7d0" : "#fecaca"}` }}
+            >
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: candidate.is_winner ? "#166534" : "#991b1b" }}>
+                  Election Performance · {candidate.election_year}
+                </p>
+                <p className="text-2xl font-extrabold mt-0.5" style={{ color: candidate.is_winner ? "#15803d" : "#dc2626" }}>
+                  {candidate.is_winner ? "Won" : "Lost"}
+                </p>
+              </div>
+              {candidate.votes_received != null && (
+                <div className="text-right">
+                  <p className="text-2xl font-extrabold text-gray-900">{fmt(candidate.votes_received)}</p>
+                  <p className="text-xs text-gray-500">votes received</p>
+                </div>
+              )}
             </div>
+            {/* Stats row */}
+            <div className="grid grid-cols-2 gap-px bg-gray-100">
+              <div className="bg-white px-4 py-3 text-center">
+                <p className="text-lg font-bold text-gray-900">
+                  {candidate.vote_share != null ? `${candidate.vote_share.toFixed(1)}%` : "—"}
+                </p>
+                <p className="text-[11px] text-gray-500 mt-0.5">Vote Share</p>
+              </div>
+              <div className="bg-white px-4 py-3 text-center">
+                <p className="text-lg font-bold" style={{ color: candidate.is_winner ? "#15803d" : "#dc2626" }}>
+                  {fmt(candidate.margin) || "—"}
+                </p>
+                <p className="text-[11px] text-gray-500 mt-0.5">Margin</p>
+              </div>
+            </div>
+            {/* Position among candidates */}
+            {totalCandidates > 1 && (
+              <div className="px-5 py-2.5 bg-gray-50 border-t border-gray-100">
+                <p className="text-xs text-gray-500">
+                  Finished <strong className="text-gray-800">{ordinal(position)} of {totalCandidates}</strong> candidates in {constituency?.name}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* ── Assets & Net Worth ── */}
@@ -1008,96 +1012,25 @@ export default function CandidatePage() {
             <CrorepatiCalculator netWorth={candidate.net_worth} />
           )}
 
-          {/* ── Assets Over Time (4.8) ── */}
-          {historicalAssets.length > 1 && (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 md:col-span-2">
-              <h2 className="font-bold text-gray-900 text-sm mb-4">
-                Wealth Growth Over Elections
-              </h2>
-              <div className="flex items-end gap-4 h-48">
-                {historicalAssets.map((h) => {
-                  const maxNW = Math.max(...historicalAssets.map((a) => a.net_worth || 0), 1);
-                  const movable = h.assets_movable || 0;
-                  const immovable = h.assets_immovable || 0;
-                  const total = h.net_worth || 0;
-                  const pctMov = (movable / maxNW) * 100;
-                  const pctImm = (immovable / maxNW) * 100;
-                  return (
-                    <div key={h.election_year} className="flex-1 flex flex-col items-center group">
-                      <p className="text-xs font-bold text-terracotta mb-1">
-                        {fmtCurrency(total)}
-                      </p>
-                      <div className="w-full bg-gray-50 rounded-t-lg flex-1 relative overflow-hidden border border-gray-100">
-                        {/* Immovable (bottom) */}
-                        <div
-                          className="absolute bottom-0 left-0 right-0 transition-all"
-                          style={{
-                            height: `${Math.max(pctImm, 3)}%`,
-                            background: "#2d7a4f",
-                          }}
-                        />
-                        {/* Movable (on top) */}
-                        <div
-                          className="absolute left-0 right-0 transition-all"
-                          style={{
-                            bottom: `${Math.max(pctImm, 3)}%`,
-                            height: `${Math.max(pctMov, 3)}%`,
-                            background: "#1a5276",
-                          }}
-                        />
-                      </div>
-                      <p className="text-xs text-gray-600 mt-1.5 font-bold">{h.election_year}</p>
-                      {/* Tooltip on hover */}
-                      <div className="hidden group-hover:block absolute -top-16 bg-gray-900 text-white text-[10px] rounded-lg px-2 py-1.5 z-10 whitespace-nowrap">
-                        <p>Movable: {fmtCurrency(movable)}</p>
-                        <p>Immovable: {fmtCurrency(immovable)}</p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              {/* Legend */}
-              <div className="flex items-center gap-4 mt-3 justify-center">
-                <div className="flex items-center gap-1">
-                  <span className="w-3 h-3 rounded-sm" style={{ background: "#1a5276" }} />
-                  <span className="text-[10px] text-gray-500">Movable</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className="w-3 h-3 rounded-sm" style={{ background: "#2d7a4f" }} />
-                  <span className="text-[10px] text-gray-500">Immovable</span>
-                </div>
-              </div>
-              {(() => {
-                const first = historicalAssets[0]?.net_worth || 0;
-                const last = historicalAssets[historicalAssets.length - 1]?.net_worth || 0;
-                if (first > 0 && last > first) {
-                  const growth = ((last - first) / first * 100).toFixed(0);
-                  const years = (historicalAssets[historicalAssets.length - 1].election_year) - historicalAssets[0].election_year;
-                  return (
-                    <div className="bg-orange-50 border border-orange-100 rounded-lg px-3 py-2 mt-3 text-center">
-                      <p className="text-xs text-gray-700">
-                        Net worth grew <strong className="text-terracotta">{growth}%</strong> in {years} years
-                        ({historicalAssets[0].election_year} → {historicalAssets[historicalAssets.length - 1].election_year})
-                      </p>
-                    </div>
-                  );
-                }
-                return null;
-              })()}
-            </div>
-          )}
 
           {/* ── Criminal record ── */}
           <div
-            className={`bg-white rounded-2xl border shadow-sm p-5 ${
+            className={`bg-white rounded-2xl border shadow-sm overflow-hidden ${
               candidate.criminal_mismatch
                 ? "border-red-300"
-                : "border-gray-100"
+                : hasCriminal ? "border-red-200" : "border-gray-100"
             }`}
           >
-            <h2 className="font-bold text-gray-900 text-sm mb-1">
-              Criminal Record
-            </h2>
+            {/* Header strip */}
+            <div className={`px-5 py-3 border-b ${hasCriminal ? "bg-red-50 border-red-100" : "bg-green-50 border-green-100"}`}>
+              <h2 className={`font-bold text-sm ${hasCriminal ? "text-red-800" : "text-green-800"}`}>
+                Criminal Record
+              </h2>
+              {!hasCriminal && (
+                <p className="text-xs text-green-600 font-medium mt-0.5">No cases declared or found in eCourts</p>
+              )}
+            </div>
+            <div className="p-5">
             {/* Visual severity meter */}
             <CriminalSeverityMeter cases={candidate.criminal_cases_declared} />
 
@@ -1135,6 +1068,7 @@ export default function CandidatePage() {
                 )}
               </div>
             )}
+            </div>
           </div>
 
           {/* ── Assembly Attendance (4.9) — only show if real data exists ── */}
@@ -1298,10 +1232,10 @@ export default function CandidatePage() {
             </div>
             {summaryLoading ? (
               <div className="space-y-2 animate-pulse py-4">
-                {[1, 2, 3, 4, 5].map((i) => (
+                {[90, 75, 85, 70, 80].map((w, i) => (
                   <div key={i} className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-gray-300 mt-1.5 flex-shrink-0" />
-                    <div className="h-4 bg-gray-200 rounded w-full" style={{ width: `${70 + Math.random() * 30}%` }} />
+                    <div className="h-4 bg-gray-200 rounded" style={{ width: `${w}%` }} />
                   </div>
                 ))}
                 <p className="text-xs text-gray-400 mt-2 text-center">Generating summary with sources...</p>

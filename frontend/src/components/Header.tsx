@@ -16,24 +16,28 @@ export default function Header({ active }: HeaderProps) {
 
   // "For Voters" dropdown — action tools
   const voterTools = [
-    { href: "/find-constituency", label: "🔍 " + t("nav.find"), id: "find" },
-    { href: "/vote-calculator", label: "🗳️ உங்கள் vote முக்கியமா?", id: "vote-calculator" },
-    { href: "/pledge", label: "✊ Thamizhan Pledge", id: "pledge" },
-    { href: "/voter-guide", label: "📋 " + t("nav.voterguide"), id: "voter-guide" },
-    { href: "/booth-locator", label: "📍 Booth Locator", id: "booth-locator" },
+    { href: "/find-constituency", label: t("nav.find"), id: "find" },
+    { href: "/vote-calculator", label: "உங்கள் vote முக்கியமா?", id: "vote-calculator" },
+    { href: "/pledge", label: "Thamizhan Pledge", id: "pledge" },
+    { href: "/voter-guide", label: t("nav.voterguide"), id: "voter-guide" },
+    { href: "/booth-locator", label: "Booth Locator", id: "booth-locator" },
   ];
 
   // Direct nav links — research/info
   const directLinks = [
     { href: "/districts", label: t("nav.districts"), id: "districts" },
     { href: "/parties", label: t("nav.parties"), id: "parties" },
+    { href: "/manifesto", label: t("nav.manifesto"), id: "manifesto" },
     { href: "/swing-seats", label: t("nav.swing"), id: "swing" },
+    { href: "/alt-history", label: "What if they voted?", id: "alt-history" },
     { href: "/fact-check", label: t("nav.factcheck"), id: "factcheck" },
   ];
 
   // Extra links — in mobile menu only
   const extraLinks = [
     { href: "/manifesto", label: t("nav.manifesto"), id: "manifesto" },
+    { href: "/asset-growth", label: "Wealth Growth", id: "asset-growth" },
+    { href: "/alt-history", label: "What if they voted?", id: "alt-history" },
     { href: "/news", label: t("nav.news"), id: "news" },
     { href: "/results", label: t("nav.results"), id: "results" },
   ];
@@ -75,7 +79,7 @@ export default function Header({ active }: HeaderProps) {
                 isVoterActive ? "text-terracotta font-semibold" : "text-gray-600 hover:text-terracotta"
               }`}
             >
-              🗳️ Voter Tools
+              Voter Tools
               <svg width="11" height="11" viewBox="0 0 12 12" fill="currentColor"
                 className={`transition-transform mt-px ${voterOpen ? "rotate-180" : ""}`}>
                 <path d="M6 8L1 3h10L6 8z" />
@@ -149,7 +153,7 @@ export default function Header({ active }: HeaderProps) {
           <nav className="max-w-6xl mx-auto px-4 py-2 flex flex-col">
             <Link href="/" onClick={() => setMenuOpen(false)}
               className="py-2.5 text-sm font-medium border-b border-gray-50 text-gray-700">
-              🏠 Home
+              Home
             </Link>
 
             {/* Voter tools section */}

@@ -154,7 +154,7 @@ export default function PledgePage() {
                   {pledgeCount.toLocaleString("en-IN")}
                 </span>
                 <span className="text-sm text-gray-600">
-                  {isTa ? "தமிழர்கள் உறுதி கொடுத்தனர்" : "Thamizhan-s have pledged"}
+                  {isTa ? " உறுதி கொடுத்தனர்" : "have pledged"}
                 </span>
               </div>
             )}
@@ -267,7 +267,7 @@ export default function PledgePage() {
               >
                 {submitting
                   ? (isTa ? "பதிவு செய்கிறோம்..." : "Pledging...")
-                  : (isTa ? "நான் Thamizhan — நான் vote போடுவேன்" : "I am Thamizhan — I will vote")}
+                  : (isTa ? "நான் vote போடுவேன்" : "I will vote ")}
               </button>
 
               <p className="text-center text-xs text-gray-400">
@@ -313,7 +313,7 @@ export default function PledgePage() {
                   {pledgeCount.toLocaleString("en-IN")}
                 </p>
                 <p className="text-sm text-gray-600 mt-1">
-                  {isTa ? "தமிழர்கள் உறுதி கொடுத்தனர்" : "Thamizhan-s have pledged"}
+                  {isTa ? " உறுதி கொடுத்தனர்" : " have pledged"}
                 </p>
               </div>
             )}
