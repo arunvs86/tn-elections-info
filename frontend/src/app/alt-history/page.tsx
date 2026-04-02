@@ -159,7 +159,7 @@ export default function AltHistoryPage() {
             In 2021, over{" "}
             <span className="text-white font-semibold">
               {totalNonVoters > 0
-                ? (totalNonVoters / 1e6).toFixed(1) + " million"
+                ? (totalNonVoters / 1e7).toFixed(2) + " crore"
                 : "millions of"}{" "}
               people
             </span>{" "}

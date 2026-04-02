@@ -549,7 +549,7 @@ export default function ConstituencyPage() {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedYear, setSelectedYear] = useState<number>(2021);
-  const availableYears = [2021]; // Add 2026 here when data is available
+  const availableYears = [2021, 2026];
 
   // Compare selection
   const [compareIds, setCompareIds] = useState<Set<number>>(new Set());
@@ -920,18 +920,15 @@ export default function ConstituencyPage() {
                   <button
                     key={yr}
                     onClick={() => setSelectedYear(yr)}
-                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                    className={`px-4 py-1.5 rounded-full text-sm font-bold transition-all border-2 ${
                       selectedYear === yr
-                        ? "bg-terracotta text-white"
-                        : "bg-white text-gray-600 border border-gray-200 hover:border-terracotta"
+                        ? "bg-terracotta text-white border-terracotta shadow-md"
+                        : "bg-white text-gray-700 border-gray-400 hover:border-terracotta hover:text-terracotta"
                     }`}
                   >
                     {yr}
                   </button>
                 ))}
-                <span className="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-400 cursor-not-allowed">
-                  2026
-                </span>
               </div>
             </div>
 

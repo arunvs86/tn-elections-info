@@ -144,7 +144,8 @@
       "Bash(curl -L -o frontend/public/leaders/stalin.jpg \"https://upload.wikimedia.org/wikipedia/commons/9/9d/The_Chief_Minister_of_Tamil_Nadu%2C_Thiru_MK_Stalin.jpg\")",
       "Bash(curl -L -o frontend/public/leaders/eps.jpg \"https://upload.wikimedia.org/wikipedia/commons/0/03/Palanisamy.jpg\")",
       "Bash(curl -L -o frontend/public/leaders/vijay.jpg \"https://upload.wikimedia.org/wikipedia/commons/f/ff/Vijay_at_Protest_of_the_Nadigar_Sangam.jpg\")",
-      "Bash(curl -L -o frontend/public/leaders/seeman.jpg \"https://upload.wikimedia.org/wikipedia/commons/3/32/Seeman_at_Saravana_Stores_Family_Wedding_party%2C_Chennai.jpg\")"
+      "Bash(curl -L -o frontend/public/leaders/seeman.jpg \"https://upload.wikimedia.org/wikipedia/commons/3/32/Seeman_at_Saravana_Stores_Family_Wedding_party%2C_Chennai.jpg\")",
+      "Bash(git rebase:*)"
     ]
   }
 }

@@ -150,6 +150,9 @@ interface CandidateExtended extends Candidate {
   assembly_sessions_attended?: number | null;
   assembly_sessions_total?: number | null;
   ai_summary_ta?: string | null;
+  questions_asked?: number | null;
+  debates_count?: number | null;
+  questions_state_avg?: number | null;
 }
 
 interface Rival {
@@ -1099,6 +1102,34 @@ export default function CandidatePage() {
                   {(candidate as CandidateExtended).assembly_sessions_attended || "?"} of {(candidate as CandidateExtended).assembly_sessions_total || "?"} sessions attended
                 </p>
                 <p className="text-[10px] text-gray-400 mt-1">Source: PRS India MLATrack</p>
+              </div>
+            </div>
+          )}
+
+          {/* ── Questions Asked in Assembly ── */}
+          {candidate.is_winner && (candidate as CandidateExtended).questions_asked != null && (
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+              <h2 className="font-bold text-gray-900 text-sm mb-3">Assembly Performance</h2>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-2xl font-extrabold text-gray-900">{(candidate as CandidateExtended).questions_asked}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Starred questions asked</p>
+                  </div>
+                  <div className="text-right">
+                    <p className={`text-sm font-bold ${((candidate as CandidateExtended).questions_asked || 0) >= ((candidate as CandidateExtended).questions_state_avg || 2.87) ? "text-green-600" : "text-orange-500"}`}>
+                      {((candidate as CandidateExtended).questions_asked || 0) >= ((candidate as CandidateExtended).questions_state_avg || 2.87) ? "Above avg" : "Below avg"}
+                    </p>
+                    <p className="text-xs text-gray-400">State avg: {((candidate as CandidateExtended).questions_state_avg || 2.87).toFixed(1)}</p>
+                  </div>
+                </div>
+                <div className="w-full bg-gray-100 rounded-full h-2">
+                  <div
+                    className={`h-2 rounded-full ${((candidate as CandidateExtended).questions_asked || 0) >= ((candidate as CandidateExtended).questions_state_avg || 2.87) ? "bg-green-500" : "bg-orange-400"}`}
+                    style={{ width: `${Math.min(100, ((candidate as CandidateExtended).questions_asked || 0) / 10 * 100)}%` }}
+                  />
+                </div>
+                <p className="text-[10px] text-gray-400">Starred questions · 16th TN Assembly (Apr 2023 – Oct 2025)</p>
               </div>
             </div>
           )}

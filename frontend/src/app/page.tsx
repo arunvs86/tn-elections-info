@@ -134,7 +134,7 @@ function SearchBar({
 
   return (
     <div className="relative w-full max-w-xl mx-auto">
-      <div className="flex items-center bg-white rounded-2xl overflow-hidden shadow-xl focus-within:ring-2 focus-within:ring-white/50 transition-all">
+      <div className="flex items-center bg-white rounded-2xl overflow-hidden shadow-xl border-2 border-gray-200 focus-within:border-terracotta focus-within:ring-2 focus-within:ring-terracotta/20 transition-all">
         <span className="pl-4 text-gray-400 text-xl">🔍</span>
         <input
           type="text"
