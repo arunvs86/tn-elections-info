@@ -14,7 +14,7 @@ DECLARE
   cand_id INTEGER;
 BEGIN
   FOR rec IN SELECT * FROM (VALUES
-    ('Alangulam', 5, NULL, 2.8735),
+    ('Alangulam'::TEXT, 5::INTEGER, NULL::INTEGER, 2.8735::NUMERIC),
     ('Senthamangalam', 3, NULL, 2.8735),
     ('Erode (East)', NULL, NULL, NULL),
     ('Valparai', 4, NULL, 2.7102),
