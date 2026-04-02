@@ -21,6 +21,7 @@ from agents.summary_agent import generate_candidate_summary
 from agents.briefing_agent import generate_briefing, get_latest_briefing
 from agents.thamizhan_agent import trigger_vapi_call, call_all_pledgers, get_pledge_stats, send_whatsapp_reminder, send_sms_reminder, sms_all_pledgers
 from agents.allegations_agent import fetch_allegations
+from agents.connections_agent import build_connections
 from tools.db_tools import save_messages
 
 app = FastAPI(title="TN Elections API", version="2.0.0")
@@ -139,6 +140,30 @@ def candidate_allegations(req: AllegationsRequest):
     """Search web for candidate allegations and controversies via Tavily + Claude."""
     try:
         result = fetch_allegations(req.name, req.party, req.constituency)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    return result
+
+
+class ConnectionsRequest(BaseModel):
+    candidate_id: int
+    name: str
+    party: str
+    constituency: str = ""
+    force_refresh: bool = False
+
+
+@app.post("/api/candidate-connections")
+def candidate_connections(req: ConnectionsRequest):
+    """Build political network graph for a candidate on-demand. Results cached in Supabase."""
+    try:
+        result = build_connections(
+            candidate_id=req.candidate_id,
+            name=req.name,
+            party=req.party,
+            constituency=req.constituency,
+            force_refresh=req.force_refresh,
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     return result

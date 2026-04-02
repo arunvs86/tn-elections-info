@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import Header from "@/components/Header";
 import ScopedChat from "@/components/ScopedChat";
+import ConnectionGraph, { type GraphData } from "@/components/ConnectionGraph";
 
 // ── IPC Sections Lookup (English + Tamil + severity) ──
 const IPC: Record<string, { en: string; ta: string; severity: string; category: string }> = {
@@ -573,6 +574,8 @@ export default function CandidatePage() {
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [allegations, setAllegations] = useState<Allegation[]>([]);
   const [allegationsLoading, setAllegationsLoading] = useState(false);
+  const [connections, setConnections] = useState<GraphData | null>(null);
+  const [connectionsLoading, setConnectionsLoading] = useState(false);
 
   useEffect(() => {
     if (!candidateId) return;
@@ -688,6 +691,32 @@ export default function CandidatePage() {
       setAllegations([]);
     }
     setAllegationsLoading(false);
+  }
+
+  // Fetch connections on-demand
+  async function fetchConnections(forceRefresh = false) {
+    if (!candidate) return;
+    setConnectionsLoading(true);
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "";
+      const res = await fetch(`${backendUrl}/api/candidate-connections`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          candidate_id: candidate.id,
+          name: candidate.name,
+          party: candidate.party,
+          constituency: constituency?.name || "",
+          force_refresh: forceRefresh,
+        }),
+      });
+      if (res.ok) {
+        setConnections(await res.json());
+      }
+    } catch {
+      // silent fail
+    }
+    setConnectionsLoading(false);
   }
 
   if (loading) {
@@ -1133,6 +1162,52 @@ export default function CandidatePage() {
               </div>
             </div>
           )}
+
+          {/* ── Political Connections (on-demand) ── */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 md:col-span-2">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h2 className="font-bold text-gray-900 text-sm">Political Network</h2>
+                <p className="text-xs text-gray-400 mt-0.5">Companies · Family · Associates · Donors</p>
+              </div>
+              {!connections && !connectionsLoading && (
+                <button
+                  onClick={() => fetchConnections()}
+                  className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-xl transition-colors"
+                >
+                  <span>🕸</span> Investigate Network
+                </button>
+              )}
+              {connections && !connectionsLoading && (
+                <button
+                  onClick={() => fetchConnections(true)}
+                  className="text-xs text-gray-400 hover:text-gray-600 underline"
+                >
+                  Refresh
+                </button>
+              )}
+            </div>
+
+            {connectionsLoading && (
+              <div className="flex items-center gap-3 py-8 justify-center">
+                <div className="w-5 h-5 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin" />
+                <p className="text-sm text-gray-400 animate-pulse">Searching public records, company filings, news...</p>
+              </div>
+            )}
+
+            {!connections && !connectionsLoading && (
+              <div className="text-center py-8">
+                <p className="text-4xl mb-3">🕸</p>
+                <p className="text-sm text-gray-500 max-w-xs mx-auto">
+                  Tap <strong>Investigate Network</strong> to map this candidate's companies, family connections, and political associates from public records.
+                </p>
+              </div>
+            )}
+
+            {connections && !connectionsLoading && (
+              <ConnectionGraph data={connections} />
+            )}
+          </div>
 
           {/* ── Criminal Case Details (4.4) ── */}
           {criminalCases.length > 0 && (
