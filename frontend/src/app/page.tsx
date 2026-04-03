@@ -489,7 +489,8 @@ export default function HomePage() {
       </section>
 
       {/* ── Daily AI Briefing ── */}
-      <DailyBriefing />
+      {/* <DailyBriefing /> */}
+      
 
       {/* ── Explore Section ── */}
       <section className="max-w-6xl mx-auto px-4 pb-10">

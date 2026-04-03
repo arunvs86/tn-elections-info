@@ -72,13 +72,13 @@ export default function ReviewWidget() {
       <div className="max-w-xl mx-auto text-center">
         <p className="text-xs font-bold uppercase tracking-widest text-indigo-400 mb-1">Share your experience</p>
         <h3 className="text-xl font-extrabold text-gray-900 mb-1">How useful was tnelections.info?</h3>
-        <p className="text-sm text-gray-500 mb-6">Anonymous · takes 10 seconds · helps us improve</p>
+        <p className="text-sm text-gray-500 mb-6">Anonymous · takes 10 seconds · helps me improve</p>
 
         {submitted ? (
           <div className="py-6">
             <div className="text-4xl mb-3">🙏</div>
             <p className="text-lg font-bold text-gray-800">Thank you for your feedback!</p>
-            <p className="text-sm text-gray-500 mt-1">Your review helps us build a better platform for voters.</p>
+            <p className="text-sm text-gray-500 mt-1">Your review helps me build a better platform for voters.</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">

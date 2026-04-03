@@ -43,11 +43,11 @@ const PARTY_TAGS: { keywords: string[]; name: string; color: string }[] = [
   { keywords: ["dmk", "stalin", "udhayanidhi", "dravidar"], name: "DMK", color: "#c0392b" },
   { keywords: ["aiadmk", "admk", "palaniswami", "eps", "edappadi"], name: "AIADMK", color: "#2d7a4f" },
   { keywords: ["bjp", "annamalai", "modi", "nda"], name: "BJP", color: "#d35400" },
-  { keywords: ["tvk", "vijay", "tamilaga"], name: "TVK", color: "#1a5276" },
+  { keywords: ["tvk", "vijay", "tamilaga vetri kazhagam"], name: "TVK", color: "#1a5276" },
   { keywords: ["ntk", "seeman", "naam tamilar"], name: "NTK", color: "#6c3483" },
-  { keywords: ["congress", "inc", "rahul"], name: "INC", color: "#1565c0" },
+  { keywords: ["congress", "inc", "rahul gandhi"], name: "INC", color: "#1565c0" },
   { keywords: ["pmk", "ramadoss", "anbumani"], name: "PMK", color: "#b8860b" },
-  { keywords: ["mnm", "kamal", "makkal"], name: "MNM", color: "#0e6655" },
+  { keywords: ["mnm", "kamal", "makkal needhi maiam"], name: "MNM", color: "#0e6655" },
 ];
 
 function detectParties(text: string): { name: string; color: string }[] {

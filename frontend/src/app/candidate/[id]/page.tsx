@@ -317,7 +317,7 @@ const SEVERITY_LEVELS = [
   {
     label: "Grave",       labelTa: "கடுமையான வழக்கு",
     desc: "6+ cases. Grave charges including violence or fraud.",
-    descTa: "6+ வழக்குகள். கொலை, மோசடி போன்ற கடுமையான குற்றங்கள்.",
+    descTa: "6+ வழக்குகள். வன்முறை, மோசடி போன்ற கடுமையான குற்றங்கள்.",
     color: "#c0392b", light: "#fee2e2",
   },
 ];
