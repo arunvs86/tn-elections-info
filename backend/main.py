@@ -281,14 +281,20 @@ class ReviewRequest(BaseModel):
 def submit_review(req: ReviewRequest):
     if req.rating < 1 or req.rating > 5:
         raise HTTPException(status_code=400, detail="Rating must be between 1 and 5")
-    comment = req.comment.strip()[:1000] if req.comment else None
-    rest_post("site_reviews", {"rating": req.rating, "comment": comment})
-    return {"success": True}
+    try:
+        comment = req.comment.strip()[:1000] if req.comment else None
+        rest_post("site_reviews", {"rating": req.rating, "comment": comment})
+        return {"success": True}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/api/reviews/summary")
 def reviews_summary():
-    rows = rest_get("site_reviews", {"select": "rating,comment,created_at", "order": "created_at.desc", "limit": "100"})
+    try:
+        rows = rest_get("site_reviews", {"select": "rating,comment,created_at", "order": "created_at.desc", "limit": "100"})
+    except Exception:
+        return {"average": 0, "total": 0, "recent": []}
     if not rows:
         return {"average": 0, "total": 0, "recent": []}
     total = len(rows)
