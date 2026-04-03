@@ -15,6 +15,25 @@ from tools.db_tools import rest_get, _base, _headers
 _TAVILY_URL  = "https://api.tavily.com/search"
 _CLAUDE_URL  = "https://api.anthropic.com/v1/messages"
 
+# Verified credible sources only
+_VERIFIED_DOMAINS = [
+    # ROC / corporate registry aggregators
+    "zaubacorp.com", "tofler.in", "indiafilings.com", "filesure.in", "mca.gov.in",
+    # Official govt / election
+    "myneta.info", "eci.gov.in", "adrindia.org",
+    # Major Indian national news
+    "thehindu.com", "indianexpress.com", "timesofindia.com", "ndtv.com",
+    "livemint.com", "businessstandard.com", "hindustantimes.com", "aninews.in",
+    # Investigative / digital media
+    "thewire.in", "thenewsminute.com", "caravanmagazine.in", "scroll.in",
+    "theprint.in", "thefederal.com", "deccanherald.com", "outlookindia.com",
+    "firstpost.com", "moneycontrol.com", "theweek.in",
+    # TN / regional credible
+    "dinamalar.com", "dtnext.in", "pucl.org",
+    # Reference
+    "en.wikipedia.org",
+]
+
 
 # ── Supabase cache ─────────────────────────────────────────────────────────────
 
@@ -45,22 +64,22 @@ def _save_cache(candidate_id: int, graph_data: dict) -> None:
 
 # ── Tavily (basic depth — matches working allegations agent) ───────────────────
 
-def _tavily_search(query: str, max_results: int = 5) -> list[dict]:
+def _tavily_search(query: str, max_results: int = 5,
+                   include_domains: list | None = None) -> list[dict]:
     api_key = os.getenv("TAVILY_API_KEY", "")
     if not api_key:
         return []
+    body = {
+        "api_key": api_key,
+        "query": query,
+        "max_results": max_results,
+        "search_depth": "basic",
+        "include_answer": False,
+    }
+    if include_domains:
+        body["include_domains"] = include_domains
     try:
-        r = httpx.post(
-            _TAVILY_URL,
-            json={
-                "api_key": api_key,
-                "query": query,
-                "max_results": max_results,
-                "search_depth": "basic",       # same as working allegations agent
-                "include_answer": False,
-            },
-            timeout=15.0,
-        )
+        r = httpx.post(_TAVILY_URL, json=body, timeout=15.0)
         r.raise_for_status()
         return [
             {
@@ -82,6 +101,7 @@ def _find_myneta_url(name: str) -> str | None:
     results = _tavily_search(
         f'"{name}" myneta.info affidavit TamilNadu2026 OR TamilNadu2021',
         max_results=5,
+        include_domains=["myneta.info"],
     )
     for r in results:
         url = r.get("url", "")
@@ -155,29 +175,30 @@ Page text:
 
 def _search_news(name: str, party: str, constituency: str) -> list[dict]:
     """
-    5 targeted Tavily searches — Zauba/IndiaFilings, family companies, news.
-    basic depth, quoted names, score-filtered.
+    5 targeted Tavily searches — verified domains only, quoted names, score-filtered.
     """
     last_name = name.split()[-1]
 
-    queries = [
-        # ROC aggregator sites — finds declared + undeclared directorships
-        f'"{name}" zaubacorp.com OR indiafilings.com OR tofler.in director company',
-        # Family company connections — son/daughter/wife often hold companies
-        f'"{last_name}" family son daughter wife company director business Tamil Nadu',
-        # Asset declaration gaps and transfers
-        f'"{name}" affidavit assets declared wife company minister',
-        # Investigative journalism
-        f'"{name}" {party} conflict interest allegation undisclosed business',
-        # Specific business interests and film/media connections
-        f'"{name}" company Red Giant OR cinema OR production OR media OR trust',
+    _ROC_DOMAINS = ["zaubacorp.com", "tofler.in", "indiafilings.com", "filesure.in", "mca.gov.in"]
+
+    queries_with_domains = [
+        # ROC aggregators — undeclared directorships by name/DIN
+        (f'"{name}" director company DIN',                                      _ROC_DOMAINS),
+        # Family ROC search — son/daughter/wife directorships
+        (f'"{last_name}" director company Tamil Nadu',                          _ROC_DOMAINS),
+        # Affidavit / wealth — verified news only
+        (f'"{name}" affidavit assets declared wife company minister',           _VERIFIED_DOMAINS),
+        # Conflicts of interest — investigative journalism
+        (f'"{name}" conflict interest allegation undisclosed business {party}', _VERIFIED_DOMAINS),
+        # Business / film / media interests
+        (f'"{name}" company business cinema production media trust Tamil Nadu', _VERIFIED_DOMAINS),
     ]
 
     all_results: list[dict] = []
     seen_urls: set[str] = set()
 
-    for q in queries:
-        for r in _tavily_search(q, max_results=5):
+    for query, domains in queries_with_domains:
+        for r in _tavily_search(query, max_results=5, include_domains=domains):
             if r["url"] not in seen_urls and r.get("score", 0) > 0.1:
                 seen_urls.add(r["url"])
                 all_results.append(r)
