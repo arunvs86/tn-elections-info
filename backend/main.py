@@ -22,7 +22,7 @@ from agents.briefing_agent import generate_briefing, get_latest_briefing
 from agents.thamizhan_agent import trigger_vapi_call, call_all_pledgers, get_pledge_stats, send_whatsapp_reminder, send_sms_reminder, sms_all_pledgers
 from agents.allegations_agent import fetch_allegations
 from agents.connections_agent import build_connections
-from tools.db_tools import save_messages
+from tools.db_tools import save_messages, rest_get, rest_post
 
 app = FastAPI(title="TN Elections API", version="2.0.0")
 
@@ -270,6 +270,34 @@ def thamizhan_sms_single(req: WhatsAppRequest):
     if not result["success"]:
         raise HTTPException(status_code=502, detail=result["error"])
     return result
+
+
+class ReviewRequest(BaseModel):
+    rating: int
+    comment: str = ""
+
+
+@app.post("/api/reviews")
+def submit_review(req: ReviewRequest):
+    if req.rating < 1 or req.rating > 5:
+        raise HTTPException(status_code=400, detail="Rating must be between 1 and 5")
+    comment = req.comment.strip()[:1000] if req.comment else None
+    rest_post("site_reviews", {"rating": req.rating, "comment": comment})
+    return {"success": True}
+
+
+@app.get("/api/reviews/summary")
+def reviews_summary():
+    rows = rest_get("site_reviews", {"select": "rating,comment,created_at", "order": "created_at.desc", "limit": "100"})
+    if not rows:
+        return {"average": 0, "total": 0, "recent": []}
+    total = len(rows)
+    average = round(sum(r["rating"] for r in rows) / total, 1)
+    recent = [
+        {"rating": r["rating"], "comment": r["comment"], "created_at": r["created_at"]}
+        for r in rows[:5] if r.get("comment")
+    ]
+    return {"average": average, "total": total, "recent": recent}
 
 
 @app.post("/api/thamizhan/sms-all")

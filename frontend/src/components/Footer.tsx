@@ -2,32 +2,14 @@
 
 import Link from "next/link";
 import VisitorTracker from "@/components/VisitorTracker";
+import ReviewWidget from "@/components/ReviewWidget";
 
 export default function Footer() {
   return (
     <footer className="mt-16 bg-white border-t border-gray-100">
 
-      {/* ── Donation banner — full-width prominent block ── */}
-      <div className="bg-gradient-to-r from-orange-50 to-amber-50 border-b border-orange-100 py-10 px-4">
-        <div className="max-w-xl mx-auto text-center">
-          <p className="text-xs font-bold uppercase tracking-widest text-orange-400 mb-1">Support this project</p>
-          <h3 className="text-xl font-extrabold text-gray-900 mb-1">This site is free & independent</h3>
-          <p className="text-sm text-gray-500 mb-6">
-            If tnelections.info helped you make an informed choice, kindly consider donating to help me keep the site up and running. 
-          </p>
-          {/* QR code — large and centred */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/qr.jpg"
-            alt="UPI QR code for donation"
-            className="w-56 h-56 mx-auto rounded-2xl border-2 border-orange-200 shadow-md object-contain bg-white p-2"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-            suppressHydrationWarning
-          />
-          <p className="mt-4 text-sm font-semibold text-gray-600">Scan with PhonePe · GPay · Paytm · any UPI app</p>
-          <p className="text-xs text-gray-400 mt-1">Any amount helps keep this site running 🙏</p>
-        </div>
-      </div>
+      {/* ── Reviews banner ── */}
+      <ReviewWidget />
 
       {/* ── Bottom bar ── */}
       <div className="max-w-6xl mx-auto px-4 py-8">
