@@ -56,21 +56,22 @@ def _save_cache(candidate_id: int, graph_data: dict) -> None:
 
 # ── Tavily search ──────────────────────────────────────────────────────────────
 
-def _tavily_search(query: str, max_results: int = 5, include_domains: list | None = None) -> list[dict]:
+def _tavily_search(query: str, max_results: int = 8) -> list[dict]:
     api_key = os.getenv("TAVILY_API_KEY", "")
     if not api_key:
         return []
-    body = {
-        "api_key": api_key,
-        "query": query,
-        "max_results": max_results,
-        "search_depth": "advanced",
-        "include_answer": False,
-    }
-    if include_domains:
-        body["include_domains"] = include_domains
     try:
-        r = httpx.post(_TAVILY_URL, json=body, timeout=15.0)
+        r = httpx.post(
+            _TAVILY_URL,
+            json={
+                "api_key": api_key,
+                "query": query,
+                "max_results": max_results,
+                "search_depth": "advanced",
+                "include_answer": False,
+            },
+            timeout=20.0,
+        )
         r.raise_for_status()
         return [
             {
@@ -94,20 +95,39 @@ def _html_to_text(html: str) -> str:
     return text[:10000]
 
 
-def _find_myneta_url(name: str, year: int = 2026) -> str | None:
-    """Use Tavily to find the candidate's Myneta affidavit page URL."""
+def _find_myneta_url(name: str) -> str | None:
+    """Find Myneta affidavit URL — search includes myneta.info naturally."""
+    first = name.split()[0]
     results = _tavily_search(
-        f"{name} TamilNadu{year} candidate affidavit assets",
+        f"{name} myneta.info affidavit TamilNadu2026 OR TamilNadu2021 candidate",
         max_results=5,
-        include_domains=["myneta.info"],
     )
     for r in results:
         url = r.get("url", "")
-        if f"TamilNadu{year}" in url and "candidate.php" in url:
+        if "myneta.info" in url and "candidate.php" in url:
             return url
-    # Fallback to previous election year
-    if year == 2026:
-        return _find_myneta_url(name, 2021)
+
+    # Direct fetch fallback: search Myneta's own candidate list
+    for year in [2026, 2021]:
+        try:
+            search_url = f"https://myneta.info/TamilNadu{year}/index.php?action=show_candidates&constituency_id=0&name={first}"
+            resp = httpx.get(search_url, timeout=10.0, follow_redirects=True,
+                             headers={"User-Agent": "Mozilla/5.0 tnelections.info"})
+            ids = re.findall(r'candidate\.php\?candidate_id=(\d+)', resp.text)
+            names_in_page = re.findall(r'candidate_id=\d+"[^>]*>([^<]+)<', resp.text)
+            # Pick the candidate ID whose surrounding name best matches
+            for cid in ids[:10]:
+                candidate_url = f"https://myneta.info/TamilNadu{year}/candidate.php?candidate_id={cid}"
+                # Quick check: fetch page title to verify name
+                try:
+                    page = httpx.get(candidate_url, timeout=8.0, follow_redirects=True,
+                                     headers={"User-Agent": "Mozilla/5.0 tnelections.info"})
+                    if any(part.lower() in page.text.lower() for part in name.split() if len(part) > 3):
+                        return candidate_url
+                except Exception:
+                    continue
+        except Exception:
+            continue
     return None
 
 
@@ -186,41 +206,37 @@ Page text:
 # ── News search ────────────────────────────────────────────────────────────────
 
 def _search_news(name: str, party: str, constituency: str) -> list[dict]:
-    """Run targeted news searches for undeclared connections."""
-    parts = name.split()
-    last = parts[-1] if parts else name
-    first = parts[0] if parts else name
-
-    queries = [
-        f"{name} company director business Tamil Nadu assets wealth",
-        f"{name} family son daughter wife business undisclosed",
-        f"{name} conflict interest minister government contract",
-        f"{name} allegation corruption benami trust",
-        f"{last} {first} {party} political network ally",
-    ]
+    """2 Tavily searches for connections — broad + investigative."""
+    last = name.split()[-1] if name.split() else name
 
     all_results: list[dict] = []
     seen_urls: set[str] = set()
 
-    for q in queries:
-        # Broad search
-        for r in _tavily_search(q, max_results=4):
-            if r["url"] not in seen_urls:
-                seen_urls.add(r["url"])
-                all_results.append(r)
-        # Investigative outlet search
-        for r in _tavily_search(q, max_results=3, include_domains=_INVESTIGATIVE_DOMAINS):
-            if r["url"] not in seen_urls:
-                seen_urls.add(r["url"])
-                all_results.append(r)
+    # Search 1: business, family, assets
+    for r in _tavily_search(
+        f"{name} company director family business assets wealth Tamil Nadu politician",
+        max_results=8,
+    ):
+        if r["url"] not in seen_urls:
+            seen_urls.add(r["url"])
+            all_results.append(r)
 
-    # Keep results that mention the candidate
+    # Search 2: conflicts, allegations, political network
+    for r in _tavily_search(
+        f"{name} {party} conflict interest minister allegation undisclosed son wife Tamil Nadu",
+        max_results=8,
+    ):
+        if r["url"] not in seen_urls:
+            seen_urls.add(r["url"])
+            all_results.append(r)
+
+    # Keep results that mention the candidate by name
     name_tokens = [t.lower() for t in name.split() if len(t) >= 3]
     relevant = [
         r for r in all_results
         if any(tok in (r["title"] + " " + r["content"]).lower() for tok in name_tokens)
     ]
-    return relevant if relevant else all_results[:10]
+    return relevant if relevant else all_results
 
 
 # ── Claude graph synthesis ─────────────────────────────────────────────────────
