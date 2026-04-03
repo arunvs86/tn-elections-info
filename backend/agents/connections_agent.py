@@ -155,13 +155,22 @@ Page text:
 
 def _search_news(name: str, party: str, constituency: str) -> list[dict]:
     """
-    3 targeted Tavily searches — quoted name, basic depth, score-filtered.
-    Mirrors the exact pattern of the working allegations agent.
+    5 targeted Tavily searches — Zauba/IndiaFilings, family companies, news.
+    basic depth, quoted names, score-filtered.
     """
+    last_name = name.split()[-1]
+
     queries = [
-        f'"{name}" company director business family assets Tamil Nadu',
-        f'"{name}" {party} conflict interest minister allegation undisclosed',
-        f'"{name}" son wife trust business wealth controversy',
+        # ROC aggregator sites — finds declared + undeclared directorships
+        f'"{name}" zaubacorp.com OR indiafilings.com OR tofler.in director company',
+        # Family company connections — son/daughter/wife often hold companies
+        f'"{last_name}" family son daughter wife company director business Tamil Nadu',
+        # Asset declaration gaps and transfers
+        f'"{name}" affidavit assets declared wife company minister',
+        # Investigative journalism
+        f'"{name}" {party} conflict interest allegation undisclosed business',
+        # Specific business interests and film/media connections
+        f'"{name}" company Red Giant OR cinema OR production OR media OR trust',
     ]
 
     all_results: list[dict] = []
@@ -169,11 +178,11 @@ def _search_news(name: str, party: str, constituency: str) -> list[dict]:
 
     for q in queries:
         for r in _tavily_search(q, max_results=5):
-            if r["url"] not in seen_urls and r.get("score", 0) > 0.2:
+            if r["url"] not in seen_urls and r.get("score", 0) > 0.1:
                 seen_urls.add(r["url"])
                 all_results.append(r)
 
-    # Keep results mentioning the candidate (name tokens ≥ 4 chars, same as allegations)
+    # Keep results mentioning the candidate (name tokens ≥ 4 chars)
     name_tokens = [t.lower() for t in name.replace(".", " ").split() if len(t) >= 4]
     relevant = [
         r for r in all_results
@@ -198,36 +207,42 @@ def _synthesize(name: str, party: str, constituency: str,
     ])
 
     system = """You are a political transparency analyst for Tamil Nadu elections.
-Build a verified connection graph from official affidavit data and news sources.
+Build the most complete possible connection graph from affidavit data, ROC filings (Zauba Corp, IndiaFilings), and news sources.
 
 Return ONLY valid JSON (no markdown):
 {
   "nodes": [
-    {"id": "c0", "type": "candidate", "label": "name", "detail": "party · constituency", "source": "declared", "link": null},
-    {"id": "f1", "type": "family",    "label": "spouse name", "detail": "Spouse", "source": "declared", "link": "<myneta_url>"},
-    {"id": "co1","type": "company",   "label": "company",     "detail": "Director (declared)", "source": "declared", "link": "<myneta_url>"},
-    {"id": "co2","type": "company",   "label": "company",     "detail": "not declared in affidavit", "source": "reported", "link": "<news_url>"},
-    {"id": "p1", "type": "politician","label": "name",        "detail": "relation/party", "source": "declared", "link": null}
+    {"id": "c0",  "type": "candidate", "label": "name",        "detail": "party · constituency",       "source": "declared", "link": null},
+    {"id": "f1",  "type": "family",    "label": "spouse name", "detail": "Spouse",                     "source": "declared", "link": "<myneta_url>"},
+    {"id": "f2",  "type": "family",    "label": "son name",    "detail": "Son · CEO of X",             "source": "reported", "link": "<news_url>"},
+    {"id": "co1", "type": "company",   "label": "company",     "detail": "Director (declared)",        "source": "declared", "link": "<myneta_url>"},
+    {"id": "co2", "type": "company",   "label": "Red Giant",   "detail": "Film co, son is CEO",        "source": "reported", "link": "<news_url>"},
+    {"id": "p1",  "type": "politician","label": "name",        "detail": "Father · Chief Minister",    "source": "declared", "link": null}
   ],
   "edges": [
-    {"from": "c0", "to": "f1", "label": "Spouse"},
-    {"from": "c0", "to": "co1","label": "Director"}
+    {"from": "c0", "to": "f1",  "label": "Spouse"},
+    {"from": "c0", "to": "f2",  "label": "Son"},
+    {"from": "f2", "to": "co2", "label": "CEO"},
+    {"from": "c0", "to": "co1", "label": "Director"}
   ],
-  "summary": "2-3 sentence plain-English summary of key connections and any conflicts of interest.",
+  "summary": "3-4 sentence summary covering: declared assets, known family businesses, undeclared connections found in news/ROC, and any wealth transfers between election years.",
   "red_flags": [
-    {"text": "Conflict description", "link": "<source_url>"}
+    {"text": "Specific conflict description with amounts if known", "link": "<source_url>"}
   ]
 }
 
 Rules:
 - Candidate node id MUST be "c0", source "declared"
-- source field: "declared" = in affidavit | "reported" = in news with URL | "alleged" = unverified
-- Every "reported" node MUST have a real link from the provided news sources
+- source: "declared" = explicitly in affidavit | "reported" = found in news/ROC with URL | "alleged" = unverified claim
+- Every "reported" node MUST have a real URL from the provided sources
+- ALWAYS include: spouse (if known), sons/daughters with businesses, any companies linked via family
 - Node types: candidate, company, family, politician, donor
 - Max 15 nodes, labels max 4 words
-- red_flags: only genuine conflicts of interest (e.g. spouse holds company in minister's portfolio)
-- If spouse or family member runs a business linked to candidate's govt portfolio → red flag
-- If assets transferred to spouse/son between election years → flag it"""
+- CRITICAL: If a company appears in ROC (Zauba/IndiaFilings) sources but NOT in the affidavit → source="reported", add red flag "Not declared in affidavit"
+- If son/daughter holds a company linked to the candidate's ministerial portfolio → red flag
+- If spouse's assets grew significantly between election years → red flag with amounts
+- If candidate resigned directorship just before filing (transferred to spouse/child same day) → red flag
+- Include film production companies, trusts, holding companies even if held by family"""
 
     user = f"""Candidate: {name}
 Party: {party}
