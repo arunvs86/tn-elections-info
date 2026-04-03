@@ -1,13 +1,10 @@
 """
-Connections agent v2: affidavit-first + targeted investigative news.
-
-Sources (in order of reliability):
-1. Myneta.info affidavit  → officially declared connections
-2. Targeted news search   → reported but undeclared connections (with source URLs)
-
-Each graph node is tagged with:
-  source: "declared" | "reported" | "alleged"
-  link:   URL to the affidavit page or news article
+Connections agent v3: affidavit-first + targeted investigative news.
+Uses search_depth="basic" to match working allegations agent pattern.
+Sources:
+  1. Myneta affidavit page (via Tavily search)
+  2. News/investigative journalism (2 targeted Tavily calls)
+  3. Claude synthesizes into a labelled graph with source URLs
 """
 import os
 import re
@@ -15,16 +12,8 @@ import json
 import httpx
 from tools.db_tools import rest_get, _base, _headers
 
-_TAVILY_URL = "https://api.tavily.com/search"
-_ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"
-
-# Investigative outlets most likely to have TN politician coverage
-_INVESTIGATIVE_DOMAINS = [
-    "thewire.in", "thenewsminute.com", "thehindu.com",
-    "caravanmagazine.in", "scroll.in", "thefederal.com",
-    "deccanherald.com", "outlookindia.com", "indiatoday.in",
-    "ndtv.com", "theprint.in",
-]
+_TAVILY_URL  = "https://api.tavily.com/search"
+_CLAUDE_URL  = "https://api.anthropic.com/v1/messages"
 
 
 # ── Supabase cache ─────────────────────────────────────────────────────────────
@@ -54,9 +43,9 @@ def _save_cache(candidate_id: int, graph_data: dict) -> None:
         pass
 
 
-# ── Tavily search ──────────────────────────────────────────────────────────────
+# ── Tavily (basic depth — matches working allegations agent) ───────────────────
 
-def _tavily_search(query: str, max_results: int = 8) -> list[dict]:
+def _tavily_search(query: str, max_results: int = 5) -> list[dict]:
     api_key = os.getenv("TAVILY_API_KEY", "")
     if not api_key:
         return []
@@ -67,17 +56,18 @@ def _tavily_search(query: str, max_results: int = 8) -> list[dict]:
                 "api_key": api_key,
                 "query": query,
                 "max_results": max_results,
-                "search_depth": "advanced",
+                "search_depth": "basic",       # same as working allegations agent
                 "include_answer": False,
             },
-            timeout=20.0,
+            timeout=15.0,
         )
         r.raise_for_status()
         return [
             {
                 "title": item.get("title", ""),
-                "url": item.get("url", ""),
-                "content": item.get("content", "")[:1000],
+                "url":   item.get("url", ""),
+                "content": item.get("content", "")[:800],
+                "score": item.get("score", 0),
             }
             for item in r.json().get("results", [])
         ]
@@ -87,106 +77,64 @@ def _tavily_search(query: str, max_results: int = 8) -> list[dict]:
 
 # ── Myneta affidavit ───────────────────────────────────────────────────────────
 
-def _html_to_text(html: str) -> str:
-    """Strip HTML tags and collapse whitespace."""
-    html = re.sub(r"<(script|style)[^>]*>.*?</(script|style)>", "", html, flags=re.DOTALL | re.IGNORECASE)
-    text = re.sub(r"<[^>]+>", " ", html)
-    text = re.sub(r"\s+", " ", text).strip()
-    return text[:10000]
-
-
 def _find_myneta_url(name: str) -> str | None:
-    """Find Myneta affidavit URL — search includes myneta.info naturally."""
-    first = name.split()[0]
+    """Single Tavily call to find Myneta affidavit page URL."""
     results = _tavily_search(
-        f"{name} myneta.info affidavit TamilNadu2026 OR TamilNadu2021 candidate",
+        f'"{name}" myneta.info affidavit TamilNadu2026 OR TamilNadu2021',
         max_results=5,
     )
     for r in results:
         url = r.get("url", "")
         if "myneta.info" in url and "candidate.php" in url:
             return url
-
-    # Direct fetch fallback: search Myneta's own candidate list
-    for year in [2026, 2021]:
-        try:
-            search_url = f"https://myneta.info/TamilNadu{year}/index.php?action=show_candidates&constituency_id=0&name={first}"
-            resp = httpx.get(search_url, timeout=10.0, follow_redirects=True,
-                             headers={"User-Agent": "Mozilla/5.0 tnelections.info"})
-            ids = re.findall(r'candidate\.php\?candidate_id=(\d+)', resp.text)
-            names_in_page = re.findall(r'candidate_id=\d+"[^>]*>([^<]+)<', resp.text)
-            # Pick the candidate ID whose surrounding name best matches
-            for cid in ids[:10]:
-                candidate_url = f"https://myneta.info/TamilNadu{year}/candidate.php?candidate_id={cid}"
-                # Quick check: fetch page title to verify name
-                try:
-                    page = httpx.get(candidate_url, timeout=8.0, follow_redirects=True,
-                                     headers={"User-Agent": "Mozilla/5.0 tnelections.info"})
-                    if any(part.lower() in page.text.lower() for part in name.split() if len(part) > 3):
-                        return candidate_url
-                except Exception:
-                    continue
-        except Exception:
-            continue
     return None
 
 
-def _fetch_myneta_page(url: str) -> str:
-    """Fetch Myneta candidate page and return plain text."""
+def _fetch_myneta_text(url: str) -> str:
+    """Fetch Myneta page and return plain text (strips HTML tags)."""
     try:
-        r = httpx.get(
-            url,
-            timeout=15.0,
-            headers={"User-Agent": "Mozilla/5.0 tnelections.info research bot"},
-            follow_redirects=True,
-        )
+        r = httpx.get(url, timeout=12.0, follow_redirects=True,
+                      headers={"User-Agent": "Mozilla/5.0 tnelections.info"})
         r.raise_for_status()
-        return _html_to_text(r.text)
+        html = r.text
+        # Strip script/style blocks
+        html = re.sub(r'<(script|style)[^>]*>.*?</(script|style)>', '', html,
+                      flags=re.DOTALL | re.IGNORECASE)
+        # Strip tags
+        text = re.sub(r'<[^>]+>', ' ', html)
+        text = re.sub(r'\s+', ' ', text).strip()
+        return text[:8000]
     except Exception:
         return ""
 
 
-def _extract_affidavit(name: str, page_text: str, source_url: str) -> dict:
-    """Ask Claude Haiku to extract structured data from Myneta page text."""
+def _extract_affidavit(name: str, text: str, source_url: str) -> dict:
+    """Ask Claude Haiku to extract structured affidavit data from Myneta page text."""
     api_key = os.getenv("ANTHROPIC_API_KEY", "")
-    if not api_key or not page_text:
+    if not api_key or not text:
         return {}
-
-    prompt = f"""Extract affidavit information from this Myneta.info candidate page for {name}.
-
+    prompt = f"""Extract affidavit information from this Myneta.info page text for {name}.
 Return ONLY valid JSON (no markdown):
 {{
   "spouse_name": "name or null",
   "criminal_cases": 0,
-  "criminal_sections": ["IPC 143", "IPC 188"],
+  "companies_declared": [
+    {{"name": "company", "role": "Director/MD/etc", "holder": "self/spouse"}}
+  ],
   "total_assets_self_cr": 0.0,
   "total_assets_spouse_cr": 0.0,
-  "companies_declared": [
-    {{"name": "company name", "role": "Director/MD/Partner", "holder": "self or spouse"}}
-  ],
   "source_url": "{source_url}"
 }}
-
-Rules:
-- total_assets_self_cr and total_assets_spouse_cr must be in crores (divide rupees by 1,00,00,000)
-- Only include companies explicitly listed on the page
-- criminal_sections: list actual IPC section numbers found
-- If a field is not found, use null or 0 or []
-
 Page text:
-{page_text}"""
-
+{text[:6000]}"""
     try:
         r = httpx.post(
-            _ANTHROPIC_URL,
-            headers={
-                "x-api-key": api_key,
-                "anthropic-version": "2023-06-01",
-                "content-type": "application/json",
-            },
+            _CLAUDE_URL,
+            headers={"x-api-key": api_key, "anthropic-version": "2023-06-01",
+                     "content-type": "application/json"},
             json={
                 "model": "claude-haiku-4-5-20251001",
-                "max_tokens": 800,
+                "max_tokens": 600,
                 "temperature": 0,
                 "messages": [{"role": "user", "content": prompt}],
             },
@@ -203,35 +151,30 @@ Page text:
         return {}
 
 
-# ── News search ────────────────────────────────────────────────────────────────
+# ── News searches (3 focused queries with quoted names) ────────────────────────
 
 def _search_news(name: str, party: str, constituency: str) -> list[dict]:
-    """2 Tavily searches for connections — broad + investigative."""
-    last = name.split()[-1] if name.split() else name
+    """
+    3 targeted Tavily searches — quoted name, basic depth, score-filtered.
+    Mirrors the exact pattern of the working allegations agent.
+    """
+    queries = [
+        f'"{name}" company director business family assets Tamil Nadu',
+        f'"{name}" {party} conflict interest minister allegation undisclosed',
+        f'"{name}" son wife trust business wealth controversy',
+    ]
 
     all_results: list[dict] = []
     seen_urls: set[str] = set()
 
-    # Search 1: business, family, assets
-    for r in _tavily_search(
-        f"{name} company director family business assets wealth Tamil Nadu politician",
-        max_results=8,
-    ):
-        if r["url"] not in seen_urls:
-            seen_urls.add(r["url"])
-            all_results.append(r)
+    for q in queries:
+        for r in _tavily_search(q, max_results=5):
+            if r["url"] not in seen_urls and r.get("score", 0) > 0.2:
+                seen_urls.add(r["url"])
+                all_results.append(r)
 
-    # Search 2: conflicts, allegations, political network
-    for r in _tavily_search(
-        f"{name} {party} conflict interest minister allegation undisclosed son wife Tamil Nadu",
-        max_results=8,
-    ):
-        if r["url"] not in seen_urls:
-            seen_urls.add(r["url"])
-            all_results.append(r)
-
-    # Keep results that mention the candidate by name
-    name_tokens = [t.lower() for t in name.split() if len(t) >= 3]
+    # Keep results mentioning the candidate (name tokens ≥ 4 chars, same as allegations)
+    name_tokens = [t.lower() for t in name.replace(".", " ").split() if len(t) >= 4]
     relevant = [
         r for r in all_results
         if any(tok in (r["title"] + " " + r["content"]).lower() for tok in name_tokens)
@@ -239,80 +182,68 @@ def _search_news(name: str, party: str, constituency: str) -> list[dict]:
     return relevant if relevant else all_results
 
 
-# ── Claude graph synthesis ─────────────────────────────────────────────────────
+# ── Claude synthesis ───────────────────────────────────────────────────────────
 
-def _synthesize_graph(
-    name: str,
-    party: str,
-    constituency: str,
-    affidavit: dict,
-    news_results: list[dict],
-) -> dict:
-    """Synthesize affidavit + news into a sourced connection graph."""
+def _synthesize(name: str, party: str, constituency: str,
+                affidavit: dict, news: list[dict]) -> dict:
     api_key = os.getenv("ANTHROPIC_API_KEY", "")
     if not api_key:
-        return _fallback_graph(name, party)
+        return _fallback(name, party)
 
-    affidavit_str = json.dumps(affidavit, ensure_ascii=False) if affidavit else "Not available"
+    affidavit_str = json.dumps(affidavit, ensure_ascii=False) if affidavit else "Not found"
+
     news_str = "\n\n".join([
-        f"[SOURCE URL: {r['url']}]\nTitle: {r['title']}\n{r['content'][:600]}"
-        for r in news_results[:15]
+        f"[{r['url']}]\nTitle: {r['title']}\n{r['content'][:500]}"
+        for r in news[:10]
     ])
 
     system = """You are a political transparency analyst for Tamil Nadu elections.
-Build a connection graph from official affidavit data and news sources.
+Build a verified connection graph from official affidavit data and news sources.
 
 Return ONLY valid JSON (no markdown):
 {
   "nodes": [
-    {"id": "c0", "type": "candidate", "label": "<name>", "detail": "<party> · <constituency>", "source": "declared", "link": null},
-    {"id": "f1", "type": "family", "label": "<spouse name>", "detail": "Spouse · declared", "source": "declared", "link": "<affidavit source_url>"},
-    {"id": "f2", "type": "family", "label": "<son/daughter>", "detail": "<relation> · <role>", "source": "reported", "link": "<news url>"},
-    {"id": "co1", "type": "company", "label": "<company>", "detail": "<role> · declared", "source": "declared", "link": "<affidavit source_url>"},
-    {"id": "co2", "type": "company", "label": "<company>", "detail": "<role> · not declared", "source": "reported", "link": "<exact news url>"},
-    {"id": "p1", "type": "politician", "label": "<name>", "detail": "<relation>", "source": "declared", "link": null}
+    {"id": "c0", "type": "candidate", "label": "name", "detail": "party · constituency", "source": "declared", "link": null},
+    {"id": "f1", "type": "family",    "label": "spouse name", "detail": "Spouse", "source": "declared", "link": "<myneta_url>"},
+    {"id": "co1","type": "company",   "label": "company",     "detail": "Director (declared)", "source": "declared", "link": "<myneta_url>"},
+    {"id": "co2","type": "company",   "label": "company",     "detail": "not declared in affidavit", "source": "reported", "link": "<news_url>"},
+    {"id": "p1", "type": "politician","label": "name",        "detail": "relation/party", "source": "declared", "link": null}
   ],
   "edges": [
     {"from": "c0", "to": "f1", "label": "Spouse"},
-    {"from": "c0", "to": "co1", "label": "Director"}
+    {"from": "c0", "to": "co1","label": "Director"}
   ],
-  "summary": "2-3 sentence summary covering key connections, conflicts of interest, and any wealth transfer patterns.",
+  "summary": "2-3 sentence plain-English summary of key connections and any conflicts of interest.",
   "red_flags": [
-    {"text": "Specific conflict of interest description", "link": "<source url>"}
+    {"text": "Conflict description", "link": "<source_url>"}
   ]
 }
 
 Rules:
-- Candidate node id MUST be "c0", source MUST be "declared"
-- source field: "declared" = from affidavit, "reported" = found in news (must have real URL), "alleged" = unverified claim
-- Every "reported" or "alleged" node MUST have the exact URL from the news sources provided
-- Declared nodes use the affidavit source_url as link
-- Max 15 nodes total
-- red_flags: only genuine conflicts of interest (e.g. spouse directs company in candidate's ministry portfolio; assets transferred to family before election; company received govt contract while candidate was minister)
-- Each red_flag MUST have a source link
-- If spouse declared in affidavit → always include as family node
-- Detect wealth transfer: if news mentions assets moved to spouse/children → red flag
-- Keep node labels concise (max 4 words)
-- If data is limited, still write a useful summary from what is known"""
+- Candidate node id MUST be "c0", source "declared"
+- source field: "declared" = in affidavit | "reported" = in news with URL | "alleged" = unverified
+- Every "reported" node MUST have a real link from the provided news sources
+- Node types: candidate, company, family, politician, donor
+- Max 15 nodes, labels max 4 words
+- red_flags: only genuine conflicts of interest (e.g. spouse holds company in minister's portfolio)
+- If spouse or family member runs a business linked to candidate's govt portfolio → red flag
+- If assets transferred to spouse/son between election years → flag it"""
 
     user = f"""Candidate: {name}
 Party: {party}
 Constituency: {constituency}
 
-OFFICIAL AFFIDAVIT DATA (ECI declaration via Myneta.info):
+AFFIDAVIT (official ECI declaration):
 {affidavit_str}
 
-NEWS SOURCES (titles and snippets with URLs):
+NEWS SOURCES:
 {news_str}"""
 
     try:
         r = httpx.post(
-            _ANTHROPIC_URL,
-            headers={
-                "x-api-key": api_key,
-                "anthropic-version": "2023-06-01",
-                "content-type": "application/json",
-            },
+            _CLAUDE_URL,
+            headers={"x-api-key": api_key, "anthropic-version": "2023-06-01",
+                     "content-type": "application/json"},
             json={
                 "model": "claude-haiku-4-5-20251001",
                 "max_tokens": 2000,
@@ -320,7 +251,7 @@ NEWS SOURCES (titles and snippets with URLs):
                 "system": system,
                 "messages": [{"role": "user", "content": user}],
             },
-            timeout=45.0,
+            timeout=40.0,
         )
         r.raise_for_status()
         raw = r.json()["content"][0]["text"].strip()
@@ -329,64 +260,55 @@ NEWS SOURCES (titles and snippets with URLs):
             if raw.startswith("json"):
                 raw = raw[4:]
         result = json.loads(raw.strip())
-        # Ensure candidate node exists
+        # Ensure candidate node always exists
         if not any(n["id"] == "c0" for n in result.get("nodes", [])):
             result.setdefault("nodes", []).insert(0, {
                 "id": "c0", "type": "candidate", "label": name,
-                "detail": f"{party} · {constituency}",
-                "source": "declared", "link": None,
+                "detail": f"{party} · {constituency}", "source": "declared", "link": None,
             })
         return result
     except Exception:
-        return _fallback_graph(name, party)
+        return _fallback(name, party)
 
 
-def _fallback_graph(name: str, party: str) -> dict:
+def _fallback(name: str, party: str) -> dict:
     return {
-        "nodes": [{
-            "id": "c0", "type": "candidate", "label": name,
-            "detail": party, "source": "declared", "link": None,
-        }],
+        "nodes": [{"id": "c0", "type": "candidate", "label": name,
+                   "detail": party, "source": "declared", "link": None}],
         "edges": [],
-        "summary": f"Could not retrieve connection data for {name} at this time. Please try again.",
+        "summary": f"No connection data found for {name}. Try again or check back later.",
         "red_flags": [],
     }
 
 
 # ── Main entry ─────────────────────────────────────────────────────────────────
 
-def build_connections(
-    candidate_id: int,
-    name: str,
-    party: str,
-    constituency: str,
-    force_refresh: bool = False,
-) -> dict:
-    # Check cache
+def build_connections(candidate_id: int, name: str, party: str,
+                      constituency: str, force_refresh: bool = False) -> dict:
+    # Serve from cache unless forced
     if not force_refresh:
         cached = _get_cached(candidate_id)
         if cached:
-            return {**cached["graph_data"], "cached": True, "generated_at": cached["generated_at"]}
+            return {**cached["graph_data"], "cached": True,
+                    "generated_at": cached["generated_at"]}
 
-    # Step 1: Find and parse affidavit
+    # Step 1: Affidavit (best-effort)
     affidavit_data: dict = {}
     myneta_url = _find_myneta_url(name)
     if myneta_url:
-        page_text = _fetch_myneta_page(myneta_url)
+        page_text = _fetch_myneta_text(myneta_url)
         if page_text:
             affidavit_data = _extract_affidavit(name, page_text, myneta_url)
 
-    # Step 2: Search investigative news
+    # Step 2: News (3 focused Tavily calls, basic depth)
     news_results = _search_news(name, party, constituency)
 
-    # Step 3: Synthesize graph
-    if not affidavit_data  or news_results:
-        graph = _fallback_graph(name, party)
+    # Step 3: Synthesize (or fallback)
+    if not affidavit_data and not news_results:
+        graph = _fallback(name, party)
     else:
-        graph = _synthesize_graph(name, party, constituency, affidavit_data, news_results)
+        graph = _synthesize(name, party, constituency, affidavit_data, news_results)
 
-    
     graph["cached"] = False
     _save_cache(candidate_id, {k: v for k, v in graph.items() if k != "cached"})
-
     return graph
