@@ -380,17 +380,12 @@ def build_connections(
     news_results = _search_news(name, party, constituency)
 
     # Step 3: Synthesize graph
-    # if not affidavit_data  or news_results:
-    #     graph = _fallback_graph(name, party)
-    # else:
-    #     graph = _synthesize_graph(name, party, constituency, affidavit_data, news_results)
-
-    if affidavit_data or news_results:
+    if not affidavit_data  or news_results:
+        graph = _fallback_graph(name, party)
+    else:
         graph = _synthesize_graph(name, party, constituency, affidavit_data, news_results)
 
-    else:
-        graph = _fallback_graph(name, party)
-
+    
     graph["cached"] = False
     _save_cache(candidate_id, {k: v for k, v in graph.items() if k != "cached"})
 
