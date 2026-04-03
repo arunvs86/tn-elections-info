@@ -9,6 +9,7 @@ export interface GraphNode {
   detail: string;
   source?: "declared" | "reported" | "alleged";
   link?: string | null;
+  confidence?: "confirmed" | "medium" | "low";
 }
 
 export interface GraphEdge {
@@ -264,6 +265,13 @@ export default function ConnectionGraph({ data }: { data: GraphData }) {
                   >
                     {badge.label}
                   </span>
+                  {/* Confidence badge — only show for low confidence to warn user */}
+                  {node.confidence === "low" && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700"
+                      title="Name match only — may not be the same person. Verify before sharing.">
+                      ⚠ Unverified
+                    </span>
+                  )}
                   {/* Type badge */}
                   <span
                     className="text-[10px] font-bold px-2 py-0.5 rounded-full"

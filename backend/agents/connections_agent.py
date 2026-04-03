@@ -173,35 +173,82 @@ Page text:
 
 # ── News searches (3 focused queries with quoted names) ────────────────────────
 
+def _extract_din_from_results(results: list[dict]) -> str | None:
+    """Extract DIN from Zauba/Tofler/IndiaFilings URLs or content."""
+    for r in results:
+        url = r.get("url", "")
+        # Zauba: zaubacorp.com/director/NAME/01234567
+        # Tofler: tofler.in/name/director/01234567
+        # IndiaFilings: indiafilings.com/search/name-din-01234567
+        din_match = re.search(r'/(\d{8})(?:/|$)', url)
+        if din_match:
+            return din_match.group(1)
+        # Also check content for "DIN: 01234567" or "DIN 01234567"
+        content = r.get("content", "")
+        din_in_content = re.search(r'DIN[:\s]+(\d{8})', content, re.IGNORECASE)
+        if din_in_content:
+            return din_in_content.group(1)
+    return None
+
+
 def _search_news(name: str, party: str, constituency: str) -> list[dict]:
     """
-    5 targeted Tavily searches — verified domains only, quoted names, score-filtered.
+    5 targeted Tavily searches — verified domains only, DIN-anchored ROC search.
+    Step 1: Find DIN from ROC profile search
+    Step 2: Search all companies by confirmed DIN (eliminates wrong-person matches)
+    Step 3: News/investigative from verified outlets only
     """
     last_name = name.split()[-1]
-
-    _ROC_DOMAINS = ["zaubacorp.com", "tofler.in", "indiafilings.com", "filesure.in", "mca.gov.in"]
-
-    queries_with_domains = [
-        # ROC aggregators — undeclared directorships by name/DIN
-        (f'"{name}" director company DIN',                                      _ROC_DOMAINS),
-        # Family ROC search — son/daughter/wife directorships
-        (f'"{last_name}" director company Tamil Nadu',                          _ROC_DOMAINS),
-        # Affidavit / wealth — verified news only
-        (f'"{name}" affidavit assets declared wife company minister',           _VERIFIED_DOMAINS),
-        # Conflicts of interest — investigative journalism
-        (f'"{name}" conflict interest allegation undisclosed business {party}', _VERIFIED_DOMAINS),
-        # Business / film / media interests
-        (f'"{name}" company business cinema production media trust Tamil Nadu', _VERIFIED_DOMAINS),
-    ]
+    _ROC_DOMAINS = ["zaubacorp.com", "tofler.in", "indiafilings.com", "filesure.in"]
 
     all_results: list[dict] = []
     seen_urls: set[str] = set()
 
-    for query, domains in queries_with_domains:
-        for r in _tavily_search(query, max_results=5, include_domains=domains):
+    def add(results: list[dict]) -> None:
+        for r in results:
             if r["url"] not in seen_urls and r.get("score", 0) > 0.1:
                 seen_urls.add(r["url"])
                 all_results.append(r)
+
+    # Step 1: Find the candidate's ROC profile to extract DIN
+    roc_profile = _tavily_search(
+        f'"{name}" director Tamil Nadu',
+        max_results=5, include_domains=_ROC_DOMAINS,
+    )
+    add(roc_profile)
+
+    # Step 2: If DIN found, search by DIN — unambiguous, no wrong-person risk
+    din = _extract_din_from_results(roc_profile)
+    if din:
+        din_results = _tavily_search(
+            f'DIN {din} director company Tamil Nadu',
+            max_results=5, include_domains=_ROC_DOMAINS,
+        )
+        add(din_results)
+    else:
+        # Fallback: name + Tamil Nadu to reduce ambiguity
+        add(_tavily_search(
+            f'"{name}" director company Tamil Nadu {constituency}',
+            max_results=5, include_domains=_ROC_DOMAINS,
+        ))
+
+    # Step 3: Affidavit / wealth news
+    add(_tavily_search(
+        f'"{name}" affidavit assets declared company minister Tamil Nadu',
+        max_results=5, include_domains=_VERIFIED_DOMAINS,
+    ))
+
+    # Step 4: Conflicts and investigative journalism
+    add(_tavily_search(
+        f'"{name}" conflict interest allegation undisclosed business {party}',
+        max_results=5, include_domains=_VERIFIED_DOMAINS,
+    ))
+
+    # Step 5: Business / film / trust interests
+    add(_tavily_search(
+        f'"{name}" company business cinema production media trust Tamil Nadu',
+        max_results=5, include_domains=_VERIFIED_DOMAINS,
+    ))
 
     # Keep results mentioning the candidate (name tokens ≥ 4 chars)
     name_tokens = [t.lower() for t in name.replace(".", " ").split() if len(t) >= 4]
@@ -209,7 +256,13 @@ def _search_news(name: str, party: str, constituency: str) -> list[dict]:
         r for r in all_results
         if any(tok in (r["title"] + " " + r["content"]).lower() for tok in name_tokens)
     ]
-    return relevant if relevant else all_results
+
+    # Attach DIN to results metadata so Claude can use it
+    output = relevant if relevant else all_results
+    if din:
+        for r in output:
+            r["_confirmed_din"] = din
+    return output
 
 
 # ── Claude synthesis ───────────────────────────────────────────────────────────
@@ -227,43 +280,46 @@ def _synthesize(name: str, party: str, constituency: str,
         for r in news[:10]
     ])
 
-    system = """You are a political transparency analyst for Tamil Nadu elections.
-Build the most complete possible connection graph from affidavit data, ROC filings (Zauba Corp, IndiaFilings), and news sources.
+    # Check if DIN was confirmed during search
+    confirmed_din = next(
+        (r.get("_confirmed_din") for r in news if r.get("_confirmed_din")), None
+    )
+    din_note = f"Confirmed DIN for this candidate: {confirmed_din}. Only include ROC companies linked to this exact DIN." if confirmed_din else \
+               "No DIN confirmed. For ROC results: only include a company if Tamil Nadu state AND address/constituency area matches. If name is common and match is uncertain, mark confidence as low."
+
+    system = f"""You are a political transparency analyst for Tamil Nadu elections.
+Build the most complete and ACCURATE connection graph. Accuracy is critical — do NOT include ROC company connections unless you can confirm it is the same person.
+
+DISAMBIGUATION RULE: {din_note}
 
 Return ONLY valid JSON (no markdown):
-{
+{{
   "nodes": [
-    {"id": "c0",  "type": "candidate", "label": "name",        "detail": "party · constituency",       "source": "declared", "link": null},
-    {"id": "f1",  "type": "family",    "label": "spouse name", "detail": "Spouse",                     "source": "declared", "link": "<myneta_url>"},
-    {"id": "f2",  "type": "family",    "label": "son name",    "detail": "Son · CEO of X",             "source": "reported", "link": "<news_url>"},
-    {"id": "co1", "type": "company",   "label": "company",     "detail": "Director (declared)",        "source": "declared", "link": "<myneta_url>"},
-    {"id": "co2", "type": "company",   "label": "Red Giant",   "detail": "Film co, son is CEO",        "source": "reported", "link": "<news_url>"},
-    {"id": "p1",  "type": "politician","label": "name",        "detail": "Father · Chief Minister",    "source": "declared", "link": null}
+    {{"id": "c0",  "type": "candidate", "label": "name",        "detail": "party · constituency",           "source": "declared",  "link": null,           "confidence": "confirmed"}},
+    {{"id": "f1",  "type": "family",    "label": "spouse name", "detail": "Spouse",                         "source": "declared",  "link": "<myneta_url>", "confidence": "confirmed"}},
+    {{"id": "co1", "type": "company",   "label": "company",     "detail": "Director · DIN confirmed",       "source": "reported",  "link": "<zauba_url>",  "confidence": "confirmed"}},
+    {{"id": "co2", "type": "company",   "label": "company",     "detail": "Director · name match only",     "source": "reported",  "link": "<zauba_url>",  "confidence": "low"}},
+    {{"id": "p1",  "type": "politician","label": "name",        "detail": "Father · Chief Minister",        "source": "declared",  "link": null,           "confidence": "confirmed"}}
   ],
   "edges": [
-    {"from": "c0", "to": "f1",  "label": "Spouse"},
-    {"from": "c0", "to": "f2",  "label": "Son"},
-    {"from": "f2", "to": "co2", "label": "CEO"},
-    {"from": "c0", "to": "co1", "label": "Director"}
+    {{"from": "c0", "to": "f1",  "label": "Spouse"}},
+    {{"from": "c0", "to": "co1", "label": "Director"}}
   ],
-  "summary": "3-4 sentence summary covering: declared assets, known family businesses, undeclared connections found in news/ROC, and any wealth transfers between election years.",
+  "summary": "3-4 sentence summary: declared assets, confirmed ROC companies (with DIN), undeclared connections, wealth transfers. Mention DIN if confirmed.",
   "red_flags": [
-    {"text": "Specific conflict description with amounts if known", "link": "<source_url>"}
+    {{"text": "Specific conflict with amounts if known", "link": "<source_url>"}}
   ]
-}
+}}
 
 Rules:
-- Candidate node id MUST be "c0", source "declared"
-- source: "declared" = explicitly in affidavit | "reported" = found in news/ROC with URL | "alleged" = unverified claim
+- Candidate node id MUST be "c0"
+- confidence field: "confirmed" = DIN verified OR in affidavit | "medium" = Tamil Nadu + address match | "low" = name match only, may not be same person
+- source: "declared" = in affidavit | "reported" = ROC/news with URL | "alleged" = unverified
 - Every "reported" node MUST have a real URL from the provided sources
-- ALWAYS include: spouse (if known), sons/daughters with businesses, any companies linked via family
-- Node types: candidate, company, family, politician, donor
-- Max 15 nodes, labels max 4 words
-- CRITICAL: If a company appears in ROC (Zauba/IndiaFilings) sources but NOT in the affidavit → source="reported", add red flag "Not declared in affidavit"
-- If son/daughter holds a company linked to the candidate's ministerial portfolio → red flag
-- If spouse's assets grew significantly between election years → red flag with amounts
-- If candidate resigned directorship just before filing (transferred to spouse/child same day) → red flag
-- Include film production companies, trusts, holding companies even if held by family"""
+- INCLUDE: spouse, family members with businesses, companies by confirmed DIN
+- EXCLUDE: companies where match is uncertain for a common name without DIN confirmation
+- Node types: candidate, company, family, politician, donor — max 15 nodes, labels max 4 words
+- red_flags: ROC company not in affidavit | spouse company in minister's portfolio | directorship resigned day before filing | large asset transfer to spouse/child"""
 
     user = f"""Candidate: {name}
 Party: {party}
