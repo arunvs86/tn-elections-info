@@ -7,6 +7,8 @@ export interface GraphNode {
   type: "candidate" | "company" | "family" | "politician" | "donor";
   label: string;
   detail: string;
+  source?: "declared" | "reported" | "alleged";
+  link?: string | null;
 }
 
 export interface GraphEdge {
@@ -15,29 +17,40 @@ export interface GraphEdge {
   label: string;
 }
 
+export interface RedFlag {
+  text: string;
+  link?: string | null;
+}
+
 export interface GraphData {
   nodes: GraphNode[];
   edges: GraphEdge[];
   summary: string;
-  red_flags: string[];
+  red_flags: (string | RedFlag)[];
   cached?: boolean;
   generated_at?: string;
 }
 
 const NODE_COLORS: Record<GraphNode["type"], { bg: string; border: string; text: string }> = {
-  candidate: { bg: "#c0392b", border: "#922b21", text: "#fff" },
-  company:   { bg: "#2471a3", border: "#1a5276", text: "#fff" },
-  family:    { bg: "#1e8449", border: "#145a32", text: "#fff" },
-  politician:{ bg: "#6c3483", border: "#512e5f", text: "#fff" },
-  donor:     { bg: "#d35400", border: "#a04000", text: "#fff" },
+  candidate:  { bg: "#c0392b", border: "#922b21", text: "#fff" },
+  company:    { bg: "#2471a3", border: "#1a5276", text: "#fff" },
+  family:     { bg: "#1e8449", border: "#145a32", text: "#fff" },
+  politician: { bg: "#6c3483", border: "#512e5f", text: "#fff" },
+  donor:      { bg: "#d35400", border: "#a04000", text: "#fff" },
 };
 
 const TYPE_LABELS: Record<GraphNode["type"], string> = {
-  candidate:  "You",
+  candidate:  "Candidate",
   company:    "Company",
   family:     "Family",
   politician: "Politician",
   donor:      "Donor",
+};
+
+const SOURCE_BADGE: Record<string, { label: string; bg: string; text: string }> = {
+  declared: { label: "✓ Declared",  bg: "#dcfce7", text: "#166534" },
+  reported: { label: "⚠ Reported",  bg: "#fef9c3", text: "#854d0e" },
+  alleged:  { label: "? Alleged",   bg: "#f3f4f6", text: "#6b7280" },
 };
 
 function RadialGraph({ nodes, edges }: { nodes: GraphNode[]; edges: GraphEdge[] }) {
@@ -53,17 +66,14 @@ function RadialGraph({ nodes, edges }: { nodes: GraphNode[]; edges: GraphEdge[] 
     const H = canvas.height;
     ctx.clearRect(0, 0, W, H);
 
-    // Position nodes: candidate in center, others in a circle
     const centerX = W / 2;
     const centerY = H / 2;
     const radius = Math.min(W, H) * 0.36;
 
     const positions: Record<string, { x: number; y: number }> = {};
     const others = nodes.filter((n) => n.id !== "c0");
-    const candidateNode = nodes.find((n) => n.id === "c0");
 
     positions["c0"] = { x: centerX, y: centerY };
-
     others.forEach((node, i) => {
       const angle = (2 * Math.PI * i) / others.length - Math.PI / 2;
       positions[node.id] = {
@@ -87,7 +97,6 @@ function RadialGraph({ nodes, edges }: { nodes: GraphNode[]; edges: GraphEdge[] 
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Edge label at midpoint
       const mx = (from.x + to.x) / 2;
       const my = (from.y + to.y) / 2;
       ctx.font = "10px Inter, sans-serif";
@@ -102,22 +111,29 @@ function RadialGraph({ nodes, edges }: { nodes: GraphNode[]; edges: GraphEdge[] 
       if (!pos) return;
       const colors = NODE_COLORS[node.type];
       const r = node.id === "c0" ? 36 : 28;
+      const isReported = node.source === "reported" || node.source === "alleged";
 
       // Shadow
       ctx.shadowColor = "rgba(0,0,0,0.15)";
       ctx.shadowBlur = 8;
 
-      // Circle
+      // Circle fill
       ctx.beginPath();
       ctx.arc(pos.x, pos.y, r, 0, 2 * Math.PI);
-      ctx.fillStyle = colors.bg;
+      ctx.fillStyle = isReported ? colors.bg + "cc" : colors.bg;
       ctx.fill();
-      ctx.strokeStyle = colors.border;
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      ctx.shadowBlur = 0;
 
-      // Label inside node (first word only if too long)
+      // Border: solid for declared, dashed for reported/alleged
+      ctx.shadowBlur = 0;
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = colors.border;
+      if (isReported) {
+        ctx.setLineDash([5, 3]);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Label inside
       ctx.font = node.id === "c0" ? "bold 11px Inter, sans-serif" : "bold 10px Inter, sans-serif";
       ctx.fillStyle = colors.text;
       ctx.textAlign = "center";
@@ -152,14 +168,19 @@ function RadialGraph({ nodes, edges }: { nodes: GraphNode[]; edges: GraphEdge[] 
   );
 }
 
+function normaliseRedFlag(flag: string | RedFlag): RedFlag {
+  if (typeof flag === "string") return { text: flag, link: null };
+  return flag;
+}
+
 export default function ConnectionGraph({ data }: { data: GraphData }) {
   const { nodes, edges, summary, red_flags } = data;
 
   const legend = [
-    { type: "company" as const, label: "Company / Business" },
-    { type: "family" as const, label: "Family Member" },
-    { type: "politician" as const, label: "Connected Politician" },
-    { type: "donor" as const, label: "Electoral Donor" },
+    { type: "company"   as const, label: "Company / Business" },
+    { type: "family"    as const, label: "Family Member" },
+    { type: "politician"as const, label: "Connected Politician" },
+    { type: "donor"     as const, label: "Electoral Donor" },
   ];
 
   return (
@@ -169,15 +190,40 @@ export default function ConnectionGraph({ data }: { data: GraphData }) {
         <p className="text-sm text-gray-600 leading-relaxed">{summary}</p>
       )}
 
+      {/* Source legend */}
+      <div className="flex flex-wrap gap-3 text-[11px]">
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block w-3 h-3 rounded-full border-2 border-gray-400 bg-gray-200" />
+          <span className="text-gray-500">Solid border = Officially declared</span>
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block w-3 h-3 rounded-full border-2 border-dashed border-gray-400 bg-gray-100" />
+          <span className="text-gray-500">Dashed = Reported in news</span>
+        </span>
+      </div>
+
       {/* Red flags */}
       {red_flags && red_flags.length > 0 && (
         <div className="space-y-2">
-          {red_flags.map((flag, i) => (
-            <div key={i} className="flex items-start gap-2 bg-red-50 border border-red-100 rounded-xl px-3 py-2">
-              <span className="text-red-500 mt-0.5 flex-shrink-0">⚑</span>
-              <p className="text-xs text-red-700 font-medium">{flag}</p>
-            </div>
-          ))}
+          {red_flags.map((flag, i) => {
+            const { text, link } = normaliseRedFlag(flag);
+            return (
+              <div key={i} className="flex items-start gap-2 bg-red-50 border border-red-100 rounded-xl px-3 py-2">
+                <span className="text-red-500 mt-0.5 flex-shrink-0">⚑</span>
+                <p className="text-xs text-red-700 font-medium flex-1">{text}</p>
+                {link && (
+                  <a
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[10px] text-red-400 hover:text-red-600 underline flex-shrink-0 mt-0.5"
+                  >
+                    Source ↗
+                  </a>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -192,12 +238,14 @@ export default function ConnectionGraph({ data }: { data: GraphData }) {
         </div>
       )}
 
-      {/* Node list */}
+      {/* Connection list */}
       {nodes.filter((n) => n.id !== "c0").length > 0 && (
         <div className="space-y-2">
           <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Connections Found</p>
           {nodes.filter((n) => n.id !== "c0").map((node) => {
             const colors = NODE_COLORS[node.type];
+            const srcKey = node.source ?? "declared";
+            const badge = SOURCE_BADGE[srcKey] ?? SOURCE_BADGE.declared;
             return (
               <div key={node.id} className="flex items-center gap-3 bg-white border border-gray-100 rounded-xl px-3 py-2.5">
                 <div
@@ -208,19 +256,41 @@ export default function ConnectionGraph({ data }: { data: GraphData }) {
                   <p className="text-sm font-semibold text-gray-900 truncate">{node.label}</p>
                   <p className="text-xs text-gray-400 truncate">{node.detail}</p>
                 </div>
-                <span
-                  className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0"
-                  style={{ background: colors.bg + "20", color: colors.bg }}
-                >
-                  {TYPE_LABELS[node.type]}
-                </span>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {/* Source badge */}
+                  <span
+                    className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                    style={{ background: badge.bg, color: badge.text }}
+                  >
+                    {badge.label}
+                  </span>
+                  {/* Type badge */}
+                  <span
+                    className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                    style={{ background: colors.bg + "20", color: colors.bg }}
+                  >
+                    {TYPE_LABELS[node.type]}
+                  </span>
+                  {/* Source link */}
+                  {node.link && (
+                    <a
+                      href={node.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] text-gray-400 hover:text-gray-600"
+                      title="View source"
+                    >
+                      ↗
+                    </a>
+                  )}
+                </div>
               </div>
             );
           })}
         </div>
       )}
 
-      {/* Legend */}
+      {/* Node type legend */}
       <div className="flex flex-wrap gap-2 pt-1">
         {legend.map((l) => (
           <div key={l.type} className="flex items-center gap-1.5">
@@ -229,6 +299,11 @@ export default function ConnectionGraph({ data }: { data: GraphData }) {
           </div>
         ))}
       </div>
+
+      {/* Data disclaimer */}
+      <p className="text-[10px] text-gray-400 leading-relaxed border-t border-gray-100 pt-2">
+        Sources: ECI affidavit (declared) · News reports (reported). Undisclosed informal networks cannot be detected by any automated system.
+      </p>
 
       {data.cached && data.generated_at && (
         <p className="text-[10px] text-gray-400">
