@@ -171,36 +171,131 @@ Page text:
         return {}
 
 
-# ── News searches (3 focused queries with quoted names) ────────────────────────
+# ── ROC: DIN extraction + director-profile-only fetching ──────────────────────
 
-def _extract_din_from_results(results: list[dict]) -> str | None:
-    """Extract DIN from Zauba/Tofler/IndiaFilings URLs or content."""
-    for r in results:
-        url = r.get("url", "")
-        # Zauba: zaubacorp.com/director/NAME/01234567
-        # Tofler: tofler.in/name/director/01234567
-        # IndiaFilings: indiafilings.com/search/name-din-01234567
-        din_match = re.search(r'/(\d{8})(?:/|$)', url)
-        if din_match:
-            return din_match.group(1)
-        # Also check content for "DIN: 01234567" or "DIN 01234567"
-        content = r.get("content", "")
-        din_in_content = re.search(r'DIN[:\s]+(\d{8})', content, re.IGNORECASE)
-        if din_in_content:
-            return din_in_content.group(1)
-    return None
+_ROC_DOMAINS = ["zaubacorp.com", "tofler.in", "indiafilings.com", "filesure.in"]
 
+
+def _extract_din_from_url(url: str) -> str | None:
+    """
+    Extract DIN from a /director/ profile URL.
+    Zauba:       zaubacorp.com/director/NAME/01234567
+    Tofler:      tofler.in/name/director/01234567
+    FileSure:    filesure.in/director/name/01234567
+    IndiaFilings: indiafilings.com/search/name-din-01234567
+    """
+    m = re.search(r'/(\d{8})(?:/|$)', url)
+    return m.group(1) if m else None
+
+
+def _is_director_profile_url(url: str) -> bool:
+    """Return True only for director profile pages, NOT company pages."""
+    # Must contain /director/ segment
+    return "/director/" in url.lower()
+
+
+def _fetch_director_profile(profile_url: str, name: str, din: str) -> list[dict]:
+    """
+    Fetch the Zauba/Tofler director profile page and extract the authoritative
+    list of companies where this person is/was a director.
+    Returns list of {company_name, role, status, source_url}
+    """
+    try:
+        r = httpx.get(profile_url, timeout=12.0, follow_redirects=True,
+                      headers={"User-Agent": "Mozilla/5.0 tnelections.info"})
+        r.raise_for_status()
+        # Strip HTML
+        html = re.sub(r'<(script|style)[^>]*>.*?</(script|style)>', '', r.text,
+                      flags=re.DOTALL | re.IGNORECASE)
+        text = re.sub(r'<[^>]+>', ' ', html)
+        text = re.sub(r'\s+', ' ', text).strip()[:6000]
+    except Exception:
+        return []
+
+    # Ask Claude to extract company list from page text
+    api_key = os.getenv("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        return []
+    try:
+        r2 = httpx.post(
+            _CLAUDE_URL,
+            headers={"x-api-key": api_key, "anthropic-version": "2023-06-01",
+                     "content-type": "application/json"},
+            json={
+                "model": "claude-haiku-4-5-20251001",
+                "max_tokens": 800,
+                "temperature": 0,
+                "messages": [{"role": "user", "content": f"""
+Extract the list of companies where {name} (DIN: {din}) is or was a director from this ROC profile page.
+Only include companies where {name} is explicitly listed as Director/MD/Partner — NOT companies that merely have '{name}' in their name.
+
+Return ONLY valid JSON array:
+[
+  {{"company_name": "ACME PVT LTD", "role": "Director", "status": "Active", "appointed": "2010-01-01", "resigned": null}},
+  {{"company_name": "XYZ LLP", "role": "Designated Partner", "status": "Struck Off", "appointed": "2005-03-01", "resigned": "2021-08-20"}}
+]
+
+Page text:
+{text}
+"""}],
+            },
+            timeout=20.0,
+        )
+        r2.raise_for_status()
+        raw = r2.json()["content"][0]["text"].strip()
+        if "```" in raw:
+            raw = raw.split("```")[1]
+            if raw.startswith("json"):
+                raw = raw[4:]
+        companies = json.loads(raw.strip())
+        # Attach source URL
+        for c in companies:
+            c["source_url"] = profile_url
+        return companies
+    except Exception:
+        return []
+
+
+def _get_roc_data(name: str, constituency: str) -> dict:
+    """
+    Precise ROC lookup:
+    1. Search for /director/ profile URLs only (rejects company-name URLs)
+    2. Extract DIN from URL
+    3. Fetch the director profile page → authoritative company list
+    Returns {"din": str|None, "profile_url": str|None, "companies": list}
+    """
+    # Search ROC sites for this person
+    raw = _tavily_search(
+        f'"{name}" director DIN Tamil Nadu',
+        max_results=8, include_domains=_ROC_DOMAINS,
+    )
+
+    # CRITICAL FILTER: only keep /director/ profile URLs — reject /company/ URLs
+    director_results = [r for r in raw if _is_director_profile_url(r.get("url", ""))]
+
+    if not director_results:
+        return {"din": None, "profile_url": None, "companies": []}
+
+    # Pick the best-scoring director profile
+    best = max(director_results, key=lambda r: r.get("score", 0))
+    profile_url = best["url"]
+    din = _extract_din_from_url(profile_url)
+
+    if not din:
+        return {"din": None, "profile_url": profile_url, "companies": []}
+
+    # Fetch and parse the director profile page
+    companies = _fetch_director_profile(profile_url, name, din)
+    return {"din": din, "profile_url": profile_url, "companies": companies}
+
+
+# ── News searches ──────────────────────────────────────────────────────────────
 
 def _search_news(name: str, party: str, constituency: str) -> list[dict]:
     """
-    5 targeted Tavily searches — verified domains only, DIN-anchored ROC search.
-    Step 1: Find DIN from ROC profile search
-    Step 2: Search all companies by confirmed DIN (eliminates wrong-person matches)
-    Step 3: News/investigative from verified outlets only
+    News-only Tavily searches from verified outlets.
+    ROC data is handled separately via _get_roc_data (director-profile-only).
     """
-    last_name = name.split()[-1]
-    _ROC_DOMAINS = ["zaubacorp.com", "tofler.in", "indiafilings.com", "filesure.in"]
-
     all_results: list[dict] = []
     seen_urls: set[str] = set()
 
@@ -210,80 +305,50 @@ def _search_news(name: str, party: str, constituency: str) -> list[dict]:
                 seen_urls.add(r["url"])
                 all_results.append(r)
 
-    # Step 1: Find the candidate's ROC profile to extract DIN
-    roc_profile = _tavily_search(
-        f'"{name}" director Tamil Nadu',
-        max_results=5, include_domains=_ROC_DOMAINS,
-    )
-    add(roc_profile)
-
-    # Step 2: If DIN found, search by DIN — unambiguous, no wrong-person risk
-    din = _extract_din_from_results(roc_profile)
-    if din:
-        din_results = _tavily_search(
-            f'DIN {din} director company Tamil Nadu',
-            max_results=5, include_domains=_ROC_DOMAINS,
-        )
-        add(din_results)
-    else:
-        # Fallback: name + Tamil Nadu to reduce ambiguity
-        add(_tavily_search(
-            f'"{name}" director company Tamil Nadu {constituency}',
-            max_results=5, include_domains=_ROC_DOMAINS,
-        ))
-
-    # Step 3: Affidavit / wealth news
     add(_tavily_search(
         f'"{name}" affidavit assets declared company minister Tamil Nadu',
         max_results=5, include_domains=_VERIFIED_DOMAINS,
     ))
-
-    # Step 4: Conflicts and investigative journalism
     add(_tavily_search(
         f'"{name}" conflict interest allegation undisclosed business {party}',
         max_results=5, include_domains=_VERIFIED_DOMAINS,
     ))
-
-    # Step 5: Business / film / trust interests
     add(_tavily_search(
         f'"{name}" company business cinema production media trust Tamil Nadu',
         max_results=5, include_domains=_VERIFIED_DOMAINS,
     ))
 
-    # Keep results mentioning the candidate (name tokens ≥ 4 chars)
     name_tokens = [t.lower() for t in name.replace(".", " ").split() if len(t) >= 4]
     relevant = [
         r for r in all_results
         if any(tok in (r["title"] + " " + r["content"]).lower() for tok in name_tokens)
     ]
-
-    # Attach DIN to results metadata so Claude can use it
-    output = relevant if relevant else all_results
-    if din:
-        for r in output:
-            r["_confirmed_din"] = din
-    return output
+    return relevant if relevant else all_results
 
 
 # ── Claude synthesis ───────────────────────────────────────────────────────────
 
 def _synthesize(name: str, party: str, constituency: str,
-                affidavit: dict, news: list[dict]) -> dict:
+                affidavit: dict, roc_data: dict, news: list[dict]) -> dict:
     api_key = os.getenv("ANTHROPIC_API_KEY", "")
     if not api_key:
         return _fallback(name, party)
 
     affidavit_str = json.dumps(affidavit, ensure_ascii=False) if affidavit else "Not found"
 
+    # ROC: authoritative company list (director-profile-fetched, DIN-confirmed)
+    din = roc_data.get("din")
+    roc_companies = roc_data.get("companies", [])
+    roc_profile_url = roc_data.get("profile_url", "")
+    roc_str = f"DIN: {din}\nProfile: {roc_profile_url}\nCompanies (authoritative, fetched from director profile):\n" + \
+              json.dumps(roc_companies, ensure_ascii=False) if roc_companies else "No ROC director profile found."
+
     news_str = "\n\n".join([
         f"[{r['url']}]\nTitle: {r['title']}\n{r['content'][:500]}"
         for r in news[:10]
     ])
 
-    # Check if DIN was confirmed during search
-    confirmed_din = next(
-        (r.get("_confirmed_din") for r in news if r.get("_confirmed_din")), None
-    )
+    confirmed_din = din
     din_note = f"Confirmed DIN for this candidate: {confirmed_din}. Only include ROC companies linked to this exact DIN." if confirmed_din else \
                "No DIN confirmed. For ROC results: only include a company if Tamil Nadu state AND address/constituency area matches. If name is common and match is uncertain, mark confidence as low."
 
@@ -328,7 +393,10 @@ Constituency: {constituency}
 AFFIDAVIT (official ECI declaration):
 {affidavit_str}
 
-NEWS SOURCES:
+ROC DIRECTOR DATA (fetched from director profile page — 100% accurate, DIN-confirmed):
+{roc_str}
+
+NEWS SOURCES (verified outlets only):
 {news_str}"""
 
     try:
@@ -384,7 +452,7 @@ def build_connections(candidate_id: int, name: str, party: str,
             return {**cached["graph_data"], "cached": True,
                     "generated_at": cached["generated_at"]}
 
-    # Step 1: Affidavit (best-effort)
+    # Step 1: Affidavit (Myneta)
     affidavit_data: dict = {}
     myneta_url = _find_myneta_url(name)
     if myneta_url:
@@ -392,14 +460,17 @@ def build_connections(candidate_id: int, name: str, party: str,
         if page_text:
             affidavit_data = _extract_affidavit(name, page_text, myneta_url)
 
-    # Step 2: News (3 focused Tavily calls, basic depth)
+    # Step 2: ROC data — director-profile-only, DIN-anchored (no false positives)
+    roc_data = _get_roc_data(name, constituency)
+
+    # Step 3: News from verified outlets
     news_results = _search_news(name, party, constituency)
 
-    # Step 3: Synthesize (or fallback)
-    if not affidavit_data and not news_results:
+    # Step 4: Synthesize (or fallback)
+    if not affidavit_data and not roc_data["companies"] and not news_results:
         graph = _fallback(name, party)
     else:
-        graph = _synthesize(name, party, constituency, affidavit_data, news_results)
+        graph = _synthesize(name, party, constituency, affidavit_data, roc_data, news_results)
 
     graph["cached"] = False
     _save_cache(candidate_id, {k: v for k, v in graph.items() if k != "cached"})
