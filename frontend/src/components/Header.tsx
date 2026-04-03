@@ -36,7 +36,6 @@ export default function Header({ active }: HeaderProps) {
   // Extra links — in mobile menu only
   const extraLinks = [
     { href: "/manifesto", label: t("nav.manifesto"), id: "manifesto" },
-    { href: "/asset-growth", label: "Wealth Growth", id: "asset-growth" },
     { href: "/alt-history", label: "What if they voted?", id: "alt-history" },
     { href: "/news", label: t("nav.news"), id: "news" },
     { href: "/results", label: t("nav.results"), id: "results" },
