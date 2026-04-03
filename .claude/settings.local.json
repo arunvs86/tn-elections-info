@@ -222,7 +222,23 @@
       "Bash(grep -n \"allegations\\\\|candidate-allegations\\\\|fetchAllegations\\\\|allegation\" /Users/arunsoundararajan/Documents/TNELECTIONS/tnelections/frontend/src/app/candidate/[id]/page.tsx)",
       "Bash(curl -s -X POST \"https://zealous-spontaneity-production-71e6.up.railway.app/api/candidate-allegations\" -H \"Content-Type: application/json\" -d '{\"\"\"\"name\"\"\"\":\"\"\"\"Stalin\"\"\"\",\"\"\"\"party\"\"\"\":\"\"\"\"DMK\"\"\"\",\"\"\"\"constituency\"\"\"\":\"\"\"\"Kolathur\"\"\"\"}')",
       "Bash(git pull:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(curl -s https://tnelections-production.up.railway.app/api/health)",
+      "Bash(grep -r \"railway\\\\|BACKEND_URL\\\\|backend_url\" /Users/arunsoundararajan/Documents/TNELECTIONS/tnelections/frontend/.env*)",
+      "Bash(ls /Users/arunsoundararajan/Documents/TNELECTIONS/tnelections/frontend/.env*)",
+      "Bash(curl -s -X POST https://zealous-spontaneity-production-71e6.up.railway.app/api/candidate-connections -H \"Content-Type: application/json\" -d '{\"\"candidate_id\"\": 390, \"\"name\"\": \"\"Udhayanidhi Stalin\"\", \"\"party\"\": \"\"DMK\"\", \"\"constituency\"\": \"\"Chepauk-Triplicane\"\"}')",
+      "WebFetch(domain:www.mca.gov.in)",
+      "WebFetch(domain:www.data.gov.in)",
+      "WebFetch(domain:offshoreleaks.icij.org)",
+      "WebFetch(domain:opensanctions.org)",
+      "WebFetch(domain:tcpd.ashoka.edu.in)",
+      "WebFetch(domain:adrindia.org)",
+      "WebFetch(domain:affidavitarchive.nic.in)",
+      "WebFetch(domain:www.myneta.info)",
+      "WebFetch(domain:www.theweek.in)",
+      "WebFetch(domain:thecommunemag.com)",
+      "WebFetch(domain:www.thenewsminute.com)",
+      "Bash(curl -s -X POST https://zealous-spontaneity-production-71e6.up.railway.app/api/candidate-connections -H 'Content-Type: application/json' -d '{\"\"\"\"candidate_id\"\"\"\": 390, \"\"\"\"name\"\"\"\": \"\"\"\"Udhayanidhi Stalin\"\"\"\", \"\"\"\"party\"\"\"\": \"\"\"\"DMK\"\"\"\", \"\"\"\"constituency\"\"\"\": \"\"\"\"Chepauk\"\"\"\", \"\"\"\"force_refresh\"\"\"\": true}')"
     ]
   }
 }
