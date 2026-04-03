@@ -272,6 +272,35 @@ def thamizhan_sms_single(req: WhatsAppRequest):
     return result
 
 
+@app.get("/api/debug/tavily")
+def debug_tavily(name: str = "Udhayanidhi Stalin", party: str = "DMK"):
+    """Temporary debug: shows raw Tavily results for each connections query."""
+    import os, httpx as _httpx
+    api_key = os.getenv("TAVILY_API_KEY", "")
+    last_name = name.split()[-1]
+    queries = [
+        f'"{name}" zaubacorp.com OR indiafilings.com OR tofler.in director company',
+        f'"{last_name}" family son daughter wife company director business Tamil Nadu',
+        f'"{name}" affidavit assets declared wife company minister',
+        f'"{name}" {party} conflict interest allegation undisclosed business',
+        f'"{name}" company Red Giant OR cinema OR production OR media OR trust',
+    ]
+    output = {}
+    for q in queries:
+        try:
+            r = _httpx.post(
+                "https://api.tavily.com/search",
+                json={"api_key": api_key, "query": q, "max_results": 5,
+                      "search_depth": "basic", "include_answer": False},
+                timeout=15.0,
+            )
+            results = r.json().get("results", [])
+            output[q] = [{"title": x["title"], "url": x["url"], "score": x.get("score", 0)} for x in results]
+        except Exception as e:
+            output[q] = {"error": str(e)}
+    return output
+
+
 class ReviewRequest(BaseModel):
     rating: int
     comment: str = ""
