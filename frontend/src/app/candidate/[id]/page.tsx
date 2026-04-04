@@ -476,6 +476,78 @@ function ScoreRing({ score, size = 64 }: { score: number; size?: number }) {
   );
 }
 
+// Animated evaluation + score reveal component
+function ScoreEvaluation({
+  score,
+  loading,
+  showBreakdown,
+  onToggle,
+}: {
+  score: ScoreBreakdown;
+  loading: boolean;
+  showBreakdown: boolean;
+  onToggle: () => void;
+}) {
+  const [animatedScore, setAnimatedScore] = useState(0);
+  const [isRevealed, setIsRevealed] = useState(false);
+
+  useEffect(() => {
+    if (loading) {
+      setIsRevealed(false);
+      setAnimatedScore(0);
+      return;
+    }
+    const timeout = setTimeout(() => {
+      setIsRevealed(true);
+      const target = score.total;
+      const duration = 1200;
+      const startTime = performance.now();
+      const animate = (now: number) => {
+        const elapsed = now - startTime;
+        const t = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - t, 3);
+        setAnimatedScore(Math.round(eased * target));
+        if (t < 1) requestAnimationFrame(animate);
+      };
+      requestAnimationFrame(animate);
+    }, 200);
+    return () => clearTimeout(timeout);
+  }, [loading, score.total]);
+
+  if (!isRevealed) {
+    // Spinning evaluation animation
+    return (
+      <div className="flex flex-col items-center gap-1 flex-shrink-0">
+        <div className="relative" style={{ width: 64, height: 64 }}>
+          <svg width={64} height={64} className="animate-spin" style={{ animationDuration: "1.4s" }}>
+            <circle cx={32} cy={32} r={28} fill="none" stroke="#e5e7eb" strokeWidth={4} />
+            <circle
+              cx={32} cy={32} r={28} fill="none"
+              stroke="#6366f1" strokeWidth={4} strokeLinecap="round"
+              strokeDasharray={`${2 * Math.PI * 28 * 0.25} ${2 * Math.PI * 28 * 0.75}`}
+            />
+          </svg>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-lg">⚖</span>
+          </div>
+        </div>
+        <span className="text-[10px] font-semibold text-indigo-500 animate-pulse">Evaluating…</span>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={onToggle}
+      className="flex flex-col items-center gap-1 flex-shrink-0 hover:opacity-80 transition-opacity"
+      title="Click to see score breakdown"
+    >
+      <ScoreRing score={animatedScore} size={64} />
+      <span className="text-[10px] font-semibold text-gray-500">Candidate Score</span>
+    </button>
+  );
+}
+
 // Breakdown row for the score detail panel
 function ScoreRow({
   label,
@@ -897,20 +969,16 @@ export default function CandidatePage() {
             </div>
 
             {/* Transparency score ring — right side of header */}
-            <button
-              onClick={() => setShowBreakdown(!showBreakdown)}
-              className="flex flex-col items-center gap-1 flex-shrink-0 hover:opacity-80 transition-opacity"
-              title="Click to see score breakdown"
-            >
-              <ScoreRing score={score.total} size={64} />
-              <span className="text-[10px] font-semibold text-gray-500">
-                Candidate Score
-              </span>
-            </button>
+            <ScoreEvaluation
+              score={score}
+              loading={allegationsLoading}
+              showBreakdown={showBreakdown}
+              onToggle={() => setShowBreakdown(!showBreakdown)}
+            />
           </div>
 
           {/* Score breakdown — expandable */}
-          {showBreakdown && (
+          {!allegationsLoading && showBreakdown && (
             <div className="mt-4 pt-4 border-t border-gray-100">
               <p className="text-xs font-bold text-gray-700 mb-2">
               Candidate Score Breakdown

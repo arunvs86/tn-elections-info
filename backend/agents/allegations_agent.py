@@ -9,8 +9,29 @@ import httpx
 
 _TAVILY_URL = "https://api.tavily.com/search"
 
+# Verified Tamil Nadu / Indian news domains only
+_VERIFIED_DOMAINS = [
+    "thehindu.com",
+    "thenewsminute.com",
+    "ndtv.com",
+    "timesofindia.com",
+    "indiatoday.in",
+    "deccanherald.com",
+    "indianexpress.com",
+    "scroll.in",
+    "thewire.in",
+    "dinamalar.com",
+    "dinamani.com",
+    "puthiyathalaimurai.tv",
+    "polimer.com",
+    "news18.com",
+    "theprint.in",
+    "hindustantimes.com",
+    "outlookindia.com",
+]
 
-def _tavily_search(query: str, max_results: int = 5) -> list[dict]:
+
+def _tavily_search(query: str, max_results: int = 6) -> list[dict]:
     api_key = os.getenv("TAVILY_API_KEY", "")
     if not api_key:
         return []
@@ -23,6 +44,7 @@ def _tavily_search(query: str, max_results: int = 5) -> list[dict]:
                 "max_results": max_results,
                 "search_depth": "basic",
                 "include_answer": False,
+                "include_domains": _VERIFIED_DOMAINS,
             },
             timeout=15.0,
         )
@@ -32,7 +54,7 @@ def _tavily_search(query: str, max_results: int = 5) -> list[dict]:
             {
                 "title": item.get("title", ""),
                 "url": item.get("url", ""),
-                "content": item.get("content", "")[:600],
+                "content": item.get("content", "")[:800],
                 "score": item.get("score", 0),
             }
             for item in results
@@ -42,23 +64,36 @@ def _tavily_search(query: str, max_results: int = 5) -> list[dict]:
 
 
 def _claude_classify(name: str, party: str, results: list[dict]) -> list[dict]:
-    """Ask Claude to classify each result's severity. Returns enriched list or [] if credits unavailable."""
+    """Ask Claude to classify each result. Returns enriched list or [] if credits unavailable."""
     api_key = os.getenv("ANTHROPIC_API_KEY", "")
     if not api_key:
         return []
 
     snippets = "\n".join([
-        f"{i+1}. [{r['title']}] {r['content'][:300]}"
-        for i, r in enumerate(results[:8])
+        f"{i+1}. [{r['title']}] {r['content'][:400]}"
+        for i, r in enumerate(results[:10])
     ])
 
-    system = """You are a political news classifier for Tamil Nadu elections.
-Given news snippets about a candidate, classify each as an allegation/controversy or neutral news.
-For each, extract:
-- title: short title (max 10 words)
-- summary: one sentence summary of what the article is about
-- severity: "serious" (criminal/corruption/arrest) | "moderate" (financial/ethical issue) | "minor" (political controversy/criticism)
-- is_allegation: true if it's an allegation or controversy, false if it's neutral/positive news
+    system = """You are a political news analyst for Tamil Nadu elections. Your job is to surface ANY negative news about a politician — not just formal legal cases.
+
+Mark is_allegation: true for ALL of the following:
+- Physical altercations (slapping, assaulting, threatening anyone)
+- Verbal abuse, offensive remarks, hate speech
+- Corruption, bribery, scams, financial irregularities
+- Criminal cases, FIRs, arrests, raids, court cases
+- Misconduct, disciplinary action, party suspension/expulsion
+- Protests or complaints filed against the candidate
+- Controversies, scandals, public disputes
+- Abuse of power, misuse of government resources
+- Any negative news that reflects on the candidate's conduct or character
+
+Mark is_allegation: false ONLY for genuinely neutral/positive news (election wins, inaugurations, welfare work, speeches on policy).
+
+For each snippet extract:
+- title: short descriptive title (max 10 words)
+- summary: one clear sentence describing what happened
+- severity: "serious" (criminal/violence/corruption/arrest) | "moderate" (financial/ethical/misconduct) | "minor" (verbal dispute/political controversy/criticism)
+- is_allegation: true or false
 
 Return ONLY a JSON array, no markdown:
 [{"index": 1, "title": "...", "summary": "...", "severity": "...", "is_allegation": true}]"""
@@ -75,7 +110,7 @@ Return ONLY a JSON array, no markdown:
             },
             json={
                 "model": "claude-haiku-4-5-20251001",
-                "max_tokens": 1000,
+                "max_tokens": 1500,
                 "temperature": 0,
                 "system": system,
                 "messages": [{"role": "user", "content": user}],
@@ -111,19 +146,22 @@ def fetch_allegations(name: str, party: str, constituency: str) -> dict:
     if not name:
         return {"allegations": [], "source": "none", "ai_classified": False}
 
-    # Build focused search queries
+    # 5 focused queries covering: formal allegations, physical incidents,
+    # party/disciplinary issues, general news, and local Tamil Nadu coverage
     queries = [
-        f'"{name}" {party} allegations controversy Tamil Nadu 2024 2025',
-        f'"{name}" {constituency} corruption arrest scam case news',
-        f'"{name}" Tamil Nadu politician controversy charges',
+        f'"{name}" {party} Tamil Nadu controversy scandal misconduct complaint',
+        f'"{name}" {constituency} assault attack slap violence arrest FIR case',
+        f'"{name}" Tamil Nadu MLA suspended expelled expelled disciplinary action protest',
+        f'"{name}" corruption fraud scam bribe charge probe raid',
+        f'"{name}" Tamil Nadu news incident 2021 2022 2023 2024 2025',
     ]
 
     all_results = []
     seen_urls = set()
     for query in queries:
-        results = _tavily_search(query, max_results=4)
+        results = _tavily_search(query, max_results=6)
         for r in results:
-            if r["url"] not in seen_urls and r.get("score", 0) > 0.2:
+            if r["url"] not in seen_urls and r.get("score", 0) > 0.1:
                 seen_urls.add(r["url"])
                 all_results.append(r)
 
@@ -139,10 +177,8 @@ def fetch_allegations(name: str, party: str, constituency: str) -> dict:
     def is_relevant(result: dict) -> bool:
         """Return True only if the result is genuinely about this candidate."""
         combined = (result["title"] + " " + result["content"]).lower()
-        # At least one significant name token must appear in the result
         return any(token in combined for token in name_tokens)
 
-    # Filter all results for relevance BEFORE passing to Claude or fallback
     relevant_results = [r for r in all_results if is_relevant(r)]
 
     if not relevant_results:
@@ -154,7 +190,6 @@ def fetch_allegations(name: str, party: str, constituency: str) -> dict:
     allegations = []
 
     if classifications:
-        # Claude successfully classified — use its output
         for item in classifications:
             if not item.get("is_allegation", False):
                 continue
@@ -168,25 +203,30 @@ def fetch_allegations(name: str, party: str, constituency: str) -> dict:
                     "source_name": _extract_source_name(result["url"]),
                     "severity": item.get("severity", "minor"),
                 })
-        return {"allegations": allegations[:6], "source": "web", "ai_classified": True}
+        return {"allegations": allegations[:8], "source": "web", "ai_classified": True}
     else:
-        # Claude unavailable — only show results that:
-        # 1. Are about this candidate (already filtered above)
-        # 2. Contain controversy/allegation keywords
+        # Claude unavailable — keyword fallback, broader list of terms
         controversy_keywords = [
             "allege", "accuse", "arrest", "case", "scam", "corrupt", "contro",
             "charge", "raid", "probe", "fraud", "complaint", "fir", "crime",
-            "resign", "scandal", "bribe", "caught", "convicted", "bail"
+            "resign", "scandal", "bribe", "caught", "convicted", "bail",
+            "slap", "assault", "attack", "assault", "abuse", "threaten",
+            "suspend", "expel", "disciplin", "protest", "violence", "row",
         ]
-        for r in relevant_results[:8]:
+        for r in relevant_results[:10]:
             combined = (r["title"] + " " + r["content"]).lower()
             has_controversy = any(kw in combined for kw in controversy_keywords)
-            # Without Claude, only show results that are clearly about controversies
             if not has_controversy:
                 continue
             severity = (
-                "serious" if any(kw in combined for kw in ["arrest", "fir", "raid", "prison", "convicted", "bail"])
-                else "moderate" if any(kw in combined for kw in ["corrupt", "scam", "fraud", "bribe", "complaint"])
+                "serious" if any(kw in combined for kw in [
+                    "arrest", "fir", "raid", "prison", "convicted", "bail",
+                    "assault", "attack", "slap", "violence",
+                ])
+                else "moderate" if any(kw in combined for kw in [
+                    "corrupt", "scam", "fraud", "bribe", "complaint",
+                    "suspend", "expel", "disciplin",
+                ])
                 else "minor"
             )
             allegations.append({
@@ -197,4 +237,4 @@ def fetch_allegations(name: str, party: str, constituency: str) -> dict:
                 "severity": severity,
             })
 
-        return {"allegations": allegations[:6], "source": "web", "ai_classified": False}
+        return {"allegations": allegations[:8], "source": "web", "ai_classified": False}
