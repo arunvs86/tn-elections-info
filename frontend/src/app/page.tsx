@@ -7,6 +7,7 @@ import Header from "@/components/Header";
 import DailyBriefing from "@/components/DailyBriefing";
 import OpinionPoll from "@/components/OpinionPoll";
 import VisitorTracker from "@/components/VisitorTracker";
+import VoterQuiz from "@/components/VoterQuiz";
 import Link from "next/link";
 
 // ── Types ─────────────────────────────────────────
@@ -488,9 +489,14 @@ export default function HomePage() {
         <QuickStats />
       </section>
 
+      {/* ── Voter Quiz — Who Should I Vote For? ── */}
+      <section className="max-w-3xl mx-auto px-4 pb-10">
+        <VoterQuiz />
+      </section>
+
       {/* ── Daily AI Briefing ── */}
       {/* <DailyBriefing /> */}
-      
+
 
       {/* ── Explore Section ── */}
       <section className="max-w-6xl mx-auto px-4 pb-10">
