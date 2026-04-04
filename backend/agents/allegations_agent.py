@@ -137,23 +137,39 @@ def fetch_allegations(name: str, party: str, constituency: str) -> dict:
     if not name:
         return {"allegations": [], "source": "none", "ai_classified": False}
 
-    # Longest name token (≥4 chars) for relevance anchor — e.g. "Govindarajan"
+    # Primary name token (longest meaningful word, ≥4 chars) — e.g. "Govindarajan"
     name_parts = [t for t in name.replace(".", " ").split() if len(t) >= 4]
     primary_token = name_parts[0].lower() if name_parts else name.lower()
-    # Short name for queries: first meaningful token + party/constituency context
     short_name = name_parts[0] if name_parts else name
 
     # Disambiguation anchors — must appear alongside the name in a result
     party_token = party.lower() if party else ""
     constituency_token = constituency.lower() if constituency else ""
 
-    # 5 focused queries — each includes party or constituency for disambiguation
+    # 10 queries covering every angle of negative coverage:
+    # violence, legal cases, party discipline, corruption, public complaints,
+    # controversial statements, local issues, election controversy, catch-all news
     queries = [
-        f'{short_name} {party} {constituency} Tamil Nadu controversy scandal misconduct',
-        f'{short_name} {party} {constituency} assault attack slap violence arrest FIR',
-        f'{short_name} {party} Tamil Nadu MLA disciplinary action protest suspended expelled',
-        f'{short_name} {party} corruption fraud scam bribe charge probe raid',
-        f'{short_name} {constituency} Tamil Nadu politician news 2022 2023 2024 2025',
+        # 1. General controversy + party + constituency
+        f'{short_name} {party} {constituency} controversy scandal misconduct complaint Tamil Nadu',
+        # 2. Physical violence / assault incidents
+        f'{short_name} {party} assault attack slap beat threaten violence altercation',
+        # 3. Arrests, FIRs, court cases, criminal charges
+        f'{short_name} {party} {constituency} arrest FIR case court criminal charges bail',
+        # 4. Party suspension, expulsion, disciplinary action
+        f'{short_name} {party} MLA suspended expelled disciplinary action show cause notice',
+        # 5. Corruption, financial crimes, raids
+        f'{short_name} {party} corruption fraud scam bribe illegal money raid disproportionate assets',
+        # 6. Public protests, petitions, residents complaints against MLA
+        f'{short_name} {constituency} MLA complaint protest petition residents public against',
+        # 7. Controversial remarks, offensive statements, hate speech
+        f'{short_name} {party} controversial statement remarks row hate speech offensive',
+        # 8. Election Commission complaints, poll violations
+        f'{short_name} {party} election commission complaint violation code conduct poll',
+        # 9. Land grab, encroachment, property dispute
+        f'{short_name} {constituency} land grab encroachment property illegal construction',
+        # 10. Broad recent news catch-all
+        f'{short_name} {constituency} Tamil Nadu MLA news 2021 2022 2023 2024 2025',
     ]
 
     all_results = []
