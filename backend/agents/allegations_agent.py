@@ -9,25 +9,16 @@ import httpx
 
 _TAVILY_URL = "https://api.tavily.com/search"
 
-# Verified Tamil Nadu / Indian news domains only
-_VERIFIED_DOMAINS = [
-    "thehindu.com",
-    "thenewsminute.com",
-    "ndtv.com",
-    "timesofindia.com",
-    "indiatoday.in",
-    "deccanherald.com",
-    "indianexpress.com",
-    "scroll.in",
-    "thewire.in",
-    "dinamalar.com",
-    "dinamani.com",
-    "puthiyathalaimurai.tv",
-    "polimer.com",
-    "news18.com",
-    "theprint.in",
-    "hindustantimes.com",
-    "outlookindia.com",
+# Low-credibility domains to exclude from results
+_EXCLUDE_DOMAINS = [
+    "reddit.com",
+    "facebook.com",
+    "twitter.com",
+    "x.com",
+    "instagram.com",
+    "youtube.com",
+    "quora.com",
+    "wikipedia.org",
 ]
 
 
@@ -44,7 +35,7 @@ def _tavily_search(query: str, max_results: int = 6) -> list[dict]:
                 "max_results": max_results,
                 "search_depth": "basic",
                 "include_answer": False,
-                "include_domains": _VERIFIED_DOMAINS,
+                "exclude_domains": _EXCLUDE_DOMAINS,
             },
             timeout=15.0,
         )
@@ -146,14 +137,18 @@ def fetch_allegations(name: str, party: str, constituency: str) -> dict:
     if not name:
         return {"allegations": [], "source": "none", "ai_classified": False}
 
+    # Use first + last name token for broader matching (handles initials like T.J)
+    name_parts = [t for t in name.replace(".", " ").split() if len(t) >= 3]
+    short_name = " ".join(name_parts[:2]) if len(name_parts) >= 2 else name
+
     # 5 focused queries covering: formal allegations, physical incidents,
-    # party/disciplinary issues, general news, and local Tamil Nadu coverage
+    # party/disciplinary issues, corruption, and general news
     queries = [
-        f'"{name}" {party} Tamil Nadu controversy scandal misconduct complaint',
-        f'"{name}" {constituency} assault attack slap violence arrest FIR case',
-        f'"{name}" Tamil Nadu MLA suspended expelled expelled disciplinary action protest',
-        f'"{name}" corruption fraud scam bribe charge probe raid',
-        f'"{name}" Tamil Nadu news incident 2021 2022 2023 2024 2025',
+        f'{short_name} {party} Tamil Nadu controversy scandal misconduct complaint',
+        f'{short_name} {constituency} assault attack slap violence arrest FIR case',
+        f'{short_name} Tamil Nadu MLA disciplinary action protest suspended expelled',
+        f'{short_name} corruption fraud scam bribe charge probe raid',
+        f'{short_name} Tamil Nadu politician news 2022 2023 2024 2025',
     ]
 
     all_results = []
