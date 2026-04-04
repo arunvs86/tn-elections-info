@@ -31,17 +31,20 @@ function partyColor(party: string): string {
   const p = (party || "").toUpperCase();
   if (p === "DMK") return "#c0392b";
   if (p === "AIADMK") return "#2d7a4f";
+  if (p === "TVK") return "#1a5276";
   return "#888";
 }
 
 const PARTY_BG: Record<string, string> = {
-  DMK: "bg-red-50 border-red-200",
+  DMK:    "bg-red-50 border-red-200",
   AIADMK: "bg-green-50 border-green-200",
+  TVK:    "bg-blue-50 border-blue-200",
 };
 
 const PARTY_BADGE: Record<string, string> = {
-  DMK: "bg-red-600 text-white",
+  DMK:    "bg-red-600 text-white",
   AIADMK: "bg-green-700 text-white",
+  TVK:    "bg-[#1a5276] text-white",
 };
 
 function statusConfig(status: string | null, t: (k: string) => string) {
@@ -90,8 +93,9 @@ export default function ManifestoPage() {
   const verifiedPromises = pastPromises.filter((p) => p.evidence && p.evidence !== "Verification pending");
   const unverifiedPromises = pastPromises.filter((p) => !p.evidence || p.evidence === "Verification pending");
 
-  const dmkPromises = upcomingPromises.filter((p) => p.party === "DMK");
+  const dmkPromises    = upcomingPromises.filter((p) => p.party === "DMK");
   const aiadmkPromises = upcomingPromises.filter((p) => p.party === "AIADMK");
+  const tvkPromises    = upcomingPromises.filter((p) => p.party === "TVK");
 
   // Categories present in 2026 data
   const categories2026 = CATEGORIES_ORDER.filter((cat) =>
@@ -102,12 +106,45 @@ export default function ManifestoPage() {
   );
 
   // Filtered for 2026
-  const filteredDMK = dmkPromises.filter((p) =>
+  const filteredDMK    = dmkPromises.filter((p) =>
     selectedCategory === "all" || p.category === selectedCategory
   );
   const filteredAIADMK = aiadmkPromises.filter((p) =>
     selectedCategory === "all" || p.category === selectedCategory
   );
+  const filteredTVK    = tvkPromises.filter((p) =>
+    selectedCategory === "all" || p.category === selectedCategory
+  );
+
+  // ── Ranking: fiscal + specificity only (no track-record bias) ──
+  function partyAvg(arr: ManifestoPromise[], key: "fiscal_score" | "specificity_score") {
+    const vals = arr.map((p) => p[key]).filter((v): v is number => v != null);
+    return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+  }
+  const ranking = [
+    {
+      party: "DMK", color: "#c0392b",
+      score: +((partyAvg(dmkPromises, "fiscal_score") + partyAvg(dmkPromises, "specificity_score")) / 2).toFixed(1),
+      total: dmkPromises.length, flagship: dmkPromises.filter((p) => p.is_flagship).length,
+      badge: "Most Comprehensive", partial: false,
+      note: "58 promises across all 16 categories",
+    },
+    {
+      party: "TVK", color: "#1a5276",
+      score: +((partyAvg(tvkPromises, "fiscal_score") + partyAvg(tvkPromises, "specificity_score")) / 2).toFixed(1),
+      total: tvkPromises.length, flagship: tvkPromises.filter((p) => p.is_flagship).length,
+      badge: "★ Highest Specificity", partial: true,
+      note: "Partial manifesto — Agri, Women & Youth only. Every promise has a named scheme.",
+    },
+    {
+      party: "AIADMK", color: "#2d7a4f",
+      score: +((partyAvg(aiadmkPromises, "fiscal_score") + partyAvg(aiadmkPromises, "specificity_score")) / 2).toFixed(1),
+      total: aiadmkPromises.length, flagship: aiadmkPromises.filter((p) => p.is_flagship).length,
+      badge: "Proven Track Record", partial: false,
+      note: "49 promises. Led TN govt 2011–2021",
+    },
+  ].sort((a, b) => b.score - a.score);
+  const medals = ["🥇", "🥈", "🥉"];
 
   // Audit filter
   const currentPromises = verifiedPromises;
@@ -173,28 +210,62 @@ export default function ManifestoPage() {
              ══════════════════════════════════════════════════ */
           <div className="space-y-5">
 
-            {/* Party header cards */}
-            <div className="grid grid-cols-2 gap-4">
-              {(["DMK", "AIADMK"] as const).map((party) => {
-                const arr = party === "DMK" ? dmkPromises : aiadmkPromises;
+            {/* ── Manifesto Ranking Card ── */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <h2 className="font-extrabold text-gray-900 text-base">Manifesto Rankings 2026</h2>
+                <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium">
+                  Fiscal Soundness + Promise Specificity · No track-record bias
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {ranking.map((r, i) => (
+                  <div key={r.party} className="rounded-xl border p-4" style={{ borderColor: r.color + "40", background: r.color + "08" }}>
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">{medals[i]}</span>
+                        <span className="text-sm font-extrabold" style={{ color: r.color }}>{r.party}</span>
+                        {r.partial && (
+                          <span className="text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">Partial</span>
+                        )}
+                      </div>
+                      <span className="text-2xl font-extrabold" style={{ color: r.color }}>{r.score}</span>
+                    </div>
+                    {/* Score bar */}
+                    <div className="w-full bg-gray-100 rounded-full h-1.5 mb-2">
+                      <div className="h-1.5 rounded-full transition-all" style={{ width: `${(r.score / 10) * 100}%`, background: r.color }} />
+                    </div>
+                    <p className="text-[10px] font-bold mb-0.5" style={{ color: r.color }}>{r.badge}</p>
+                    <p className="text-[10px] text-gray-500 leading-snug">{r.note}</p>
+                    <p className="text-[10px] text-gray-400 mt-1">{r.total} promises · {r.flagship} flagship</p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-gray-400 mt-3 text-center">
+                Score = (Fiscal Feasibility + Promise Specificity) ÷ 2 · out of 10
+              </p>
+            </div>
+
+            {/* Party header cards — 3 columns */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {(["DMK", "TVK", "AIADMK"] as const).map((party) => {
+                const arr = party === "DMK" ? dmkPromises : party === "TVK" ? tvkPromises : aiadmkPromises;
                 const flagships = arr.filter((p) => p.is_flagship);
                 return (
-                  <div
-                    key={party}
-                    className={`rounded-2xl border p-4 ${PARTY_BG[party]}`}
-                  >
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${PARTY_BADGE[party]}`}>
-                        {party}
-                      </span>
+                  <div key={party} className={`rounded-2xl border p-4 ${PARTY_BG[party]}`}>
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${PARTY_BADGE[party]}`}>{party}</span>
                       <span className="text-xs text-gray-500">{arr.length} {t("manifesto.promises_reviewed")}</span>
+                      {party === "TVK" && (
+                        <span className="text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">Partial</span>
+                      )}
                     </div>
                     <div className="space-y-1">
                       {flagships.slice(0, 3).map((p) => {
                         const txt = (lang === "ta" && p.promise_text_tamil) ? p.promise_text_tamil : p.promise_text;
                         return (
                           <p key={p.id} className="text-xs text-gray-700 leading-snug">
-                            {txt.length > 90 ? txt.slice(0, 90) + "…" : txt}
+                            {txt.length > 80 ? txt.slice(0, 80) + "…" : txt}
                           </p>
                         );
                       })}
@@ -238,22 +309,22 @@ export default function ManifestoPage() {
             </div>
 
             {compareMode === "side-by-side" ? (
-              /* ── Side-by-side view ── */
+              /* ── Side-by-side view — 3 columns ── */
               <div className="space-y-6">
                 {(selectedCategory === "all" ? categories2026 : [selectedCategory]).map((cat) => {
                   const dmkCat = filteredDMK.filter((p) => p.category === cat);
                   const aiCat  = filteredAIADMK.filter((p) => p.category === cat);
-                  if (dmkCat.length === 0 && aiCat.length === 0) return null;
+                  const tvkCat = filteredTVK.filter((p) => p.category === cat);
+                  if (dmkCat.length === 0 && aiCat.length === 0 && tvkCat.length === 0) return null;
                   return (
                     <div key={cat} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                      {/* Category header */}
-                      <div className="px-5 py-3 bg-gray-50 border-b border-gray-100 flex items-center gap-2">
+                      <div className="px-5 py-3 bg-gray-50 border-b border-gray-100">
                         <h3 className="font-bold text-gray-800 text-sm">{t(`cat.${cat}`)}</h3>
                       </div>
 
-                      {/* 2-col grid */}
-                      <div className="grid grid-cols-2 divide-x divide-gray-100">
-                        {/* DMK column */}
+                      {/* 3-col grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-100">
+                        {/* DMK */}
                         <div className="p-4 space-y-3">
                           <div className="flex items-center gap-1.5 mb-2">
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-600 text-white">DMK</span>
@@ -266,7 +337,23 @@ export default function ManifestoPage() {
                           ))}
                         </div>
 
-                        {/* AIADMK column */}
+                        {/* TVK */}
+                        <div className="p-4 space-y-3">
+                          <div className="flex items-center gap-1.5 mb-2">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#1a5276] text-white">TVK</span>
+                            <span className="text-xs text-gray-400">{tvkCat.length} promises</span>
+                            {tvkCat.length === 0 && (
+                              <span className="text-[9px] text-amber-600 bg-amber-50 px-1 rounded">Not announced</span>
+                            )}
+                          </div>
+                          {tvkCat.length === 0 ? (
+                            <p className="text-xs text-gray-300 italic">TVK has not announced promises in this category yet</p>
+                          ) : tvkCat.map((p) => (
+                            <PromiseCard key={p.id} p={p} expandedId={expandedId} setExpandedId={setExpandedId} t={t} lang={lang} />
+                          ))}
+                        </div>
+
+                        {/* AIADMK */}
                         <div className="p-4 space-y-3">
                           <div className="flex items-center gap-1.5 mb-2">
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-700 text-white">AIADMK</span>
@@ -286,7 +373,7 @@ export default function ManifestoPage() {
             ) : (
               /* ── List view (all promises) ── */
               <div className="space-y-3">
-                {[...filteredDMK, ...filteredAIADMK]
+                {[...filteredDMK, ...filteredTVK, ...filteredAIADMK]
                   .sort((a, b) => (a.category || "").localeCompare(b.category || ""))
                   .map((p) => (
                     <div
