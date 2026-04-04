@@ -571,7 +571,7 @@ export default function CandidatePage() {
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [showBreakdown, setShowBreakdown] = useState(false);
+  const [showBreakdown, setShowBreakdown] = useState(true);
   const [allegations, setAllegations] = useState<Allegation[]>([]);
   const [allegationsLoading, setAllegationsLoading] = useState(false);
   const [connections, setConnections] = useState<GraphData | null>(null);
@@ -624,20 +624,10 @@ export default function CandidatePage() {
       if (casesResult.data) setCriminalCases(casesResult.data);
       if (promisesResult.data) setPromises(promisesResult.data);
 
-      // Load cached AI summary if available
-      if (candData.ai_summary_ta) setAiSummary(candData.ai_summary_ta);
-
-      // Cross-year wealth growth: skipped for now.
-      // Requires a manual candidate_cross_year_links table to handle
-      // name transliteration differences and party/constituency changes.
-      // Will be built post-launch.
-
       setLoading(false);
 
-      // Auto-trigger AI summary if not cached
-      if (!candData.ai_summary_ta) {
-        fetchAiSummary(candData.id);
-      }
+      // Always fetch fresh English summary
+      fetchAiSummary(candData.id);
 
       // Auto-trigger allegations search
       fetchAllegations(candData.name, candData.party, constResult.data?.name || "");
@@ -661,7 +651,7 @@ export default function CandidatePage() {
         if (data.error === "credits_unavailable") {
           setAiSummary("__credits_unavailable__");
         } else {
-          setAiSummary(data.summary_ta || data.summary_en || "");
+          setAiSummary(data.summary_en || data.summary_ta || "");
         }
       }
     } catch {
@@ -775,9 +765,11 @@ export default function CandidatePage() {
   // Criminal severity
   const severity = criminalSeverity(candidate.criminal_cases_declared);
 
-  // Transparency score (allegations count passed in for live scoring)
-  const score = computeTransparencyScore(candidate, allegations.length);
-  // Note: showBreakdown state is declared above with other useState hooks
+  // Score only finalised after allegations finish loading
+  const score = computeTransparencyScore(
+    candidate,
+    allegationsLoading ? 0 : allegations.length
+  );
 
   return (
     <div className="min-h-screen bg-cream">
