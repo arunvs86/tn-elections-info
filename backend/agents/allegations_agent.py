@@ -137,18 +137,23 @@ def fetch_allegations(name: str, party: str, constituency: str) -> dict:
     if not name:
         return {"allegations": [], "source": "none", "ai_classified": False}
 
-    # Use first + last name token for broader matching (handles initials like T.J)
-    name_parts = [t for t in name.replace(".", " ").split() if len(t) >= 3]
-    short_name = " ".join(name_parts[:2]) if len(name_parts) >= 2 else name
+    # Longest name token (≥4 chars) for relevance anchor — e.g. "Govindarajan"
+    name_parts = [t for t in name.replace(".", " ").split() if len(t) >= 4]
+    primary_token = name_parts[0].lower() if name_parts else name.lower()
+    # Short name for queries: first meaningful token + party/constituency context
+    short_name = name_parts[0] if name_parts else name
 
-    # 5 focused queries covering: formal allegations, physical incidents,
-    # party/disciplinary issues, corruption, and general news
+    # Disambiguation anchors — must appear alongside the name in a result
+    party_token = party.lower() if party else ""
+    constituency_token = constituency.lower() if constituency else ""
+
+    # 5 focused queries — each includes party or constituency for disambiguation
     queries = [
-        f'{short_name} {party} Tamil Nadu controversy scandal misconduct complaint',
-        f'{short_name} {constituency} assault attack slap violence arrest FIR case',
-        f'{short_name} Tamil Nadu MLA disciplinary action protest suspended expelled',
-        f'{short_name} corruption fraud scam bribe charge probe raid',
-        f'{short_name} Tamil Nadu politician news 2022 2023 2024 2025',
+        f'{short_name} {party} {constituency} Tamil Nadu controversy scandal misconduct',
+        f'{short_name} {party} {constituency} assault attack slap violence arrest FIR',
+        f'{short_name} {party} Tamil Nadu MLA disciplinary action protest suspended expelled',
+        f'{short_name} {party} corruption fraud scam bribe charge probe raid',
+        f'{short_name} {constituency} Tamil Nadu politician news 2022 2023 2024 2025',
     ]
 
     all_results = []
@@ -163,16 +168,19 @@ def fetch_allegations(name: str, party: str, constituency: str) -> dict:
     if not all_results:
         return {"allegations": [], "source": "none", "ai_classified": False}
 
-    # Build name tokens for relevance check — significant words only (≥4 chars)
-    name_tokens = [
-        t.lower() for t in name.replace(".", " ").split()
-        if len(t) >= 4
-    ]
-
     def is_relevant(result: dict) -> bool:
-        """Return True only if the result is genuinely about this candidate."""
+        """
+        Result must mention the candidate's primary name token AND at least one
+        of: party name, constituency name. Prevents false matches on other
+        politicians who share the same name.
+        """
         combined = (result["title"] + " " + result["content"]).lower()
-        return any(token in combined for token in name_tokens)
+        has_name = primary_token in combined
+        has_context = (
+            (party_token and party_token in combined)
+            or (constituency_token and constituency_token in combined)
+        )
+        return has_name and has_context
 
     relevant_results = [r for r in all_results if is_relevant(r)]
 
