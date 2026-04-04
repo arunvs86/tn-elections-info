@@ -1,61 +1,59 @@
 """
 Allegations agent: searches web for candidate news, allegations, controversies.
-Uses Tavily for web search + Claude for severity classification.
-Falls back to raw Tavily results if Claude API credits are unavailable.
+Uses Google Custom Search API + Claude for severity classification.
 """
 import os
 import json
 import httpx
 
-_TAVILY_URL = "https://api.tavily.com/search"
+_GOOGLE_CSE_URL = "https://www.googleapis.com/customsearch/v1"
 
-# Low-credibility domains to exclude from results
-_EXCLUDE_DOMAINS = [
-    "reddit.com",
-    "facebook.com",
-    "twitter.com",
-    "x.com",
-    "instagram.com",
-    "youtube.com",
-    "quora.com",
-    "wikipedia.org",
+# Domains to exclude from results (appended to query as -site:)
+_EXCLUDE_SITES = [
+    "reddit.com", "facebook.com", "twitter.com", "x.com",
+    "instagram.com", "youtube.com", "quora.com", "wikipedia.org",
+    "scribd.com", "slideshare.net", "academia.edu",
 ]
+_EXCLUDE_QUERY = " ".join(f"-site:{s}" for s in _EXCLUDE_SITES)
 
 
-def _tavily_search(query: str, max_results: int = 6) -> list[dict]:
-    api_key = os.getenv("TAVILY_API_KEY", "")
-    if not api_key:
+def _google_search(query: str, max_results: int = 10) -> list[dict]:
+    """Search using Google Custom Search JSON API. Returns up to 10 results."""
+    api_key = os.getenv("GOOGLE_CSE_KEY", "")
+    cx = os.getenv("GOOGLE_CSE_ID", "")
+    if not api_key or not cx:
         return []
     try:
-        r = httpx.post(
-            _TAVILY_URL,
-            json={
-                "api_key": api_key,
-                "query": query,
-                "max_results": max_results,
-                "search_depth": "basic",
-                "include_answer": False,
-                "exclude_domains": _EXCLUDE_DOMAINS,
+        full_query = f"{query} {_EXCLUDE_QUERY}"
+        r = httpx.get(
+            _GOOGLE_CSE_URL,
+            params={
+                "key": api_key,
+                "cx": cx,
+                "q": full_query,
+                "num": min(max_results, 10),
+                "gl": "in",        # India results
+                "lr": "lang_en",   # English pages (Tamil outlets publish English too)
             },
             timeout=15.0,
         )
         r.raise_for_status()
-        results = r.json().get("results", [])
+        items = r.json().get("items", [])
         return [
             {
                 "title": item.get("title", ""),
-                "url": item.get("url", ""),
-                "content": item.get("content", "")[:800],
-                "score": item.get("score", 0),
+                "url": item.get("link", ""),
+                "content": item.get("snippet", ""),
+                "score": 1.0,  # Google doesn't give a relevance score
             }
-            for item in results
+            for item in items
         ]
     except Exception:
         return []
 
 
 def _claude_classify(name: str, party: str, constituency: str, results: list[dict]) -> list[dict]:
-    """Ask Claude to disambiguate and classify each result. Returns enriched list or [] if unavailable."""
+    """Ask Claude to disambiguate and classify each result."""
     api_key = os.getenv("ANTHROPIC_API_KEY", "")
     if not api_key:
         return []
@@ -69,9 +67,9 @@ def _claude_classify(name: str, party: str, constituency: str, results: list[dic
 
 You will receive news snippets about a specific Tamil Nadu politician. For each snippet:
 
-STEP 1 — Disambiguation: First check if the article is genuinely about THIS specific candidate
-(matching name, party, and constituency). If it's about a different person who happens to share
-the same name, mark is_about_candidate: false and skip classification.
+STEP 1 — Disambiguation: Check if this article is genuinely about THIS specific candidate
+(matching name, party, and constituency). If it's about a different person who shares the
+same name, mark is_about_candidate: false.
 
 STEP 2 — Classification: If it IS about this candidate, mark is_allegation: true for ANY of:
 - Physical altercations (slapping, assaulting, beating, threatening anyone)
@@ -89,9 +87,9 @@ Mark is_allegation: false ONLY for genuinely neutral/positive news
 (election wins, inaugurations, welfare work, policy speeches, awards).
 
 For each snippet return:
-- index: the snippet number
+- index: snippet number
 - is_about_candidate: true or false
-- is_allegation: true or false (only meaningful if is_about_candidate is true)
+- is_allegation: true or false
 - title: short descriptive title (max 10 words)
 - summary: one clear sentence of what happened
 - severity: "serious" | "moderate" | "minor"
@@ -157,18 +155,18 @@ def _build_queries(short_name: str, party: str, constituency: str) -> list[str]:
 
 
 def debug_raw_search(name: str, party: str, constituency: str) -> dict:
-    """Returns raw Tavily results per query with no filtering — for debugging."""
+    """Returns raw Google search results per query with no filtering — for debugging."""
     name_parts = [t for t in name.replace(".", " ").split() if len(t) >= 4]
     short_name = name_parts[0] if name_parts else name
     queries = _build_queries(short_name, party, constituency)
 
     output = []
     for query in queries:
-        results = _tavily_search(query, max_results=6)
+        results = _google_search(query, max_results=5)
         output.append({
             "query": query,
             "count": len(results),
-            "results": [{"title": r["title"], "url": r["url"], "score": r["score"]} for r in results],
+            "results": [{"title": r["title"], "url": r["url"]} for r in results],
         })
     return {"queries": output}
 
@@ -176,29 +174,24 @@ def debug_raw_search(name: str, party: str, constituency: str) -> dict:
 def fetch_allegations(name: str, party: str, constituency: str) -> dict:
     """
     Main entry: search web for candidate allegations, classify with Claude.
-    Gracefully falls back to raw results if Claude credits unavailable.
     Returns {"allegations": [...], "source": "web|none", "ai_classified": bool}
     """
     if not name:
         return {"allegations": [], "source": "none", "ai_classified": False}
 
-    # Primary name token (longest meaningful word, ≥4 chars) — e.g. "Govindarajan"
+    # Primary name token — e.g. "Govindarajan" from "Govindarajan T.J"
     name_parts = [t for t in name.replace(".", " ").split() if len(t) >= 4]
     primary_token = name_parts[0].lower() if name_parts else name.lower()
     short_name = name_parts[0] if name_parts else name
-
-    # Disambiguation anchors — must appear alongside the name in a result
-    party_token = party.lower() if party else ""
-    constituency_token = constituency.lower() if constituency else ""
 
     queries = _build_queries(short_name, party, constituency)
 
     all_results = []
     seen_urls = set()
     for query in queries:
-        results = _tavily_search(query, max_results=6)
+        results = _google_search(query, max_results=5)
         for r in results:
-            if r["url"] not in seen_urls and r.get("score", 0) > 0.1:
+            if r["url"] not in seen_urls:
                 seen_urls.add(r["url"])
                 all_results.append(r)
 
@@ -207,10 +200,8 @@ def fetch_allegations(name: str, party: str, constituency: str) -> dict:
 
     def is_relevant(result: dict) -> bool:
         """
-        Only check that the candidate's primary name token appears in the result.
-        Party/constituency context check is skipped here because Tamil news articles
-        often write party names in Tamil script (e.g. திமுக for DMK) which won't
-        match English tokens. Claude handles disambiguation in the next step.
+        Only check that the primary name token appears in the result.
+        Claude handles disambiguation (including Tamil-script party/constituency names).
         """
         combined = (result["title"] + " " + result["content"]).lower()
         return primary_token in combined
@@ -220,7 +211,7 @@ def fetch_allegations(name: str, party: str, constituency: str) -> dict:
     if not relevant_results:
         return {"allegations": [], "source": "none", "ai_classified": False}
 
-    # Try Claude classification (Claude also disambiguates — see prompt)
+    # Claude classifies and disambiguates
     classifications = _claude_classify(name, party, constituency, relevant_results)
 
     allegations = []
@@ -228,7 +219,7 @@ def fetch_allegations(name: str, party: str, constituency: str) -> dict:
     if classifications:
         for item in classifications:
             if not item.get("is_about_candidate", True):
-                continue  # Different person with same name — discard
+                continue
             if not item.get("is_allegation", False):
                 continue
             idx = item.get("index", 0) - 1
@@ -243,18 +234,17 @@ def fetch_allegations(name: str, party: str, constituency: str) -> dict:
                 })
         return {"allegations": allegations[:8], "source": "web", "ai_classified": True}
     else:
-        # Claude unavailable — keyword fallback, broader list of terms
+        # Claude unavailable — keyword fallback
         controversy_keywords = [
             "allege", "accuse", "arrest", "case", "scam", "corrupt", "contro",
             "charge", "raid", "probe", "fraud", "complaint", "fir", "crime",
             "resign", "scandal", "bribe", "caught", "convicted", "bail",
-            "slap", "assault", "attack", "assault", "abuse", "threaten",
+            "slap", "assault", "attack", "abuse", "threaten",
             "suspend", "expel", "disciplin", "protest", "violence", "row",
         ]
         for r in relevant_results[:10]:
             combined = (r["title"] + " " + r["content"]).lower()
-            has_controversy = any(kw in combined for kw in controversy_keywords)
-            if not has_controversy:
+            if not any(kw in combined for kw in controversy_keywords):
                 continue
             severity = (
                 "serious" if any(kw in combined for kw in [
@@ -271,8 +261,7 @@ def fetch_allegations(name: str, party: str, constituency: str) -> dict:
                 "title": r["title"][:80],
                 "summary": r["content"][:200],
                 "source_url": r["url"],
-                "source_name": _extract_source_name(r["url"]),
+                "source_name": _extract_source_name(result["url"]),
                 "severity": severity,
             })
-
         return {"allegations": allegations[:8], "source": "web", "ai_classified": False}
