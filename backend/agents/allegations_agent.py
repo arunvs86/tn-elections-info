@@ -156,19 +156,44 @@ def _build_queries(short_name: str, party: str, constituency: str) -> list[str]:
 
 def debug_raw_search(name: str, party: str, constituency: str) -> dict:
     """Returns raw Google search results per query with no filtering — for debugging."""
+    api_key = os.getenv("GOOGLE_CSE_KEY", "")
+    cx = os.getenv("GOOGLE_CSE_ID", "")
+
+    # Check env vars first
+    if not api_key or not cx:
+        return {
+            "error": "Missing env vars",
+            "GOOGLE_CSE_KEY_set": bool(api_key),
+            "GOOGLE_CSE_ID_set": bool(cx),
+        }
+
+    # Test a single raw call and capture any error
+    test_query = f"{name} {party} Tamil Nadu"
+    try:
+        r = httpx.get(
+            _GOOGLE_CSE_URL,
+            params={"key": api_key, "cx": cx, "q": test_query, "num": 3, "gl": "in"},
+            timeout=15.0,
+        )
+        raw_response = r.json()
+        if r.status_code != 200:
+            return {"error": raw_response, "status_code": r.status_code}
+    except Exception as e:
+        return {"error": str(e)}
+
     name_parts = [t for t in name.replace(".", " ").split() if len(t) >= 4]
     short_name = name_parts[0] if name_parts else name
     queries = _build_queries(short_name, party, constituency)
 
     output = []
-    for query in queries:
+    for query in queries[:3]:  # Only first 3 to save quota
         results = _google_search(query, max_results=5)
         output.append({
             "query": query,
             "count": len(results),
             "results": [{"title": r["title"], "url": r["url"]} for r in results],
         })
-    return {"queries": output}
+    return {"queries": output, "test_result_count": len(raw_response.get("items", []))}
 
 
 def fetch_allegations(name: str, party: str, constituency: str) -> dict:
