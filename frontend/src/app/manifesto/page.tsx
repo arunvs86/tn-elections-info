@@ -214,7 +214,7 @@ export default function ManifestoPage() {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
               <div className="flex items-center gap-2 mb-4">
                 <h2 className="font-extrabold text-gray-900 text-base">Manifesto Rankings 2026</h2>
-                <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium">
+                <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium">
                   Fiscal Soundness + Promise Specificity · No track-record bias
                 </span>
               </div>
@@ -226,7 +226,7 @@ export default function ManifestoPage() {
                         <span className="text-xl">{medals[i]}</span>
                         <span className="text-sm font-extrabold" style={{ color: r.color }}>{r.party}</span>
                         {r.partial && (
-                          <span className="text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">Partial</span>
+                          <span className="text-xs font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">Partial</span>
                         )}
                       </div>
                       <span className="text-2xl font-extrabold" style={{ color: r.color }}>{r.score}</span>
@@ -235,13 +235,13 @@ export default function ManifestoPage() {
                     <div className="w-full bg-gray-100 rounded-full h-1.5 mb-2">
                       <div className="h-1.5 rounded-full transition-all" style={{ width: `${(r.score / 10) * 100}%`, background: r.color }} />
                     </div>
-                    <p className="text-[10px] font-bold mb-0.5" style={{ color: r.color }}>{r.badge}</p>
-                    <p className="text-[10px] text-gray-500 leading-snug">{r.note}</p>
-                    <p className="text-[10px] text-gray-400 mt-1">{r.total} promises · {r.flagship} flagship</p>
+                    <p className="text-xs font-bold mb-0.5" style={{ color: r.color }}>{r.badge}</p>
+                    <p className="text-xs text-gray-500 leading-snug">{r.note}</p>
+                    <p className="text-xs text-gray-400 mt-1">{r.total} promises · {r.flagship} flagship</p>
                   </div>
                 ))}
               </div>
-              <p className="text-[10px] text-gray-400 mt-3 text-center">
+              <p className="text-xs text-gray-400 mt-3 text-center">
                 Score = (Fiscal Feasibility + Promise Specificity) ÷ 2 · out of 10
               </p>
             </div>
@@ -257,14 +257,14 @@ export default function ManifestoPage() {
                       <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${PARTY_BADGE[party]}`}>{party}</span>
                       <span className="text-xs text-gray-500">{arr.length} {t("manifesto.promises_reviewed")}</span>
                       {party === "TVK" && (
-                        <span className="text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">Partial</span>
+                        <span className="text-xs font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">Partial</span>
                       )}
                     </div>
                     <div className="space-y-1">
                       {flagships.slice(0, 3).map((p) => {
                         const txt = (lang === "ta" && p.promise_text_tamil) ? p.promise_text_tamil : p.promise_text;
                         return (
-                          <p key={p.id} className="text-xs text-gray-700 leading-snug">
+                          <p key={p.id} className="text-sm text-gray-700 leading-snug">
                             {txt.length > 80 ? txt.slice(0, 80) + "…" : txt}
                           </p>
                         );
@@ -327,8 +327,8 @@ export default function ManifestoPage() {
                         {/* DMK */}
                         <div className="p-4 space-y-3">
                           <div className="flex items-center gap-1.5 mb-2">
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-600 text-white">DMK</span>
-                            <span className="text-xs text-gray-400">{dmkCat.length} promises</span>
+                            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-600 text-white">DMK</span>
+                            <span className="text-sm text-gray-400">{dmkCat.length} promises</span>
                           </div>
                           {dmkCat.length === 0 ? (
                             <p className="text-xs text-gray-300 italic">{t("manifesto.no_promises")}</p>
@@ -340,10 +340,10 @@ export default function ManifestoPage() {
                         {/* TVK */}
                         <div className="p-4 space-y-3">
                           <div className="flex items-center gap-1.5 mb-2">
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#1a5276] text-white">TVK</span>
-                            <span className="text-xs text-gray-400">{tvkCat.length} promises</span>
+                            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-[#1a5276] text-white">TVK</span>
+                            <span className="text-sm text-gray-400">{tvkCat.length} promises</span>
                             {tvkCat.length === 0 && (
-                              <span className="text-[9px] text-amber-600 bg-amber-50 px-1 rounded">Not announced</span>
+                              <span className="text-xs text-amber-600 bg-amber-50 px-1 rounded">Not announced</span>
                             )}
                           </div>
                           {tvkCat.length === 0 ? (
@@ -356,8 +356,8 @@ export default function ManifestoPage() {
                         {/* AIADMK */}
                         <div className="p-4 space-y-3">
                           <div className="flex items-center gap-1.5 mb-2">
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-700 text-white">AIADMK</span>
-                            <span className="text-xs text-gray-400">{aiCat.length} promises</span>
+                            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-green-700 text-white">AIADMK</span>
+                            <span className="text-sm text-gray-400">{aiCat.length} promises</span>
                           </div>
                           {aiCat.length === 0 ? (
                             <p className="text-xs text-gray-300 italic">{t("manifesto.no_promises")}</p>
@@ -382,7 +382,7 @@ export default function ManifestoPage() {
                     >
                       <div className="flex items-start gap-3">
                         <div
-                          className="w-10 h-10 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0 mt-0.5"
+                          className="w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-0.5"
                           style={{ background: partyColor(p.party) }}
                         >
                           {p.party.slice(0, 3)}
@@ -393,19 +393,19 @@ export default function ManifestoPage() {
                               {p.party}
                             </span>
                             {p.category && (
-                              <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
+                              <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
                                 {t(`cat.${p.category}`)}
                               </span>
                             )}
                             {p.is_flagship && (
-                              <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-semibold">
+                              <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-semibold">
                                 {t("manifesto.flagship")}
                               </span>
                             )}
                             {p.believability_label && (() => {
                               const bc = believabilityConfig(p.believability_label);
                               return (
-                                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${bc.bg} ${bc.text}`}>
+                                <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${bc.bg} ${bc.text}`}>
                                   {t(`bel.${p.believability_label.toLowerCase().replace(" ", "_")}`)}
                                 </span>
                               );
@@ -545,7 +545,7 @@ export default function ManifestoPage() {
                             <div className="flex items-start gap-3">
                               <span className="text-lg flex-shrink-0 mt-0.5">{sc.icon}</span>
                               <div className="flex-1 min-w-0">
-                                <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full mb-1.5 ${sc.bg} ${sc.text}`}>{sc.label}</span>
+                                <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full mb-1.5 ${sc.bg} ${sc.text}`}>{sc.label}</span>
                                 <p className="text-sm text-gray-800">{(lang === "ta" && p.promise_text_tamil) ? p.promise_text_tamil : p.promise_text}</p>
                                 {p.promise_text_tamil && lang !== "ta" && <p className="text-xs text-gray-400 mt-0.5">{p.promise_text_tamil}</p>}
                                 {p.evidence && (
@@ -584,7 +584,7 @@ export default function ManifestoPage() {
                 <summary className="px-5 py-4 cursor-pointer hover:bg-gray-50 transition-colors">
                   <span className="text-sm font-semibold text-gray-600 inline-flex items-center gap-2">
                     {t("manifesto.other_promises")}
-                    <span className="text-[10px] bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full font-semibold">{unverifiedPromises.length} {t("manifesto.unverified")}</span>
+                    <span className="text-xs bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full font-semibold">{unverifiedPromises.length} {t("manifesto.unverified")}</span>
                   </span>
                 </summary>
                 <div className="divide-y divide-gray-50 border-t border-gray-100">
@@ -595,7 +595,7 @@ export default function ManifestoPage() {
                         <p className="text-sm text-gray-500">{(lang === "ta" && p.promise_text_tamil) ? p.promise_text_tamil : p.promise_text}</p>
                         {p.promise_text_tamil && lang !== "ta" && <p className="text-xs text-gray-300 mt-0.5">{p.promise_text_tamil}</p>}
                         {p.category && (
-                          <span className="inline-block text-[10px] bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded mt-1">
+                          <span className="inline-block text-xs bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded mt-1">
                             {t(`cat.${p.category}`)}
                           </span>
                         )}
@@ -660,15 +660,15 @@ function PromiseCard({
       {/* Badges row */}
       <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
         {p.is_flagship && (
-          <span className="text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">{t("manifesto.flagship")}</span>
+          <span className="text-xs font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">{t("manifesto.flagship")}</span>
         )}
         {p.believability_label && (
-          <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${bc.bg} ${bc.text}`}>
+          <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${bc.bg} ${bc.text}`}>
             {t(`bel.${p.believability_label.toLowerCase().replace(" ", "_")}`)}
           </span>
         )}
         {p.overall_score != null && (
-          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ml-auto ${
+          <span className={`text-xs font-bold px-1.5 py-0.5 rounded ml-auto ${
             p.overall_score >= 7 ? "bg-green-100 text-green-700" :
             p.overall_score >= 5 ? "bg-yellow-100 text-yellow-700" :
             "bg-red-100 text-red-700"
@@ -679,22 +679,22 @@ function PromiseCard({
       </div>
 
       {/* Promise text */}
-      <p className="text-xs text-gray-800 leading-relaxed">{(lang === "ta" && p.promise_text_tamil) ? p.promise_text_tamil : p.promise_text}</p>
+      <p className="text-sm text-gray-800 leading-relaxed">{(lang === "ta" && p.promise_text_tamil) ? p.promise_text_tamil : p.promise_text}</p>
       {p.promise_text_tamil && lang !== "ta" && (
-        <p className="text-[10px] text-gray-400 mt-0.5 leading-relaxed">{p.promise_text_tamil}</p>
+        <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">{p.promise_text_tamil}</p>
       )}
 
       {/* Analysis toggle */}
       {p.ai_reasoning && (
         <button
           onClick={() => setExpandedId(isExp ? null : p.id)}
-          className="text-[10px] text-terracotta hover:underline mt-1.5 block"
+          className="text-xs text-terracotta hover:underline mt-1.5 block"
         >
           {isExp ? t("manifesto.hide") : t("manifesto.our_take")}
         </button>
       )}
       {isExp && p.ai_reasoning && (
-        <div className="mt-2 bg-white rounded-lg p-2.5 text-[10px] text-gray-600 leading-relaxed border border-gray-100">
+        <div className="mt-2 bg-white rounded-lg p-3 text-sm text-gray-600 leading-relaxed border border-gray-100">
           {p.ai_reasoning}
         </div>
       )}
