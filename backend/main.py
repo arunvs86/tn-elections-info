@@ -20,7 +20,7 @@ from agents.chat_agent import handle_chat
 from agents.summary_agent import generate_candidate_summary
 from agents.briefing_agent import generate_briefing, get_latest_briefing
 from agents.thamizhan_agent import trigger_vapi_call, call_all_pledgers, get_pledge_stats, send_whatsapp_reminder, send_sms_reminder, sms_all_pledgers
-from agents.allegations_agent import fetch_allegations
+from agents.allegations_agent import fetch_allegations, debug_raw_search
 from agents.connections_agent import build_connections
 from tools.db_tools import save_messages, rest_get, rest_post
 
@@ -140,6 +140,16 @@ def candidate_allegations(req: AllegationsRequest):
     """Search web for candidate allegations and controversies via Tavily + Claude."""
     try:
         result = fetch_allegations(req.name, req.party, req.constituency)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    return result
+
+
+@app.post("/api/debug-allegations")
+def debug_allegations(req: AllegationsRequest):
+    """Debug: returns raw Tavily results per query before any filtering."""
+    try:
+        result = debug_raw_search(req.name, req.party, req.constituency)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     return result

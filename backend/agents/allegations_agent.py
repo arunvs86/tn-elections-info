@@ -54,42 +54,55 @@ def _tavily_search(query: str, max_results: int = 6) -> list[dict]:
         return []
 
 
-def _claude_classify(name: str, party: str, results: list[dict]) -> list[dict]:
-    """Ask Claude to classify each result. Returns enriched list or [] if credits unavailable."""
+def _claude_classify(name: str, party: str, constituency: str, results: list[dict]) -> list[dict]:
+    """Ask Claude to disambiguate and classify each result. Returns enriched list or [] if unavailable."""
     api_key = os.getenv("ANTHROPIC_API_KEY", "")
     if not api_key:
         return []
 
     snippets = "\n".join([
-        f"{i+1}. [{r['title']}] {r['content'][:400]}"
-        for i, r in enumerate(results[:10])
+        f"{i+1}. [{r['title']}]\nURL: {r['url']}\n{r['content'][:500]}"
+        for i, r in enumerate(results[:12])
     ])
 
-    system = """You are a political news analyst for Tamil Nadu elections. Your job is to surface ANY negative news about a politician — not just formal legal cases.
+    system = """You are a political news analyst for Tamil Nadu elections.
 
-Mark is_allegation: true for ALL of the following:
-- Physical altercations (slapping, assaulting, threatening anyone)
-- Verbal abuse, offensive remarks, hate speech
-- Corruption, bribery, scams, financial irregularities
-- Criminal cases, FIRs, arrests, raids, court cases
-- Misconduct, disciplinary action, party suspension/expulsion
-- Protests or complaints filed against the candidate
-- Controversies, scandals, public disputes
+You will receive news snippets about a specific Tamil Nadu politician. For each snippet:
+
+STEP 1 — Disambiguation: First check if the article is genuinely about THIS specific candidate
+(matching name, party, and constituency). If it's about a different person who happens to share
+the same name, mark is_about_candidate: false and skip classification.
+
+STEP 2 — Classification: If it IS about this candidate, mark is_allegation: true for ANY of:
+- Physical altercations (slapping, assaulting, beating, threatening anyone)
+- Verbal abuse, offensive remarks, hate speech, derogatory statements
+- Corruption, bribery, scams, financial irregularities, DA cases
+- Criminal cases, FIRs, arrests, raids, court cases, bail
+- Misconduct, disciplinary action, party suspension/expulsion, show-cause notice
+- Protests or public complaints filed against the candidate
+- Controversies, scandals, public disputes, rows
 - Abuse of power, misuse of government resources
-- Any negative news that reflects on the candidate's conduct or character
+- Land grab, illegal encroachment, property disputes
+- Election code violations, poll malpractice
 
-Mark is_allegation: false ONLY for genuinely neutral/positive news (election wins, inaugurations, welfare work, speeches on policy).
+Mark is_allegation: false ONLY for genuinely neutral/positive news
+(election wins, inaugurations, welfare work, policy speeches, awards).
 
-For each snippet extract:
+For each snippet return:
+- index: the snippet number
+- is_about_candidate: true or false
+- is_allegation: true or false (only meaningful if is_about_candidate is true)
 - title: short descriptive title (max 10 words)
-- summary: one clear sentence describing what happened
-- severity: "serious" (criminal/violence/corruption/arrest) | "moderate" (financial/ethical/misconduct) | "minor" (verbal dispute/political controversy/criticism)
-- is_allegation: true or false
+- summary: one clear sentence of what happened
+- severity: "serious" | "moderate" | "minor"
 
 Return ONLY a JSON array, no markdown:
-[{"index": 1, "title": "...", "summary": "...", "severity": "...", "is_allegation": true}]"""
+[{"index": 1, "is_about_candidate": true, "is_allegation": true, "title": "...", "summary": "...", "severity": "serious"}]"""
 
-    user = f"Candidate: {name} ({party})\n\nNews snippets:\n{snippets}"
+    user = (
+        f"Candidate: {name}\nParty: {party}\nConstituency: {constituency}, Tamil Nadu\n\n"
+        f"News snippets:\n{snippets}"
+    )
 
     try:
         r = httpx.post(
@@ -128,6 +141,38 @@ def _extract_source_name(url: str) -> str:
         return url
 
 
+def _build_queries(short_name: str, party: str, constituency: str) -> list[str]:
+    return [
+        f'{short_name} {party} {constituency} controversy scandal misconduct complaint Tamil Nadu',
+        f'{short_name} {party} assault attack slap beat threaten violence altercation',
+        f'{short_name} {party} {constituency} arrest FIR case court criminal charges bail',
+        f'{short_name} {party} MLA suspended expelled disciplinary action show cause notice',
+        f'{short_name} {party} corruption fraud scam bribe illegal money raid disproportionate assets',
+        f'{short_name} {constituency} MLA complaint protest petition residents public against',
+        f'{short_name} {party} controversial statement remarks row hate speech offensive',
+        f'{short_name} {party} election commission complaint violation code conduct poll',
+        f'{short_name} {constituency} land grab encroachment property illegal construction',
+        f'{short_name} {constituency} Tamil Nadu MLA news 2021 2022 2023 2024 2025',
+    ]
+
+
+def debug_raw_search(name: str, party: str, constituency: str) -> dict:
+    """Returns raw Tavily results per query with no filtering — for debugging."""
+    name_parts = [t for t in name.replace(".", " ").split() if len(t) >= 4]
+    short_name = name_parts[0] if name_parts else name
+    queries = _build_queries(short_name, party, constituency)
+
+    output = []
+    for query in queries:
+        results = _tavily_search(query, max_results=6)
+        output.append({
+            "query": query,
+            "count": len(results),
+            "results": [{"title": r["title"], "url": r["url"], "score": r["score"]} for r in results],
+        })
+    return {"queries": output}
+
+
 def fetch_allegations(name: str, party: str, constituency: str) -> dict:
     """
     Main entry: search web for candidate allegations, classify with Claude.
@@ -146,31 +191,7 @@ def fetch_allegations(name: str, party: str, constituency: str) -> dict:
     party_token = party.lower() if party else ""
     constituency_token = constituency.lower() if constituency else ""
 
-    # 10 queries covering every angle of negative coverage:
-    # violence, legal cases, party discipline, corruption, public complaints,
-    # controversial statements, local issues, election controversy, catch-all news
-    queries = [
-        # 1. General controversy + party + constituency
-        f'{short_name} {party} {constituency} controversy scandal misconduct complaint Tamil Nadu',
-        # 2. Physical violence / assault incidents
-        f'{short_name} {party} assault attack slap beat threaten violence altercation',
-        # 3. Arrests, FIRs, court cases, criminal charges
-        f'{short_name} {party} {constituency} arrest FIR case court criminal charges bail',
-        # 4. Party suspension, expulsion, disciplinary action
-        f'{short_name} {party} MLA suspended expelled disciplinary action show cause notice',
-        # 5. Corruption, financial crimes, raids
-        f'{short_name} {party} corruption fraud scam bribe illegal money raid disproportionate assets',
-        # 6. Public protests, petitions, residents complaints against MLA
-        f'{short_name} {constituency} MLA complaint protest petition residents public against',
-        # 7. Controversial remarks, offensive statements, hate speech
-        f'{short_name} {party} controversial statement remarks row hate speech offensive',
-        # 8. Election Commission complaints, poll violations
-        f'{short_name} {party} election commission complaint violation code conduct poll',
-        # 9. Land grab, encroachment, property dispute
-        f'{short_name} {constituency} land grab encroachment property illegal construction',
-        # 10. Broad recent news catch-all
-        f'{short_name} {constituency} Tamil Nadu MLA news 2021 2022 2023 2024 2025',
-    ]
+    queries = _build_queries(short_name, party, constituency)
 
     all_results = []
     seen_urls = set()
@@ -186,30 +207,28 @@ def fetch_allegations(name: str, party: str, constituency: str) -> dict:
 
     def is_relevant(result: dict) -> bool:
         """
-        Result must mention the candidate's primary name token AND at least one
-        of: party name, constituency name. Prevents false matches on other
-        politicians who share the same name.
+        Only check that the candidate's primary name token appears in the result.
+        Party/constituency context check is skipped here because Tamil news articles
+        often write party names in Tamil script (e.g. திமுக for DMK) which won't
+        match English tokens. Claude handles disambiguation in the next step.
         """
         combined = (result["title"] + " " + result["content"]).lower()
-        has_name = primary_token in combined
-        has_context = (
-            (party_token and party_token in combined)
-            or (constituency_token and constituency_token in combined)
-        )
-        return has_name and has_context
+        return primary_token in combined
 
     relevant_results = [r for r in all_results if is_relevant(r)]
 
     if not relevant_results:
         return {"allegations": [], "source": "none", "ai_classified": False}
 
-    # Try Claude classification
-    classifications = _claude_classify(name, party, relevant_results)
+    # Try Claude classification (Claude also disambiguates — see prompt)
+    classifications = _claude_classify(name, party, constituency, relevant_results)
 
     allegations = []
 
     if classifications:
         for item in classifications:
+            if not item.get("is_about_candidate", True):
+                continue  # Different person with same name — discard
             if not item.get("is_allegation", False):
                 continue
             idx = item.get("index", 0) - 1
