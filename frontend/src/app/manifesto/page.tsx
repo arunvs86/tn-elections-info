@@ -74,6 +74,9 @@ export default function ManifestoPage() {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [tab, setTab] = useState<"audit" | "upcoming">("upcoming");
   const [compareMode, setCompareMode] = useState<"side-by-side" | "list">("side-by-side");
+  const [selectedParty, setSelectedParty] = useState<string>("all");
+  const [selectedBelievability, setSelectedBelievability] = useState<string>("all");
+  const [flagshipOnly, setFlagshipOnly] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -106,15 +109,17 @@ export default function ManifestoPage() {
   );
 
   // Filtered for 2026
-  const filteredDMK    = dmkPromises.filter((p) =>
-    selectedCategory === "all" || p.category === selectedCategory
-  );
-  const filteredAIADMK = aiadmkPromises.filter((p) =>
-    selectedCategory === "all" || p.category === selectedCategory
-  );
-  const filteredTVK    = tvkPromises.filter((p) =>
-    selectedCategory === "all" || p.category === selectedCategory
-  );
+  function applyFilters(arr: ManifestoPromise[]) {
+    return arr.filter((p) => {
+      if (selectedCategory !== "all" && p.category !== selectedCategory) return false;
+      if (selectedBelievability !== "all" && (p.believability_label || "").toLowerCase().replace(" ", "_") !== selectedBelievability) return false;
+      if (flagshipOnly && !p.is_flagship) return false;
+      return true;
+    });
+  }
+  const filteredDMK    = (selectedParty === "all" || selectedParty === "DMK")    ? applyFilters(dmkPromises)    : [];
+  const filteredAIADMK = (selectedParty === "all" || selectedParty === "AIADMK") ? applyFilters(aiadmkPromises) : [];
+  const filteredTVK    = (selectedParty === "all" || selectedParty === "TVK")    ? applyFilters(tvkPromises)    : [];
 
   // ── Ranking: fiscal + specificity only (no track-record bias) ──
   function partyAvg(arr: ManifestoPromise[], key: "fiscal_score" | "specificity_score") {
@@ -179,7 +184,7 @@ export default function ManifestoPage() {
         {/* Tabs */}
         <div className="flex gap-2 mb-6">
           <button
-            onClick={() => { setTab("upcoming"); setSelectedCategory("all"); }}
+            onClick={() => { setTab("upcoming"); setSelectedCategory("all"); setSelectedParty("all"); setSelectedBelievability("all"); setFlagshipOnly(false); }}
             className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
               tab === "upcoming"
                 ? "bg-terracotta text-white shadow-md"
@@ -276,99 +281,174 @@ export default function ManifestoPage() {
             </div>
 
             {/* Controls */}
-            <div className="flex items-center gap-3 flex-wrap">
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-terracotta"
-              >
-                <option value="all">{t("manifesto.all_categories")}</option>
-                {categories2026.map((cat) => (
-                  <option key={cat} value={cat}>{t(`cat.${cat}`)}</option>
-                ))}
-              </select>
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
+              {/* Row 1: Party pills */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Party</span>
+                {(["all", "DMK", "TVK", "AIADMK"] as const).map((p) => {
+                  const colors: Record<string, string> = {
+                    all: "#6b7280", DMK: "#c0392b", TVK: "#1a5276", AIADMK: "#2d7a4f",
+                  };
+                  const isActive = selectedParty === p;
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => setSelectedParty(p)}
+                      className="text-xs font-bold px-3 py-1.5 rounded-full border transition-all"
+                      style={{
+                        borderColor: colors[p],
+                        background: isActive ? colors[p] : "transparent",
+                        color: isActive ? "#fff" : colors[p],
+                      }}
+                    >
+                      {p === "all" ? "All Parties" : p}
+                    </button>
+                  );
+                })}
+              </div>
 
-              <div className="flex gap-1 ml-auto bg-gray-100 rounded-lg p-1">
+              {/* Row 2: Category + Believability + Flagship + View toggle */}
+              <div className="flex items-center gap-3 flex-wrap">
+                {/* Category */}
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-terracotta"
+                >
+                  <option value="all">{t("manifesto.all_categories")}</option>
+                  {categories2026.map((cat) => (
+                    <option key={cat} value={cat}>{t(`cat.${cat}`)}</option>
+                  ))}
+                </select>
+
+                {/* Believability */}
+                <select
+                  value={selectedBelievability}
+                  onChange={(e) => setSelectedBelievability(e.target.value)}
+                  className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-terracotta"
+                >
+                  <option value="all">All Believability</option>
+                  <option value="likely">✅ Likely</option>
+                  <option value="uncertain">⚠️ Uncertain</option>
+                  <option value="unlikely">❌ Unlikely</option>
+                </select>
+
+                {/* Flagship toggle */}
                 <button
-                  onClick={() => setCompareMode("side-by-side")}
-                  className={`text-xs px-3 py-1.5 rounded-md font-medium transition-all ${
-                    compareMode === "side-by-side" ? "bg-white shadow text-gray-900" : "text-gray-500"
+                  onClick={() => setFlagshipOnly(!flagshipOnly)}
+                  className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-all ${
+                    flagshipOnly
+                      ? "bg-amber-500 border-amber-500 text-white"
+                      : "border-amber-400 text-amber-600 bg-transparent"
                   }`}
                 >
-                  {t("manifesto.side_by_side")}
+                  ⭐ Flagship only
                 </button>
-                <button
-                  onClick={() => setCompareMode("list")}
-                  className={`text-xs px-3 py-1.5 rounded-md font-medium transition-all ${
-                    compareMode === "list" ? "bg-white shadow text-gray-900" : "text-gray-500"
-                  }`}
-                >
-                  {t("manifesto.all_promises")}
-                </button>
+
+                {/* Active filter count badge */}
+                {(selectedParty !== "all" || selectedCategory !== "all" || selectedBelievability !== "all" || flagshipOnly) && (
+                  <button
+                    onClick={() => { setSelectedParty("all"); setSelectedCategory("all"); setSelectedBelievability("all"); setFlagshipOnly(false); }}
+                    className="text-xs text-terracotta font-semibold hover:underline ml-1"
+                  >
+                    Clear filters ×
+                  </button>
+                )}
+
+                {/* View toggle */}
+                <div className="flex gap-1 ml-auto bg-gray-100 rounded-lg p-1">
+                  <button
+                    onClick={() => setCompareMode("side-by-side")}
+                    className={`text-xs px-3 py-1.5 rounded-md font-medium transition-all ${
+                      compareMode === "side-by-side" ? "bg-white shadow text-gray-900" : "text-gray-500"
+                    }`}
+                  >
+                    {t("manifesto.side_by_side")}
+                  </button>
+                  <button
+                    onClick={() => setCompareMode("list")}
+                    className={`text-xs px-3 py-1.5 rounded-md font-medium transition-all ${
+                      compareMode === "list" ? "bg-white shadow text-gray-900" : "text-gray-500"
+                    }`}
+                  >
+                    {t("manifesto.all_promises")}
+                  </button>
+                </div>
               </div>
             </div>
 
             {compareMode === "side-by-side" ? (
-              /* ── Side-by-side view — 3 columns ── */
+              /* ── Side-by-side view ── */
               <div className="space-y-6">
                 {(selectedCategory === "all" ? categories2026 : [selectedCategory]).map((cat) => {
                   const dmkCat = filteredDMK.filter((p) => p.category === cat);
                   const aiCat  = filteredAIADMK.filter((p) => p.category === cat);
                   const tvkCat = filteredTVK.filter((p) => p.category === cat);
                   if (dmkCat.length === 0 && aiCat.length === 0 && tvkCat.length === 0) return null;
+
+                  // Columns to show based on selectedParty
+                  type ColDef = { key: string; label: string; badge: string; items: ManifestoPromise[]; noData?: string };
+                  const allCols: ColDef[] = [
+                    { key: "DMK",    label: "DMK",    badge: "bg-red-600",     items: dmkCat },
+                    { key: "TVK",    label: "TVK",    badge: "bg-[#1a5276]",   items: tvkCat, noData: "TVK has not announced promises in this category yet" },
+                    { key: "AIADMK", label: "AIADMK", badge: "bg-green-700",   items: aiCat },
+                  ];
+                  const cols = selectedParty === "all" ? allCols : allCols.filter((c) => c.key === selectedParty);
+                  const gridClass = cols.length === 1
+                    ? "grid grid-cols-1"
+                    : cols.length === 2
+                    ? "grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-100"
+                    : "grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-100";
+
                   return (
                     <div key={cat} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                      <div className="px-5 py-3 bg-gray-50 border-b border-gray-100">
+                      <div className="px-5 py-3 bg-gray-50 border-b border-gray-100 flex items-center gap-2">
                         <h3 className="font-bold text-gray-800 text-sm">{t(`cat.${cat}`)}</h3>
+                        <span className="text-xs text-gray-400">
+                          {[dmkCat, tvkCat, aiCat].reduce((a, b) => a + b.length, 0)} promises
+                        </span>
                       </div>
 
-                      {/* 3-col grid */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-100">
-                        {/* DMK */}
-                        <div className="p-4 space-y-3">
-                          <div className="flex items-center gap-1.5 mb-2">
-                            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-600 text-white">DMK</span>
-                            <span className="text-sm text-gray-400">{dmkCat.length} promises</span>
+                      <div className={gridClass}>
+                        {cols.map((col) => (
+                          <div key={col.key} className="p-4 space-y-3">
+                            <div className="flex items-center gap-1.5 mb-2">
+                              <span className={`text-xs font-bold px-2 py-0.5 rounded-full text-white ${col.badge}`}>{col.label}</span>
+                              <span className="text-sm text-gray-400">{col.items.length} promises</span>
+                              {col.key === "TVK" && col.items.length === 0 && (
+                                <span className="text-xs text-amber-600 bg-amber-50 px-1 rounded">Not announced</span>
+                              )}
+                            </div>
+                            {col.items.length === 0 ? (
+                              <p className="text-xs text-gray-300 italic">{col.noData || t("manifesto.no_promises")}</p>
+                            ) : col.items.map((p) => (
+                              <PromiseCard key={p.id} p={p} expandedId={expandedId} setExpandedId={setExpandedId} t={t} lang={lang} />
+                            ))}
                           </div>
-                          {dmkCat.length === 0 ? (
-                            <p className="text-xs text-gray-300 italic">{t("manifesto.no_promises")}</p>
-                          ) : dmkCat.map((p) => (
-                            <PromiseCard key={p.id} p={p} expandedId={expandedId} setExpandedId={setExpandedId} t={t} lang={lang} />
-                          ))}
-                        </div>
-
-                        {/* TVK */}
-                        <div className="p-4 space-y-3">
-                          <div className="flex items-center gap-1.5 mb-2">
-                            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-[#1a5276] text-white">TVK</span>
-                            <span className="text-sm text-gray-400">{tvkCat.length} promises</span>
-                            {tvkCat.length === 0 && (
-                              <span className="text-xs text-amber-600 bg-amber-50 px-1 rounded">Not announced</span>
-                            )}
-                          </div>
-                          {tvkCat.length === 0 ? (
-                            <p className="text-xs text-gray-300 italic">TVK has not announced promises in this category yet</p>
-                          ) : tvkCat.map((p) => (
-                            <PromiseCard key={p.id} p={p} expandedId={expandedId} setExpandedId={setExpandedId} t={t} lang={lang} />
-                          ))}
-                        </div>
-
-                        {/* AIADMK */}
-                        <div className="p-4 space-y-3">
-                          <div className="flex items-center gap-1.5 mb-2">
-                            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-green-700 text-white">AIADMK</span>
-                            <span className="text-sm text-gray-400">{aiCat.length} promises</span>
-                          </div>
-                          {aiCat.length === 0 ? (
-                            <p className="text-xs text-gray-300 italic">{t("manifesto.no_promises")}</p>
-                          ) : aiCat.map((p) => (
-                            <PromiseCard key={p.id} p={p} expandedId={expandedId} setExpandedId={setExpandedId} t={t} lang={lang} />
-                          ))}
-                        </div>
+                        ))}
                       </div>
                     </div>
                   );
                 })}
+
+                {/* Empty state when all are filtered out */}
+                {(selectedCategory === "all" ? categories2026 : [selectedCategory]).every((cat) => {
+                  const dmkCat = filteredDMK.filter((p) => p.category === cat);
+                  const aiCat  = filteredAIADMK.filter((p) => p.category === cat);
+                  const tvkCat = filteredTVK.filter((p) => p.category === cat);
+                  return dmkCat.length === 0 && aiCat.length === 0 && tvkCat.length === 0;
+                }) && (
+                  <div className="text-center py-16 text-gray-400">
+                    <p className="text-4xl mb-3">🔍</p>
+                    <p className="font-semibold text-gray-600">No promises match your filters</p>
+                    <button
+                      onClick={() => { setSelectedParty("all"); setSelectedCategory("all"); setSelectedBelievability("all"); setFlagshipOnly(false); }}
+                      className="mt-3 text-sm text-terracotta hover:underline font-semibold"
+                    >
+                      Clear all filters
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               /* ── List view (all promises) ── */
