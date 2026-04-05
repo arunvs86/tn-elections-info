@@ -34,15 +34,12 @@ export default function VisitorTracker() {
       .insert({ page, fingerprint: fp })
       .then(() => {});
 
-    // Get unique visitor count
+    // Get unique visitor count via server-side DB function
+    // (avoids PostgREST's 1000-row default limit on client-side fetches)
     supabase
-      .from("site_visits")
-      .select("fingerprint")
+      .rpc("get_unique_visitor_count")
       .then(({ data }) => {
-        if (data) {
-          const unique = new Set(data.map((d) => d.fingerprint)).size;
-          setVisitorCount(unique);
-        }
+        if (typeof data === "number") setVisitorCount(data);
       });
   }, []);
 
