@@ -542,7 +542,7 @@ export default function VoterQuiz() {
                             background: isSelected ? meta.color : meta.color + "18",
                           }}
                         >
-                          {choice.party}
+                          {/* {choice.party} */}
                         </span>
                         <p className="text-xs text-gray-700 leading-relaxed flex-1">
                           {isTa ? choice.textTa : choice.text}

@@ -220,7 +220,7 @@ export default function ManifestoPage() {
               <div className="flex items-center gap-2 mb-4">
                 <h2 className="font-extrabold text-gray-900 text-base">Manifesto Rankings 2026</h2>
                 <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium">
-                  Fiscal Soundness + Promise Specificity · No track-record bias
+                  Fiscal Soundness + Promise Specificity
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
