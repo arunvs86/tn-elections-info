@@ -18,10 +18,10 @@ interface PartyFact {
   display_order: number;
 }
 
-// ── Quiz questions — each presents real policy choices from verified 2026 manifestos ──
-// The user picks the party whose policy resonates most → 1 point for that party.
-// Questions are designed around meaningful, differentiating real policies.
-// No hidden weights, no hardcoded scores — just 1 point per pick.
+// ── Quiz questions ─────────────────────────────────────────────────────────────
+// Each question shows real 2026 manifesto policy side by side.
+// User picks the one that resonates → 1 point for that party.
+// No weights, no hidden scores. Pure count = result.
 const QUIZ_QUESTIONS = [
   {
     id: "women",
@@ -35,18 +35,99 @@ const QUIZ_QUESTIONS = [
     choices: [
       {
         party: "DMK",
-        text: "Increase Magalir Urimai from ₹1,000 → ₹2,000/month for 1.37 crore women (continuing a running scheme)",
-        textTa: "மகளிர் உரிமை ₹1,000 → ₹2,000/மாதம் — 1.37 கோடி பெண்களுக்கு (தற்போது நடைமுறையில் உள்ள திட்டம் விரிவு)",
+        text: "Increase Magalir Urimai from ₹1,000 → ₹2,000/month for 1.37 crore women (expanding a scheme already running since 2023)",
+        textTa: "மகளிர் உரிமை ₹1,000 → ₹2,000/மாதம் — 1.37 கோடி பெண்களுக்கு (2023 முதல் நடைமுறையில் உள்ளது)",
       },
       {
         party: "AIADMK",
-        text: "₹2,000/month (Kula Vilakku Scheme) + ₹25,000 two-wheeler subsidy for working women + free refrigerator",
+        text: "₹2,000/month (Kula Vilakku Scheme) + ₹25,000 two-wheeler subsidy for working women + free refrigerator for all ration families",
         textTa: "குல விளக்கு திட்டம் ₹2,000/மாதம் + வேலைக்கு போகும் பெண்களுக்கு ₹25,000 இரு சக்கர மானியம் + இலவச ஃபிரிட்ஜ்",
       },
       {
         party: "TVK",
-        text: "₹2,500/month (highest offer) + 6 free LPG cylinders/year + 1 sovereign gold coin for brides + free sanitary pads at ration shops",
-        textTa: "மாதம் ₹2,500 (மூன்று கட்சிகளிலும் அதிகம்) + 6 இலவச LPG சிலிண்டர் + திருமண தங்க நாணயம் + ration கடையில் sanitary pads",
+        text: "₹2,500/month (highest of all 3) + 6 free LPG cylinders/year + 1 sovereign gold coin for brides + free sanitary pads at ration shops & schools",
+        textTa: "மாதம் ₹2,500 (மூன்று கட்சிகளிலும் அதிகம்) + 6 இலவச LPG சிலிண்டர் + திருமண தங்க நாணயம் + ration கடை/பள்ளிகளில் sanitary pads",
+      },
+    ],
+  },
+  {
+    id: "women_safety",
+    icon: "🛡️",
+    accent: "#db2777",
+    category: "women_safety",
+    label: "Women's Safety",
+    labelTa: "பெண்கள் பாதுகாப்பு",
+    question: "Your wife, daughter, or sister travels alone at night. Which party makes you feel safer?",
+    questionTa: "உங்கள் மனைவி, மகள் அல்லது தங்கை இரவில் தனியாக பயணிக்கிறார். எந்த கட்சி நம்பிக்கை தருகிறது?",
+    choices: [
+      {
+        party: "DMK",
+        text: "Kavalan women safety app (already running) + fast-track courts for crimes against women + 2026 promise to expand safe-city surveillance and double women's helpline staff",
+        textTa: "கவலன் பெண்கள் பாதுகாப்பு app (நடைமுறையில்) + பெண்களுக்கு எதிரான வழக்குகளுக்கு fast-track நீதிமன்றம் + 2026: நகர கண்காணிப்பு விரிவு, helpline இரட்டிப்பு",
+      },
+      {
+        party: "AIADMK",
+        text: "2026 promises: dedicated women police stations in all districts + 24-hour harassment helpline + self-defence training in all government schools",
+        textTa: "AIADMK 2026: அனைத்து மாவட்டங்களிலும் பெண்கள் காவல் நிலையம் + 24 மணி நேர harassment helpline + அரசு பள்ளிகளில் self-defence பயிற்சி",
+      },
+      {
+        party: "TVK",
+        text: "Smart panic buttons in all government buses + dedicated women's safety cell in every police station + mandatory FIR registration for every complaint — no 'counselling' to dismiss cases",
+        textTa: "அனைத்து அரசு பேருந்துகளிலும் panic button + ஒவ்வொரு காவல் நிலையத்திலும் பெண்கள் safety cell + ஒவ்வொரு புகாருக்கும் கட்டாய FIR — வழக்கு தள்ளுபடி வேண்டாம்",
+      },
+    ],
+  },
+  {
+    id: "law_order",
+    icon: "👮",
+    accent: "#1d4ed8",
+    category: "law_order",
+    label: "Law & Order",
+    labelTa: "சட்டம் & ஒழுங்கு",
+    question: "A crime happens in your area. Which party's approach to law enforcement do you trust?",
+    questionTa: "உங்கள் பகுதியில் குற்றம் நடக்கிறது. எந்த கட்சியின் காவல் நடவடிக்கையை நம்புகிறீர்கள்?",
+    choices: [
+      {
+        party: "DMK",
+        text: "Police modernisation with tech upgrades + 2026: body cameras for all field officers, smart CCTV in cities (though TASMAC proliferation creates crime pressure on the ground)",
+        textTa: "காவல் துறை நவீனமயம் + 2026: body camera, நகர கண்காணிப்பு (ஆனால் TASMAC பெருக்கம் குற்ற அழுத்தம் தருகிறது என்பது உண்மை)",
+      },
+      {
+        party: "AIADMK",
+        text: "2026 promises: independent police complaints authority + accountability reforms (note: the 2018 Tuticorin protest firing that killed 13 civilians happened under AIADMK rule)",
+        textTa: "AIADMK 2026: சுயாதீன காவல் புகார் ஆணையம், பொறுப்புணர்வு சீர்திருத்தம் (குறிப்பு: 2018 தூத்துக்குடி சூட்டில் 13 பேர் மரணம் — AIADMK ஆட்சியில்)",
+      },
+      {
+        party: "TVK",
+        text: "Independent Police Complaints Authority + mandatory body cameras for all officers + 24/7 online FIR portal so no complaint can be buried at the station level",
+        textTa: "சுயாதீன காவல் புகார் ஆணையம் + அனைத்து அதிகாரிகளுக்கும் body camera + 24 மணி நேர online FIR portal — நிலையத்திலேயே புகார் புதைக்க இயலாது",
+      },
+    ],
+  },
+  {
+    id: "liquor",
+    icon: "🚫",
+    accent: "#7c3aed",
+    category: "liquor",
+    label: "Liquor & Family Welfare",
+    labelTa: "மது & குடும்ப நலன்",
+    question: "Liquor destroys thousands of Tamil families every year. What should the government do?",
+    questionTa: "மதுவால் ஆண்டுதோறும் ஆயிரக்கணக்கான குடும்பங்கள் சிதறுகின்றன. அரசு என்ன செய்ய வேண்டும்?",
+    choices: [
+      {
+        party: "DMK",
+        text: "No prohibition plan — TASMAC revenue hit ₹48,344 crore in FY25 (highest ever). DMK argues the revenue funds welfare schemes, but critics say it is a double standard",
+        textTa: "மதுவிலக்கு திட்டம் இல்லை — TASMAC வருவாய் ₹48,344 கோடி (FY25, சாதனை). DMK: இந்த வருவாய் நலத்திட்டங்களுக்கு — விமர்சகர்கள்: இது இரட்டை நிலைப்பாடு",
+      },
+      {
+        party: "AIADMK",
+        text: "Phased, gradual closure of liquor shops as part of a prohibition roadmap — a concrete 2026 manifesto promise targeting one of Tamil Nadu's biggest family welfare crises",
+        textTa: "AIADMK 2026: மதுக்கடைகளை படிப்படியாக மூடுவோம் — மதுவிலக்கு நோக்கிய திட்டம் — தமிழ்நாட்டின் மிகப்பெரிய குடும்ப நலன் பிரச்சனைக்கு நேரடி வாக்குறுதி",
+      },
+      {
+        party: "TVK",
+        text: "Systematic reduction of alcohol dependency + mandatory de-addiction centres + 'Drug-Free Tamil Nadu' with anti-drug zones in all schools and colleges",
+        textTa: "TVK: மது சார்பை முறையாக குறைக்கும் திட்டம் + கட்டாய மறுவாழ்வு மையங்கள் + அனைத்து பள்ளி-கல்லூரிகளிலும் 'Drug-Free Zone'",
       },
     ],
   },
@@ -57,23 +138,23 @@ const QUIZ_QUESTIONS = [
     category: "employment",
     label: "Jobs & Livelihoods",
     labelTa: "வேலை வாய்ப்பு",
-    question: "Which employment policy matters most to you?",
-    questionTa: "வேலை வாய்ப்புக்கான எந்த கொள்கை சரியானது?",
+    question: "Your son/daughter just finished college and can't find a job. Which promise helps them most?",
+    questionTa: "உங்கள் மகன்/மகள் கல்லூரி முடித்து வேலை கிடைக்காமல் இருக்கிறார். எந்த வாக்குறுதி உதவும்?",
     choices: [
       {
         party: "DMK",
-        text: "50 lakh jobs over 5 years + fill 1.5 lakh government vacancies + Naan Mudhalvan skill training (41 lakh already trained)",
-        textTa: "5 ஆண்டில் 50 லட்சம் வேலைகள் + 1.5 லட்சம் அரசு காலிப்பணியிடங்கள் + நான் முதல்வன் (41 லட்சம் பேர் பயிற்சி பெற்றனர்)",
+        text: "50 lakh jobs in 5 years + fill 1.5 lakh government vacancies + Naan Mudhalvan skill training with ₹1,500/month stipend (41 lakh already trained — a real achievement)",
+        textTa: "5 ஆண்டில் 50 லட்சம் வேலைகள் + 1.5 லட்சம் அரசு காலிப்பணியிடம் + நான் முதல்வன் ₹1,500/மாதம் (41 லட்சம் பேர் பயிற்சி — உண்மையான சாதனை)",
       },
       {
         party: "AIADMK",
-        text: "₹2,000/month unemployment allowance for graduates, ₹1,000/month for Class 12 pass non-graduates",
-        textTa: "வேலையில்லாத பட்டதாரிகளுக்கு ₹2,000/மாதம், 12ஆம் வகுப்பு தேர்ச்சியாளர்களுக்கு ₹1,000/மாதம்",
+        text: "₹2,000/month unemployment allowance for graduates + ₹1,000/month for Class 12 pass non-graduates — direct cash while they search",
+        textTa: "வேலையில்லாத பட்டதாரிகளுக்கு ₹2,000/மாதம் + 12ஆம் வகுப்பு தேர்ச்சியாளர்களுக்கு ₹1,000/மாதம் — தேடும் வரை நேரடி பணம்",
       },
       {
         party: "TVK",
-        text: "₹4,000/month graduate unemployment allowance + 5 lakh paid internships/year (₹10,000/month) + 75% Tamil quota in private sector",
-        textTa: "வேலையில்லாத பட்டதாரிகளுக்கு ₹4,000/மாதம் + 5 லட்சம் internship/ஆண்டு (₹10,000/மாதம்) + தனியார் வேலையில் 75% TN பங்கு",
+        text: "₹4,000/month graduate unemployment allowance + 5 lakh paid internships per year (₹10,000/month) + 75% Tamil quota in private sector + interest-free ₹25 lakh startup loans",
+        textTa: "பட்டதாரிகளுக்கு ₹4,000/மாதம் + வருடம் 5 லட்சம் internship (₹10,000/மாதம்) + தனியார் வேலையில் 75% TN பங்கு + ₹25 லட்சம் வட்டியில்லா தொழில் கடன்",
       },
     ],
   },
@@ -84,23 +165,23 @@ const QUIZ_QUESTIONS = [
     category: "agriculture",
     label: "Agriculture & Farmers",
     labelTa: "விவசாயம்",
-    question: "Which farming policy do you believe will help farmers most?",
-    questionTa: "விவசாயிகளுக்கு எந்த கொள்கை மிகவும் உதவும்?",
+    question: "A farmer in your family is struggling with loans and low prices. What matters most?",
+    questionTa: "உங்கள் குடும்பத்தில் விவசாயி கடன் தொல்லையில் உள்ளார். எது அதிகம் உதவும்?",
     choices: [
       {
         party: "DMK",
-        text: "Paddy MSP ₹3,500/quintal + sugarcane ₹4,500/tonne + free electric pumps for 20 lakh farmers (note: 2021 loan waiver promise still unfulfilled)",
-        textTa: "நெல் ₹3,500/குவிண்டால் + கரும்பு ₹4,500/டன் + 20 லட்சம் விவசாயிகளுக்கு இலவச மோட்டார் (குறிப்பு: 2021 கடன் தள்ளுபடி வாக்குறுதி நிறைவேறவில்லை)",
+        text: "Paddy MSP ₹3,500/quintal + sugarcane ₹4,500/tonne + free electric pumps for 20 lakh farmers (note: 2021 complete loan waiver promise is still unfulfilled after 5 years)",
+        textTa: "நெல் ₹3,500/குவிண்டால் + கரும்பு ₹4,500/டன் + 20 லட்சம் விவசாயிகளுக்கு இலவச மோட்டார் (குறிப்பு: 2021 கடன் தள்ளுபடி வாக்குறுதி 5 ஆண்டாகியும் நிறைவேறவில்லை)",
       },
       {
         party: "AIADMK",
-        text: "Full crop loan waiver from cooperative societies + paddy MSP ₹3,500 + 100% solar pump subsidy + ₹25 lakh accident compensation for fishermen",
+        text: "Full crop loan waiver from cooperative societies + paddy MSP ₹3,500 + 100% solar pump subsidy for new connections + ₹25 lakh accident compensation for fishermen",
         textTa: "கூட்டுறவு கடன் முழு தள்ளுபடி + நெல் ₹3,500 + 100% சோலார் பம்ப் மானியம் + மீனவர்களுக்கு ₹25 லட்சம்",
       },
       {
         party: "TVK",
-        text: "100% loan waiver for farmers with under 5 acres + 50% for above 5 acres + free higher education for children of small farmers",
-        textTa: "5 ஏக்கருக்கு கீழ் விவசாயிகளுக்கு 100% கடன் தள்ளுபடி + 5 ஏக்கருக்கு மேல் 50% தள்ளுபடி + சிறு விவசாயி பிள்ளைகளுக்கு இலவச கல்வி",
+        text: "100% loan waiver for farmers under 5 acres + 50% for above 5 acres + free higher education for children of farmers owning less than 2 acres",
+        textTa: "5 ஏக்கருக்கு கீழ் விவசாயிகளுக்கு 100% கடன் தள்ளுபடி + 5 ஏக்கருக்கு மேல் 50% + 2 ஏக்கருக்கு கீழ் விவசாயி பிள்ளைகளுக்கு இலவச கல்வி",
       },
     ],
   },
@@ -111,23 +192,23 @@ const QUIZ_QUESTIONS = [
     category: "education",
     label: "Education & Youth",
     labelTa: "கல்வி & இளைஞர்",
-    question: "Which education policy fits your vision for Tamil Nadu's youth?",
-    questionTa: "தமிழ்நாட்டு இளைஞர்களுக்கு எந்த கல்விக் கொள்கை சரியானது?",
+    question: "Which education policy fits your vision for Tamil Nadu's next generation?",
+    questionTa: "தமிழ்நாட்டின் அடுத்த தலைமுறைக்கு எந்த கல்விக் கொள்கை சரியானது?",
     choices: [
       {
         party: "DMK",
-        text: "Free laptops for 35 lakh college students + ₹1,500/month student stipend + expand free school breakfast to Class 8",
-        textTa: "35 லட்சம் கல்லூரி மாணவர்களுக்கு இலவச laptop + ₹1,500/மாதம் + இலவச காலை உணவு 8ஆம் வகுப்பு வரை",
+        text: "Free laptops for 35 lakh college students + ₹1,500/month student stipend + expand free school breakfast to Class 8 (though NEET abolition promise from 2021 remains stuck)",
+        textTa: "35 லட்சம் கல்லூரி மாணவர்களுக்கு இலவச laptop + ₹1,500/மாதம் + காலை உணவு 8ஆம் வகுப்பு வரை (ஆனால் 2021 NEET ஒழிப்பு வாக்குறுதி நிறைவேறவில்லை)",
       },
       {
         party: "AIADMK",
-        text: "Raise NEET reservation for government school students from 7.5% → 10% + education loan waiver for poor families",
+        text: "Raise NEET reservation for government school students from 7.5% → 10% + education loan waiver for poor students",
         textTa: "அரசு பள்ளி மாணவர்களுக்கு NEET இட ஒதுக்கீடு 7.5% → 10% + ஏழை மாணவர்களின் கல்விக் கடன் தள்ளுபடி",
       },
       {
         party: "TVK",
-        text: "500 Creative Schools + interest-free education loans up to ₹20 lakh (Class 12 to PhD) + education loan waiver for poor students + TNPSC on fixed transparent schedule",
-        textTa: "500 'Creative Schools' + ₹20 லட்சம் வரை வட்டியில்லா கல்விக் கடன் + ஏழை மாணவர் கடன் தள்ளுபடி + TNPSC நிர்ணயித்த கால அட்டவணையில்",
+        text: "500 Creative Schools + interest-free ₹20 lakh education loans (Class 12 to PhD, no guarantee) + TNPSC exams on a fixed transparent schedule — ending paper leak culture",
+        textTa: "500 'Creative Schools' + ₹20 லட்சம் வட்டியில்லா கல்விக் கடன் (12ஆம் வகுப்பு முதல் PhD) + TNPSC நிர்ணயித்த கால அட்டவணையில் — paper leak கலாச்சாரம் முடிவு",
       },
     ],
   },
@@ -138,23 +219,23 @@ const QUIZ_QUESTIONS = [
     category: "healthcare",
     label: "Healthcare",
     labelTa: "சுகாதாரம்",
-    question: "Which healthcare promise do you trust most?",
-    questionTa: "சுகாதாரத்தில் எந்த வாக்குறுதியை நம்புகிறீர்கள்?",
+    question: "A family member falls seriously ill. Which healthcare promise gives you real confidence?",
+    questionTa: "குடும்பத்தில் யாரோ கடுமையாக நோய்வாய்படுகிறார். எந்த சுகாதார வாக்குறுதி நம்பிக்கை தருகிறது?",
     choices: [
       {
         party: "DMK",
-        text: "Expand CMCHIS health insurance to ₹10 lakh/year (from ₹5 lakh) + raise income ceiling to ₹5 lakh + double dialysis units in govt hospitals",
-        textTa: "CMCHIS காப்பீடு ₹5 லட்சம் → ₹10 லட்சம் + வருமான வரம்பு ₹5 லட்சமாக உயர்வு + அரசு மருத்துவமனையில் dialysis இரட்டிப்பு",
+        text: "Expand CMCHIS health insurance to ₹10 lakh/year per family (from ₹5 lakh) + raise income ceiling to ₹5 lakh + double dialysis units in government hospitals",
+        textTa: "CMCHIS காப்பீடு ₹5 லட்சம் → ₹10 லட்சம் + வருமான வரம்பு ₹5 லட்சம் + அரசு மருத்துவமனையில் dialysis இரட்டிப்பு",
       },
       {
         party: "AIADMK",
-        text: "Reopen 2,000 Amma Mini Clinics (shut since 2021) to restore grassroots primary care access across Tamil Nadu",
-        textTa: "2021ல் மூடப்பட்ட 2,000 அம்மா மினி கிளினிக்குகளை மீண்டும் திறப்போம் — அடிமட்ட சுகாதார வசதி மீட்பு",
+        text: "Reopen 2,000 Amma Mini Clinics (primary care clinics shut since 2021) + CMCHIS was launched under AIADMK and still runs — they built the foundation",
+        textTa: "2021ல் மூடப்பட்ட 2,000 அம்மா மினி கிளினிக்குகளை மீண்டும் திறப்போம் + CMCHIS ஆரம்பித்தவர்கள் AIADMK — அடித்தளம் அவர்களே",
       },
       {
         party: "TVK",
-        text: "Treat healthcare as a fundamental right + 'Drug-Free Tamil Nadu' — mandatory anti-drug zones in all schools and colleges",
-        textTa: "சுகாதாரம் அடிப்படை உரிமை என அறிவிப்பு + அனைத்து பள்ளி/கல்லூரிகளிலும் கட்டாய 'Drug-Free Zone'",
+        text: "Healthcare as a fundamental right + 'Drug-Free Tamil Nadu' with mandatory de-addiction support + anti-drug zones in all schools to stop the next generation from falling sick",
+        textTa: "சுகாதாரம் அடிப்படை உரிமை + கட்டாய மறுவாழ்வு மையங்கள் + அனைத்து பள்ளி-கல்லூரிகளிலும் drug-free zone — அடுத்த தலைமுறை காக்கப்படட்டும்",
       },
     ],
   },
@@ -165,23 +246,23 @@ const QUIZ_QUESTIONS = [
     category: "cost_of_living",
     label: "Cost of Living",
     labelTa: "வாழ்க்கை செலவு",
-    question: "Which promise would reduce your daily expenses most?",
-    questionTa: "உங்கள் தினசரி செலவை எந்த வாக்குறுதி கொஞ்சமாவது குறைக்கும்?",
+    question: "At the end of the month there's nothing left. Which promise actually reduces your daily burden?",
+    questionTa: "மாத கடைசியில் கையில் பணம் இல்லை. எந்த வாக்குறுதி உங்கள் தினசரி சுமையை குறைக்கும்?",
     choices: [
       {
         party: "DMK",
-        text: "10 lakh new homes (Kalaignar Kanavu Illam) + raise old-age/widow pension to ₹2,000/month + increase disability support to ₹2,500/month",
-        textTa: "10 லட்சம் வீடுகள் + முதியோர்/விதவை உதவி ₹2,000/மாதம் + மாற்றுத்திறன் உதவி ₹2,500/மாதம்",
+        text: "10 lakh new homes + raise old-age/widow pension to ₹2,000/month + increase disability support to ₹2,500/month + ₹8,000 appliance coupon for homemakers",
+        textTa: "10 லட்சம் வீடுகள் + முதியோர்/விதவை உதவி ₹2,000/மாதம் + மாற்றுத்திறன் ₹2,500/மாதம் + இல்லத்தரசிகளுக்கு ₹8,000 appliance coupon",
       },
       {
         party: "AIADMK",
-        text: "Free refrigerator for 2.22 crore ration families + 3 free LPG cylinders/year + free 1 kg dal + 1 litre cooking oil monthly + phase out liquor shops",
+        text: "Free refrigerator for 2.22 crore ration families + 3 free LPG cylinders/year + free 1 kg dal + 1 litre cooking oil monthly + phased closure of liquor shops",
         textTa: "2.22 கோடி குடும்பங்களுக்கு இலவச ஃபிரிட்ஜ் + வருடம் 3 இலவச LPG + மாதம் 1 கிலோ பருப்பு + 1 லிட்டர் எண்ணெய் + மது கடைகள் படிப்படியாக மூடல்",
       },
       {
         party: "TVK",
-        text: "6 free LPG cylinders/year (double AIADMK's offer) + ₹2,500/month for women + 1 ration shop per 500 families with accountable weighers",
-        textTa: "வருடம் 6 இலவச LPG சிலிண்டர் (AIADMK-ன் இரு மடங்கு) + பெண்களுக்கு ₹2,500/மாதம் + 500 குடும்பத்திற்கு ஒரு ration கடை",
+        text: "6 free LPG cylinders/year (double AIADMK's offer) + ₹2,500/month for women + 1 ration shop per 500 families + appointed village weighers to stop short-weighing corruption",
+        textTa: "6 இலவச LPG சிலிண்டர் (AIADMK-ன் இரு மடங்கு) + பெண்களுக்கு ₹2,500/மாதம் + 500 குடும்பத்திற்கு 1 ration கடை + எடை மோசடி தடுக்க கிராம அளவில் அரசு நியமனம்",
       },
     ],
   },
@@ -190,25 +271,25 @@ const QUIZ_QUESTIONS = [
     icon: "⚖️",
     accent: "#dc2626",
     category: "corruption",
-    label: "Governance & Corruption",
+    label: "Corruption & Governance",
     labelTa: "ஊழல் & நேர்மை",
-    question: "Which governance track record or promise do you trust most?",
-    questionTa: "ஆட்சி நேர்மையில் யாரை நம்புகிறீர்கள்?",
+    question: "You've seen governments lie and steal. Which track record or promise makes you believe change is possible?",
+    questionTa: "அரசியல்வாதிகள் பொய் சொல்வதும் சுருட்டுவதும் நீங்கள் பார்த்திருக்கிறீர்கள். யார் மீது நம்பிக்கை வைப்பீர்கள்?",
     choices: [
       {
         party: "DMK",
-        text: "394 of 505 promises delivered (78%) — a documented track record, though TASMAC revenue hit a record ₹48,344 crore in FY25",
-        textTa: "505 வாக்குறுதிகளில் 394 நிறைவேற்றம் (78%) — ஆவணப்பட்ட சாதனை. ஆனால் TASMAC வருவாய் ₹48,344 கோடி — சாதனை உயர்வு",
+        text: "394 of 505 promises delivered (78%) — a documented track record. But TASMAC revenue under DMK hit a record ₹48,344 crore in FY25 despite their founding anti-liquor identity",
+        textTa: "505 வாக்குறுதிகளில் 394 நிறைவேற்றம் (78%) — ஆவணப்பட்ட சாதனை. ஆனால் TASMAC வருவாய் ₹48,344 கோடி (FY25 சாதனை) — மதுவிரோத கட்சி இது?",
       },
       {
         party: "AIADMK",
-        text: "Introduced CMCHIS, Amma Unavagam & multiple welfare schemes still running today — but Gutka scam prosecutions and 2018 Tuticorin firing (13 killed) are on record",
-        textTa: "CMCHIS, அம்மா உணவகம் தொடங்கியவர்கள் — இன்னும் நடைமுறையில். ஆனால் குட்கா வழக்கு, 2018 தூத்துக்குடி சூட்டில் 13 பேர் மரணம் — வரலாற்றில் பதிவு",
+        text: "Introduced lasting schemes like CMCHIS, Amma Unavagam still running today. But: Gutka scam prosecutions against ministers + 2018 Tuticorin firing killing 13 protesters are on permanent record",
+        textTa: "CMCHIS, அம்மா உணவகம் இன்னும் இயங்குகின்றன — நீடித்த பணி. ஆனால்: குட்கா வழக்கு + 2018 தூத்துக்குடி சூட்டில் 13 பேர் மரணம் — இது வரலாற்றில் பதிவு",
       },
       {
         party: "TVK",
-        text: "Zero corruption record (new party, no governance history) + promises white papers on all govt deals + TNPSC on fixed transparent schedule",
-        textTa: "ஊழல் வரலாறே இல்லை (புதிய கட்சி) + அனைத்து அரசு ஒப்பந்தங்களுக்கும் white paper + TNPSC நிர்ணயித்த கால அட்டவணையில்",
+        text: "Zero corruption record (brand new party — no governance history at all). White papers on all govt deals + TNPSC on fixed schedule. You're betting on potential, not track record",
+        textTa: "ஊழல் வரலாறே இல்லை (முற்றிலும் புதிய கட்சி — ஆட்சி அனுபவமே இல்லை). white paper + TNPSC கால அட்டவணை. நீங்கள் சாத்தியத்தில் நம்பிக்கை வைக்கிறீர்கள்",
       },
     ],
   },
@@ -217,34 +298,34 @@ const QUIZ_QUESTIONS = [
     icon: "🔭",
     accent: "#6366f1",
     category: "corruption",
-    label: "Long-term Vision",
-    labelTa: "எதிர்காலம்",
-    question: "What matters more to you for Tamil Nadu's next 5 years?",
-    questionTa: "தமிழ்நாட்டின் அடுத்த 5 ஆண்டுகளுக்கு உங்களுக்கு எது முக்கியம்?",
+    label: "Your Vote, Your Tamil Nadu",
+    labelTa: "உங்கள் வாக்கு, உங்கள் தமிழ்நாடு",
+    question: "Think of Tamil Nadu 10 years from now. Which path feels right?",
+    questionTa: "10 ஆண்டுகள் கழித்த தமிழ்நாட்டை மனதில் நினைத்துக்கொள்ளுங்கள். எந்த பாதை சரியானது?",
     choices: [
       {
         party: "DMK",
-        text: "Continue the Dravidian model — proven governance track record, expanding existing schemes with larger numbers",
-        textTa: "திராவிட மாடல் தொடர்வு — ஆவணப்பட்ட ஆட்சி அனுபவம், நடைமுறையிலுள்ள திட்டங்களை விரிவுபடுத்துவது",
+        text: "Continue the Dravidian model — proven governance, expanding running schemes with larger numbers, state autonomy push against Centre",
+        textTa: "திராவிட மாடல் தொடர்வு — ஆவணப்பட்ட ஆட்சி, நடைமுறையிலுள்ள திட்டங்கள் விரிவு, மத்திய அரசுக்கு எதிராக மாநில உரிமை",
       },
       {
         party: "AIADMK",
-        text: "Return to Opposition-tested AIADMK — restore Amma-era welfare schemes and correct DMK's course",
-        textTa: "எதிர்க்கட்சியில் முறுக்கேறிய AIADMK திரும்பட்டும் — அம்மா காலத் திட்டங்கள் மீட்பு, DMK தவறுகள் திருத்தம்",
+        text: "Return AIADMK — restore Amma-era welfare and grassroots schemes that DMK has let lapse, with a tested party machine behind them",
+        textTa: "AIADMK திரும்பட்டும் — DMK கை விட்ட அம்மா காலத் திட்டங்களை மீட்பு, அனுபவமிக்க கட்சி இயந்திரம்",
       },
       {
         party: "TVK",
-        text: "Bring change — a new party with no corrupt past, accountability-first governance, and highest youth & women's welfare offers",
-        textTa: "மாற்றம் கொண்டு வரட்டும் — ஊழல் வரலாற்றே இல்லாத புதிய கட்சி, கணக்கு கேட்கும் ஆட்சி, இளைஞர் + பெண்கள் நலனில் தேர்ந்த வாக்குறுதிகள்",
+        text: "Give fresh blood a chance — a new party with zero corrupt history, highest welfare promises, and a leader willing to stake his entire career on one shot at governance",
+        textTa: "புதுமுகத்திற்கு வாய்ப்பு கொடு — ஊழல் இல்லாத புதிய கட்சி, அதிக நலன் வாக்குறுதிகள், ஒரே ஒரு வாய்ப்பில் முழு career பணயம் வைக்கும் தலைவர்",
       },
     ],
   },
 ];
 
-const PARTY_META: Record<string, { color: string; shortName: string }> = {
-  DMK:    { color: "#c0392b", shortName: "DMK" },
-  TVK:    { color: "#1a5276", shortName: "TVK" },
-  AIADMK: { color: "#2d7a4f", shortName: "AIADMK" },
+const PARTY_META: Record<string, { color: string }> = {
+  DMK:    { color: "#c0392b" },
+  TVK:    { color: "#1a5276" },
+  AIADMK: { color: "#2d7a4f" },
 };
 const MEDALS = ["🥇", "🥈", "🥉"];
 
@@ -254,7 +335,7 @@ function computeResults(picks: Record<string, string>) {
   for (const party of Object.values(picks)) {
     if (party in tally) tally[party]++;
   }
-  const total = Object.keys(picks).length || 1;
+  const total = QUIZ_QUESTIONS.length;
   return Object.entries(tally)
     .map(([party, score]) => ({ party, score, pct: Math.round((score / total) * 100) }))
     .sort((a, b) => b.score - a.score);
@@ -335,15 +416,12 @@ export default function VoterQuiz() {
     return [
       "🗳️ Tamil Nadu 2026 — என் Voter Match!",
       "",
-      `🏆 என் match: ${winner?.party} (${winner?.pct}% of my priorities)`,
+      `🏆 என் match: ${winner?.party} (${winner?.score}/${QUIZ_QUESTIONS.length} questions)`,
       "",
-      ...results.map((r, i) => `${MEDALS[i]} ${r.party} — ${r.score}/${QUIZ_QUESTIONS.length} priorities`),
+      ...results.map((r, i) => `${MEDALS[i]} ${r.party} — ${r.score}/${QUIZ_QUESTIONS.length} priorities matched`),
       "",
-      "My choices:",
-      ...QUIZ_QUESTIONS.map((q) => {
-        const picked = picks[q.id];
-        return `${q.icon} ${isTa ? q.labelTa : q.label}: ${picked || "—"}`;
-      }),
+      "My picks:",
+      ...QUIZ_QUESTIONS.map((q) => `${q.icon} ${isTa ? q.labelTa : q.label}: ${picks[q.id] || "—"}`),
       "",
       "🔍 Data-backed voter guide 👉 tnelections.info",
     ].join("\n");
@@ -378,15 +456,15 @@ export default function VoterQuiz() {
                 <span className="text-xs font-bold bg-terracotta text-white px-2.5 py-0.5 rounded-full uppercase tracking-wide">
                   NEW — Try it
                 </span>
-                <span className="text-gray-400 text-xs">~2 min · real 2026 manifestos</span>
+                <span className="text-gray-400 text-xs">~3 min · real 2026 manifestos</span>
               </div>
               <p className="text-gray-900 font-extrabold text-lg leading-snug">
                 {isTa ? "உங்களுக்கு எந்த கட்சி சரியானது?" : "Who Should I Vote For?"}
               </p>
               <p className="text-gray-500 text-sm mt-0.5">
                 {isTa
-                  ? "8 கேள்விகள் · உண்மையான manifesto கொள்கைகள் ஒப்பிடு · verified sources"
-                  : "8 questions · pick real policies · your honest party match + WhatsApp share"}
+                  ? "11 கேள்விகள் · உண்மையான manifesto கொள்கைகள் ஒப்பிடு · verified sources"
+                  : "11 questions · pick real policies · your honest party match + WhatsApp share"}
               </p>
             </div>
           </div>
@@ -411,8 +489,8 @@ export default function VoterQuiz() {
           </p>
           <p className="text-gray-500 text-xs mt-0.5">
             {isTa
-              ? "ஒவ்வொரு கேள்விக்கும் உங்களுக்கு பிடித்த கொள்கையை தேர்வு செய்யுங்கள் — verified sources"
-              : "Pick the policy that resonates most · results from real 2026 manifestos"}
+              ? "ஒவ்வொரு கேள்விக்கும் உங்களுக்கு பிடித்த கொள்கையை தேர்வு செய்யுங்கள்"
+              : "Pick the policy that resonates · results from real 2026 manifestos · no hidden bias"}
           </p>
         </div>
         <button
@@ -425,7 +503,6 @@ export default function VoterQuiz() {
       <div className="divide-y divide-gray-50">
         {QUIZ_QUESTIONS.map((q, qi) => {
           const picked = picks[q.id];
-
           return (
             <div key={q.id} className="px-5 py-5">
               {/* Question header */}
@@ -443,7 +520,7 @@ export default function VoterQuiz() {
               </div>
 
               {/* Choice buttons */}
-              <div className="space-y-2 ml-0 sm:ml-13">
+              <div className="space-y-2">
                 {q.choices.map((choice) => {
                   const meta = PARTY_META[choice.party];
                   const isSelected = picked === choice.party;
@@ -467,11 +544,11 @@ export default function VoterQuiz() {
                         >
                           {choice.party}
                         </span>
-                        <p className="text-xs text-gray-700 leading-relaxed">
+                        <p className="text-xs text-gray-700 leading-relaxed flex-1">
                           {isTa ? choice.textTa : choice.text}
                         </p>
                         {isSelected && (
-                          <span className="flex-shrink-0 text-base ml-auto">✓</span>
+                          <span className="flex-shrink-0 text-base ml-1">✓</span>
                         )}
                       </div>
                     </button>
@@ -505,8 +582,8 @@ export default function VoterQuiz() {
           </p>
           <p className="text-xs text-gray-400 mb-5">
             {isTa
-              ? "உங்கள் தேர்வுகளின் அடிப்படையில் — ஒவ்வொரு கட்சியும் எத்தனை கேள்விகளில் உங்களை கவர்ந்தது"
-              : "Based purely on your picks — how many of your 8 priorities each party won"}
+              ? "உங்கள் தேர்வுகளின் அடிப்படையில் மட்டுமே — எந்த மறைமுக scoring-உம் இல்லை"
+              : "Based purely on your picks — no hidden weights, no bias"}
           </p>
 
           <div className="space-y-4 mb-6">
@@ -580,7 +657,7 @@ export default function VoterQuiz() {
           <p className="text-xs text-gray-400 bg-gray-50 rounded-xl px-3 py-2 mb-5 leading-relaxed">
             {isTa
               ? "* இது data-guided voter tool மட்டுமே. அனைத்து facts-க்கும் source links உள்ளன. இறுதி முடிவு உங்களுடையது."
-              : "* Data-guided tool. Every fact has a verified source link. Final judgment is always yours."}
+              : "* Data-guided tool only. Every fact links to a verified source. Final judgment is always yours."}
           </p>
 
           <div className="flex flex-wrap gap-3">
