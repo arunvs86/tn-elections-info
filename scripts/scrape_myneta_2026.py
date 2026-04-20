@@ -27,7 +27,7 @@ SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
 # ── Config ────────────────────────────────────────────────────────────────────
 BASE_URL  = "https://myneta.info/TamilNadu2026/candidate.php?candidate_id="
 CSV_PATH  = os.path.join(os.path.dirname(__file__), "myneta_tn2026.csv")
-MAX_ID    = 5000      # TN 2026 has ~234×8–12 = ~2000-2800 candidates; 5000 is safe ceiling
+MAX_ID    = 9000      # Extended ceiling to ensure full coverage
 DELAY     = 0.4       # seconds between requests
 
 HEADERS_HTTP = {
@@ -292,9 +292,9 @@ def phase1_scrape():
                 skipped += 1
                 empty_streak += 1
 
-            # Stop once 300 consecutive IDs return nothing
-            if empty_streak >= 300:
-                print(f"   300 empty IDs in a row at {cid} — stopping.", flush=True)
+            # Stop once 500 consecutive IDs return nothing
+            if empty_streak >= 500:
+                print(f"   500 empty IDs in a row at {cid} — stopping.", flush=True)
                 break
 
             time.sleep(DELAY)

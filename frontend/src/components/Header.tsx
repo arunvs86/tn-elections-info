@@ -26,10 +26,10 @@ export default function Header({ active }: HeaderProps) {
   // Direct nav links — research/info
   const directLinks = [
     { href: "/districts", label: t("nav.districts"), id: "districts" },
+    { href: "/candidates", label: "🗳️ Candidates", id: "candidates" },
     { href: "/parties", label: t("nav.parties"), id: "parties" },
     { href: "/manifesto", label: t("nav.manifesto"), id: "manifesto" },
     { href: "/swing-seats", label: t("nav.swing"), id: "swing" },
-    { href: "/alt-history", label: "What if they voted?", id: "alt-history" },
     { href: "/fact-check", label: t("nav.factcheck"), id: "factcheck" },
   ];
 
