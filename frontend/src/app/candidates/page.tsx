@@ -102,7 +102,7 @@ export default function CandidatesPage() {
         `id, name, party, election_year, age, education,
          criminal_cases_declared, net_worth, assets_movable,
          assets_immovable, liabilities, affidavit_url,
-         constituency:constituency_id(name, district)`,
+         constituency:constituencies(name, district)`,
         { count: "exact" }
       )
       .eq("election_year", year)
