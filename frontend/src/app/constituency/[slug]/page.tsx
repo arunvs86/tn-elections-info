@@ -599,7 +599,7 @@ export default function ConstituencyPage() {
         .select("*")
         .eq("constituency_id", constData.id)
         .eq("election_year", selectedYear)
-        .single();
+        .maybeSingle();
 
       if (resultData) setElectionResult(resultData);
       else setElectionResult(null);
