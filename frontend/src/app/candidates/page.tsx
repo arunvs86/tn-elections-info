@@ -19,7 +19,7 @@ interface Candidate {
   assets_immovable: number | null;
   liabilities: number | null;
   affidavit_url: string | null;
-  constituency: { name: string; district: string } | null;
+  constituency: { name: string; district: string }[] | null;
 }
 
 type SortKey = "net_worth" | "criminal_cases_declared" | "liabilities" | "age" | "name";
@@ -120,7 +120,7 @@ export default function CandidatesPage() {
     }
 
     const { data, count } = await q;
-    setCandidates((data as Candidate[]) || []);
+    setCandidates((data as unknown as Candidate[]) || []);
     setTotal(count || 0);
     setLoading(false);
   }, [sort.key, sort.dir, party, onlyCriminal, search, page, year]);
@@ -294,10 +294,10 @@ export default function CandidatesPage() {
 
                 {/* Constituency */}
                 <div className="col-span-2 text-sm text-gray-300">
-                  {c.constituency ? (
+                  {c.constituency?.[0] ? (
                     <>
-                      <div className="truncate">{c.constituency.name}</div>
-                      <div className="text-xs text-gray-500">{c.constituency.district}</div>
+                      <div className="truncate">{c.constituency[0].name}</div>
+                      <div className="text-xs text-gray-500">{c.constituency[0].district}</div>
                     </>
                   ) : "—"}
                 </div>
