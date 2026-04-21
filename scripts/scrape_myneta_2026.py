@@ -361,12 +361,22 @@ def phase2_import():
         'TIRUPPUR SOUTH': 'TIRUPPUR (SOUTH)', 'UDUMALAIPETTAI': 'UDUMALPET',
         'ULUNDURPETTAI': 'ULUNDURPET', 'VANIYAMBADI': 'VANIAYAMBADI',
         'VEDHARANYAM': 'VEDARANYAM', 'VRIDHACHALAM': 'VRIDDHACHALAM',
+        # Madurai directional — DB has no parens
+        'MADURAI (EAST)': 'MADURAI EAST', 'MADURAI (NORTH)': 'MADURAI NORTH',
+        'MADURAI (SOUTH)': 'MADURAI SOUTH', 'MADURAI (WEST)': 'MADURAI WEST',
+        'MADURAI (CENTRAL)': 'MADURAI CENTRAL',
     }
 
     def resolve_const(name):
         n = re.sub(r'\s*\((?:SC|ST|GEN)\)\s*$', '', name.upper().strip())
         n = re.sub(r'\s+', ' ', n).strip()
-        return ALIASES.get(n, n)
+        n = ALIASES.get(n, n)
+        # If still not matched, try removing directional parens: "CITY (NORTH)" → "CITY NORTH"
+        if n not in const_name_to_id:
+            n2 = re.sub(r'\s*\((\w+)\)\s*$', r' \1', n).strip()
+            if n2 in const_name_to_id:
+                return n2
+        return n
 
     # Build lookup (NORM_NAME, NORM_CONSTITUENCY) → db candidate id
     lookup = {}
