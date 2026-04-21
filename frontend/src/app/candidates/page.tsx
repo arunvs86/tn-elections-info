@@ -39,9 +39,9 @@ function partyColor(party: string): string {
   const p = (party || "").toUpperCase();
   if (p.includes("AIADMK") || p === "ADMK") return "#2d7a4f";
   if (p.includes("DMK")) return "#c0392b";
-  if (p.includes("TVK")) return "#1a5276";
+  if (p.includes("TAMILAGA VETTRI") || p.includes("TVK")) return "#1a5276";
   if (p.includes("BJP")) return "#d35400";
-  if (p.includes("NTK")) return "#6c3483";
+  if (p.includes("NAAM TAMILAR") || p.includes("NTK")) return "#6c3483";
   if (p.includes("INC") || p.includes("CONGRESS")) return "#1565c0";
   if (p.includes("PMK")) return "#b8860b";
   if (p.includes("VCK")) return "#4a148c";
@@ -53,14 +53,14 @@ function partyShort(party: string): string {
   const p = (party || "").toUpperCase();
   if (p.includes("AIADMK")) return "AIADMK";
   if (p.includes("DMK")) return "DMK";
-  if (p.includes("TVK")) return "TVK";
+  if (p.includes("TAMILAGA VETTRI") || p.includes("TVK")) return "TVK";
   if (p.includes("BJP")) return "BJP";
-  if (p.includes("NTK")) return "NTK";
+  if (p.includes("NAAM TAMILAR") || p.includes("NTK")) return "NTK";
   if (p.includes("CONGRESS")) return "INC";
   if (p.includes("PMK")) return "PMK";
   if (p.includes("VCK")) return "VCK";
   if (p === "IND") return "IND";
-  return party?.slice(0, 6) || "—";
+  return party?.slice(0, 8) || "—";
 }
 
 const SORT_OPTIONS: { key: SortKey; label: string; dir: SortDir; icon: string }[] = [
@@ -73,6 +73,19 @@ const SORT_OPTIONS: { key: SortKey; label: string; dir: SortDir; icon: string }[
 ];
 
 const PARTIES = ["All", "DMK", "AIADMK", "TVK", "BJP", "NTK", "INC", "PMK", "VCK", "IND"];
+
+// Map short label → DB ilike pattern
+const PARTY_FILTER: Record<string, string> = {
+  DMK: "DMK",
+  AIADMK: "AIADMK",
+  TVK: "Tamilaga Vettri Kazhagam",
+  BJP: "BJP",
+  NTK: "Naam Tamilar Katchi",
+  INC: "Congress",
+  PMK: "PMK",
+  VCK: "VCK",
+  IND: "IND",
+};
 const PAGE_SIZE = 50;
 
 // ── Component ──────────────────────────────────────────
@@ -110,7 +123,8 @@ export default function CandidatesPage() {
       .range(from, to);
 
     if (party !== "All") {
-      q = q.ilike("party", `%${party}%`);
+      const pattern = PARTY_FILTER[party] ?? party;
+      q = q.ilike("party", `%${pattern}%`);
     }
     if (onlyCriminal) {
       q = q.gt("criminal_cases_declared", 0);
