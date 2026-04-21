@@ -661,8 +661,26 @@ export default function ConstituencyPage() {
       });
   }
 
-  // Sort candidates: winner first, then by votes desc
+  // Party order: major parties first, then others, then IND
+  const PARTY_ORDER: Record<string, number> = {
+    DMK: 1, INC: 2, VCK: 3, CPI: 4, "CPI(M)": 4, CPM: 4, MDMK: 5, IUML: 6,
+    AIADMK: 7, ADMK: 7, BJP: 8, PMK: 9, DMDK: 10,
+    TVK: 11, NTK: 12, MNM: 13, AMMK: 14,
+  };
+  function partyRank(party: string): number {
+    const p = (party || "").toUpperCase();
+    for (const [key, rank] of Object.entries(PARTY_ORDER)) {
+      if (p.includes(key)) return rank;
+    }
+    if (p === "IND" || p === "INDEPENDENT") return 99;
+    return 50; // other small parties before IND
+  }
+
+  // Sort candidates: for 2026 by party order; for past years winner first then votes
   const sortedCandidates = [...candidates].sort((a, b) => {
+    if (selectedYear === 2026) {
+      return partyRank(a.party) - partyRank(b.party);
+    }
     if (a.is_winner && !b.is_winner) return -1;
     if (!a.is_winner && b.is_winner) return 1;
     return (b.votes_received ?? 0) - (a.votes_received ?? 0);
