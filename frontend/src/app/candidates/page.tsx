@@ -26,13 +26,11 @@ type SortKey = "net_worth" | "criminal_cases_declared" | "liabilities" | "age" |
 type SortDir = "desc" | "asc";
 
 // ── Helpers ────────────────────────────────────────────
-function fmt(n: number | null, prefix = "₹"): string {
+function fmt(n: number | null): string {
   if (n == null || n === 0) return "—";
-  if (Math.abs(n) >= 1_00_00_000)
-    return `${prefix}${(n / 1_00_00_000).toFixed(1)} Cr`;
-  if (Math.abs(n) >= 1_00_000)
-    return `${prefix}${(n / 1_00_000).toFixed(1)} L`;
-  return `${prefix}${n.toLocaleString("en-IN")}`;
+  if (Math.abs(n) >= 1_00_00_000) return `₹${(n / 1_00_00_000).toFixed(1)} Cr`;
+  if (Math.abs(n) >= 1_00_000) return `₹${(n / 1_00_000).toFixed(1)} L`;
+  return `₹${n.toLocaleString("en-IN")}`;
 }
 
 function partyColor(party: string): string {
@@ -46,7 +44,7 @@ function partyColor(party: string): string {
   if (p.includes("PMK")) return "#b8860b";
   if (p.includes("VCK")) return "#4a148c";
   if (p === "IND") return "#7f8c8d";
-  return "#555";
+  return "#888";
 }
 
 function partyShort(party: string): string {
@@ -64,28 +62,28 @@ function partyShort(party: string): string {
 }
 
 const SORT_OPTIONS: { key: SortKey; label: string; dir: SortDir; icon: string }[] = [
-  { key: "net_worth", label: "Richest", dir: "desc", icon: "💰" },
+  { key: "net_worth",               label: "Richest",    dir: "desc", icon: "💰" },
   { key: "criminal_cases_declared", label: "Most Cases", dir: "desc", icon: "⚖️" },
-  { key: "liabilities", label: "Most Debt", dir: "desc", icon: "📉" },
-  { key: "net_worth", label: "Poorest", dir: "asc", icon: "📊" },
-  { key: "age", label: "Oldest", dir: "desc", icon: "👴" },
-  { key: "age", label: "Youngest", dir: "asc", icon: "🧑" },
+  { key: "liabilities",             label: "Most Debt",  dir: "desc", icon: "📉" },
+  { key: "net_worth",               label: "Poorest",    dir: "asc",  icon: "📊" },
+  { key: "age",                     label: "Oldest",     dir: "desc", icon: "👴" },
+  { key: "age",                     label: "Youngest",   dir: "asc",  icon: "🧑" },
 ];
 
 const PARTIES = ["All", "DMK", "AIADMK", "TVK", "BJP", "NTK", "INC", "PMK", "VCK", "IND"];
 
-// Map short label → DB ilike pattern
 const PARTY_FILTER: Record<string, string> = {
-  DMK: "DMK",
+  DMK:    "DMK",
   AIADMK: "AIADMK",
-  TVK: "Tamilaga Vettri Kazhagam",
-  BJP: "BJP",
-  NTK: "Naam Tamilar Katchi",
-  INC: "Congress",
-  PMK: "PMK",
-  VCK: "VCK",
-  IND: "IND",
+  TVK:    "Tamilaga Vettri Kazhagam",
+  BJP:    "BJP",
+  NTK:    "Naam Tamilar Katchi",
+  INC:    "Congress",
+  PMK:    "PMK",
+  VCK:    "VCK",
+  IND:    "IND",
 };
+
 const PAGE_SIZE = 50;
 
 // ── Component ──────────────────────────────────────────
@@ -95,7 +93,7 @@ export default function CandidatesPage() {
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const [sortIdx, setSortIdx] = useState(0); // index into SORT_OPTIONS
+  const [sortIdx, setSortIdx] = useState(0);
   const [party, setParty] = useState("All");
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
@@ -126,12 +124,8 @@ export default function CandidatesPage() {
       const pattern = PARTY_FILTER[party] ?? party;
       q = q.ilike("party", `%${pattern}%`);
     }
-    if (onlyCriminal) {
-      q = q.gt("criminal_cases_declared", 0);
-    }
-    if (search) {
-      q = q.ilike("name", `%${search}%`);
-    }
+    if (onlyCriminal) q = q.gt("criminal_cases_declared", 0);
+    if (search)       q = q.ilike("name", `%${search}%`);
 
     const { data, count } = await q;
     setCandidates((data as unknown as Candidate[]) || []);
@@ -139,131 +133,110 @@ export default function CandidatesPage() {
     setLoading(false);
   }, [sort.key, sort.dir, party, onlyCriminal, search, page, year]);
 
-  useEffect(() => {
-    fetchCandidates();
-  }, [fetchCandidates]);
-
-  // Reset page when filters change
-  useEffect(() => {
-    setPage(0);
-  }, [sortIdx, party, onlyCriminal, search, year]);
+  useEffect(() => { fetchCandidates(); }, [fetchCandidates]);
+  useEffect(() => { setPage(0); }, [sortIdx, party, onlyCriminal, search, year]);
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <Header />
+    <div className="min-h-screen bg-[#faf9f7]">
+      <Header active="candidates" />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         {/* Title */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-white">
-            🗳️ Candidate Explorer
-          </h1>
-          <p className="text-gray-400 text-sm mt-1">
-            Browse all {year} candidates — assets, criminal cases & more from MyNeta affidavits
+          <h1 className="text-2xl font-bold text-gray-900">Candidate Explorer</h1>
+          <p className="text-gray-500 text-sm mt-1">
+            All {year} candidates — assets, criminal cases &amp; affidavits from MyNeta
           </p>
         </div>
 
         {/* Filters */}
-        <div className="bg-gray-900 rounded-xl p-4 mb-6 space-y-4">
-          {/* Year toggle */}
-          <div className="flex gap-2">
-            {[2026, 2021, 2016].map((y) => (
-              <button
-                key={y}
-                onClick={() => setYear(y)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                  year === y
-                    ? "bg-red-600 text-white"
-                    : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-                }`}
-              >
-                {y}
-              </button>
-            ))}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6 space-y-4">
+
+          {/* Year */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide w-12">Year</span>
+            <div className="flex gap-2">
+              {[2026, 2021, 2016].map((y) => (
+                <button key={y} onClick={() => setYear(y)}
+                  className={`px-4 py-1.5 rounded-full text-sm font-semibold border-2 transition-all ${
+                    year === y
+                      ? "bg-terracotta text-white border-terracotta"
+                      : "bg-white text-gray-600 border-gray-300 hover:border-terracotta hover:text-terracotta"
+                  }`}>
+                  {y}
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Sort tabs */}
-          <div className="flex flex-wrap gap-2">
-            {SORT_OPTIONS.map((opt, idx) => (
-              <button
-                key={idx}
-                onClick={() => setSortIdx(idx)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                  sortIdx === idx
-                    ? "bg-yellow-500 text-gray-900"
-                    : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-                }`}
-              >
-                {opt.icon} {opt.label}
-              </button>
-            ))}
+          {/* Sort */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide w-12">Sort</span>
+            <div className="flex flex-wrap gap-2">
+              {SORT_OPTIONS.map((opt, idx) => (
+                <button key={idx} onClick={() => setSortIdx(idx)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                    sortIdx === idx
+                      ? "bg-terracotta text-white border-terracotta"
+                      : "bg-white text-gray-600 border-gray-200 hover:border-terracotta hover:text-terracotta"
+                  }`}>
+                  {opt.icon} {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Party filter */}
-          <div className="flex flex-wrap gap-2">
-            {PARTIES.map((p) => (
-              <button
-                key={p}
-                onClick={() => setParty(p)}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                  party === p
-                    ? "text-white"
-                    : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-                }`}
-                style={
-                  party === p
-                    ? { backgroundColor: partyColor(p === "All" ? "" : p) }
-                    : {}
-                }
-              >
-                {p}
-              </button>
-            ))}
+          {/* Party */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide w-12">Party</span>
+            <div className="flex flex-wrap gap-2">
+              {PARTIES.map((p) => (
+                <button key={p} onClick={() => setParty(p)}
+                  className={`px-3 py-1 rounded-full text-xs font-semibold border-2 transition-all ${
+                    party === p ? "text-white border-transparent" : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"
+                  }`}
+                  style={party === p ? { backgroundColor: partyColor(p === "All" ? "" : p), borderColor: partyColor(p === "All" ? "" : p) } : {}}>
+                  {p}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Search + criminal toggle */}
           <div className="flex gap-3 items-center">
             <input
               type="text"
-              placeholder="Search candidate name..."
+              placeholder="Search by name..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") setSearch(searchInput);
-              }}
-              className="flex-1 bg-gray-800 text-white text-sm rounded-lg px-3 py-2 border border-gray-700 focus:outline-none focus:border-red-500"
+              onKeyDown={(e) => { if (e.key === "Enter") setSearch(searchInput); }}
+              className="flex-1 text-sm rounded-xl px-4 py-2 border border-gray-200 focus:outline-none focus:border-terracotta bg-white text-gray-800"
             />
-            <button
-              onClick={() => setSearch(searchInput)}
-              className="bg-red-600 hover:bg-red-700 text-white text-sm px-4 py-2 rounded-lg"
-            >
+            <button onClick={() => setSearch(searchInput)}
+              className="bg-terracotta hover:bg-[#a33d0e] text-white text-sm font-semibold px-5 py-2 rounded-xl transition-colors">
               Search
             </button>
-            <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer whitespace-nowrap">
-              <input
-                type="checkbox"
-                checked={onlyCriminal}
-                onChange={(e) => setOnlyCriminal(e.target.checked)}
-                className="accent-red-500"
-              />
+            <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer whitespace-nowrap">
+              <input type="checkbox" checked={onlyCriminal} onChange={(e) => setOnlyCriminal(e.target.checked)}
+                className="accent-terracotta" />
               ⚖️ With cases only
             </label>
           </div>
         </div>
 
-        {/* Stats bar */}
-        <div className="text-sm text-gray-400 mb-4">
-          {loading ? "Loading..." : `${total.toLocaleString()} candidates found`}
-          {party !== "All" && ` · Filtered: ${party}`}
-          {onlyCriminal && " · With criminal cases"}
-        </div>
+        {/* Count bar */}
+        <p className="text-sm text-gray-400 mb-3">
+          {loading ? "Loading..." : (
+            <>{total.toLocaleString()} candidates{party !== "All" && ` · ${party}`}{onlyCriminal && " · with criminal cases"}</>
+          )}
+        </p>
 
         {/* Table */}
-        <div className="bg-gray-900 rounded-xl overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           {/* Header */}
-          <div className="grid grid-cols-12 gap-2 px-4 py-2 text-xs text-gray-500 uppercase tracking-wide border-b border-gray-800">
+          <div className="grid grid-cols-12 gap-2 px-5 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 bg-gray-50">
             <div className="col-span-1">#</div>
             <div className="col-span-3">Candidate</div>
             <div className="col-span-2">Constituency</div>
@@ -274,120 +247,104 @@ export default function CandidatesPage() {
           </div>
 
           {loading ? (
-            <div className="py-16 text-center text-gray-500">
-              <div className="animate-spin text-3xl mb-3">⏳</div>
-              Loading candidates...
+            <div className="py-20 text-center text-gray-400 text-sm">
+              <div className="text-3xl mb-3 animate-spin inline-block">⏳</div>
+              <p>Loading candidates...</p>
             </div>
           ) : candidates.length === 0 ? (
-            <div className="py-16 text-center text-gray-500">
-              No candidates found. Try adjusting filters.
+            <div className="py-20 text-center text-gray-400 text-sm">
+              No candidates found. Try adjusting the filters.
             </div>
           ) : (
-            candidates.map((c, i) => (
-              <div
-                key={c.id}
-                className="grid grid-cols-12 gap-2 px-4 py-3 border-b border-gray-800/60 hover:bg-gray-800/40 transition-colors items-center"
-              >
-                {/* Rank */}
-                <div className="col-span-1 text-gray-500 text-sm font-mono">
-                  {page * PAGE_SIZE + i + 1}
-                </div>
+            candidates.map((c, i) => {
+              const color = partyColor(c.party);
+              return (
+                <div key={c.id}
+                  className="grid grid-cols-12 gap-2 px-5 py-3 border-b border-gray-50 hover:bg-orange-50/40 transition-colors items-center"
+                  style={{ borderLeft: `3px solid ${color}` }}>
 
-                {/* Name */}
-                <div className="col-span-3">
-                  <Link
-                    href={`/candidate/${c.id}`}
-                    className="text-white hover:text-yellow-400 font-medium text-sm transition-colors"
-                  >
-                    {c.name}
-                  </Link>
-                  {c.age && (
-                    <div className="text-xs text-gray-500">{c.age} yrs · {c.education?.split(" ")[0] || "—"}</div>
-                  )}
-                </div>
-
-                {/* Constituency */}
-                <div className="col-span-2 text-sm text-gray-300">
-                  {c.constituency?.[0] ? (
-                    <>
-                      <div className="truncate">{c.constituency[0].name}</div>
-                      <div className="text-xs text-gray-500">{c.constituency[0].district}</div>
-                    </>
-                  ) : "—"}
-                </div>
-
-                {/* Party */}
-                <div className="col-span-2">
-                  <span
-                    className="inline-block px-2 py-0.5 rounded text-xs font-bold text-white"
-                    style={{ backgroundColor: partyColor(c.party) }}
-                  >
-                    {partyShort(c.party)}
-                  </span>
-                </div>
-
-                {/* Net worth */}
-                <div className="col-span-2 text-right">
-                  <div className="text-sm font-medium text-green-400">
-                    {fmt(c.net_worth)}
+                  {/* Rank */}
+                  <div className="col-span-1 text-xs text-gray-400 font-mono">
+                    {page * PAGE_SIZE + i + 1}
                   </div>
-                  {c.liabilities && c.liabilities > 0 && (
-                    <div className="text-xs text-red-400">
-                      -{fmt(c.liabilities)} debt
-                    </div>
-                  )}
-                </div>
 
-                {/* Criminal cases */}
-                <div className="col-span-1 text-center">
-                  {c.criminal_cases_declared && c.criminal_cases_declared > 0 ? (
-                    <span className="inline-block bg-red-900/60 text-red-300 text-xs font-bold px-2 py-0.5 rounded-full">
-                      {c.criminal_cases_declared}
+                  {/* Name */}
+                  <div className="col-span-3">
+                    <Link href={`/candidate/${c.id}`}
+                      className="font-semibold text-gray-900 text-sm hover:text-terracotta transition-colors leading-tight block">
+                      {c.name}
+                    </Link>
+                    <span className="text-[11px] text-gray-400">
+                      {c.age ? `${c.age} yrs` : ""}
+                      {c.age && c.education ? " · " : ""}
+                      {c.education?.split(" ")[0] || ""}
                     </span>
-                  ) : (
-                    <span className="text-gray-600 text-xs">0</span>
-                  )}
-                </div>
+                  </div>
 
-                {/* Affidavit */}
-                <div className="col-span-1 text-center">
-                  {c.affidavit_url ? (
-                    <a
-                      href={c.affidavit_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-400 hover:text-blue-300 text-xs"
-                      title="View affidavit"
-                    >
-                      📄
-                    </a>
-                  ) : (
-                    <span className="text-gray-600 text-xs">—</span>
-                  )}
+                  {/* Constituency */}
+                  <div className="col-span-2">
+                    {c.constituency?.[0] ? (
+                      <>
+                        <p className="text-sm text-gray-700 truncate">{c.constituency[0].name}</p>
+                        <p className="text-[11px] text-gray-400">{c.constituency[0].district}</p>
+                      </>
+                    ) : <span className="text-gray-300">—</span>}
+                  </div>
+
+                  {/* Party badge */}
+                  <div className="col-span-2">
+                    <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-bold text-white"
+                      style={{ backgroundColor: color }}>
+                      {partyShort(c.party)}
+                    </span>
+                  </div>
+
+                  {/* Net worth */}
+                  <div className="col-span-2 text-right">
+                    <p className="text-sm font-semibold text-gray-800">{fmt(c.net_worth)}</p>
+                    {c.liabilities && c.liabilities > 0 && (
+                      <p className="text-[11px] text-red-500">−{fmt(c.liabilities)}</p>
+                    )}
+                  </div>
+
+                  {/* Cases */}
+                  <div className="col-span-1 text-center">
+                    {c.criminal_cases_declared && c.criminal_cases_declared > 0 ? (
+                      <span className="inline-block bg-red-100 text-red-700 text-xs font-bold px-2 py-0.5 rounded-full">
+                        {c.criminal_cases_declared}
+                      </span>
+                    ) : (
+                      <span className="text-gray-300 text-xs">0</span>
+                    )}
+                  </div>
+
+                  {/* Affidavit */}
+                  <div className="col-span-1 text-center">
+                    {c.affidavit_url ? (
+                      <a href={c.affidavit_url} target="_blank" rel="noopener noreferrer"
+                        className="text-terracotta hover:underline text-xs font-medium">
+                        View
+                      </a>
+                    ) : <span className="text-gray-300 text-xs">—</span>}
+                  </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between mt-4">
-            <button
-              onClick={() => setPage((p) => Math.max(0, p - 1))}
-              disabled={page === 0}
-              className="px-4 py-2 bg-gray-800 rounded-lg text-sm disabled:opacity-40 hover:bg-gray-700 transition-colors"
-            >
+          <div className="flex items-center justify-between mt-5">
+            <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0}
+              className="px-4 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 bg-white hover:border-terracotta hover:text-terracotta disabled:opacity-40 transition-colors">
               ← Previous
             </button>
             <span className="text-sm text-gray-400">
               Page {page + 1} of {totalPages} · {total.toLocaleString()} total
             </span>
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-              disabled={page === totalPages - 1}
-              className="px-4 py-2 bg-gray-800 rounded-lg text-sm disabled:opacity-40 hover:bg-gray-700 transition-colors"
-            >
+            <button onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={page === totalPages - 1}
+              className="px-4 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 bg-white hover:border-terracotta hover:text-terracotta disabled:opacity-40 transition-colors">
               Next →
             </button>
           </div>
