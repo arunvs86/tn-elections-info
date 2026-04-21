@@ -548,7 +548,7 @@ export default function ConstituencyPage() {
   );
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedYear, setSelectedYear] = useState<number>(2021);
+  const [selectedYear, setSelectedYear] = useState<number>(2026);
   const availableYears = [2021, 2026];
 
   // Compare selection
