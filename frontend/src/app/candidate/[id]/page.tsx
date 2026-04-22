@@ -154,6 +154,7 @@ interface CandidateExtended extends Candidate {
   questions_asked?: number | null;
   debates_count?: number | null;
   questions_state_avg?: number | null;
+  sections?: string | null;
 }
 
 interface Rival {
@@ -708,29 +709,89 @@ export default function CandidatePage() {
     fetchData();
   }, [candidateId]);
 
-  // Fetch AI summary from backend
+  // Fetch AI summary from backend (enhancement only — data summary always shown)
   async function fetchAiSummary(candId: number) {
     setSummaryLoading(true);
     try {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "";
+      if (!backendUrl) { setSummaryLoading(false); return; }
       const res = await fetch(`${backendUrl}/api/candidate-summary`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ candidate_id: candId }),
+        signal: AbortSignal.timeout(8000),
       });
       if (res.ok) {
         const data = await res.json();
-        if (data.error === "credits_unavailable") {
-          setAiSummary("__credits_unavailable__");
-        } else {
+        if (data.summary_en || data.summary_ta) {
           setAiSummary(data.summary_en || data.summary_ta || "");
         }
       }
     } catch {
-      // Silently fail — section will show fallback
+      // Backend unavailable — data summary already shown
     } finally {
       setSummaryLoading(false);
     }
+  }
+
+  // Build a data-driven summary from candidate fields (no backend required)
+  function buildDataSummary(c: CandidateExtended, constName: string): string[] {
+    const lines: string[] = [];
+    const yr = c.election_year;
+    const isContesting = yr === 2026;
+
+    // Line 1: Who + what
+    if (isContesting) {
+      lines.push(`${c.name} is contesting from ${constName} in the Tamil Nadu 2026 Legislative Assembly Election on a ${c.party} ticket.`);
+    } else {
+      lines.push(`${c.name} ${c.is_winner ? "won" : "contested"} from ${constName} in the ${yr} Tamil Nadu election on a ${c.party} ticket${c.is_winner ? "" : ` — finishing ${ordinal(position)} of ${totalCandidates}`}.`);
+    }
+
+    // Line 2: Age + education
+    const agePart = c.age ? `${c.age} years old` : null;
+    const eduPart = c.education && c.education.toLowerCase() !== "others" ? c.education : null;
+    if (agePart || eduPart) {
+      lines.push([agePart, eduPart ? `educational qualification: ${eduPart}` : null].filter(Boolean).join(", ") + ".");
+    }
+
+    // Line 3: Wealth
+    const nw = c.net_worth ?? ((c.assets_movable ?? 0) + (c.assets_immovable ?? 0));
+    if (nw > 0) {
+      const fmtVal = nw >= 10000000 ? `₹${(nw / 10000000).toFixed(2)} Crore` : `₹${(nw / 100000).toFixed(1)} Lakh`;
+      const parts: string[] = [`Declared net worth: ${fmtVal}`];
+      if (c.assets_movable && c.assets_movable > 0) {
+        parts.push(`movable assets ₹${c.assets_movable >= 10000000 ? (c.assets_movable / 10000000).toFixed(1) + " Cr" : (c.assets_movable / 100000).toFixed(1) + " L"}`);
+      }
+      if (c.assets_immovable && c.assets_immovable > 0) {
+        parts.push(`immovable assets ₹${c.assets_immovable >= 10000000 ? (c.assets_immovable / 10000000).toFixed(1) + " Cr" : (c.assets_immovable / 100000).toFixed(1) + " L"}`);
+      }
+      if (c.liabilities && c.liabilities > 0) {
+        parts.push(`liabilities ₹${c.liabilities >= 10000000 ? (c.liabilities / 10000000).toFixed(1) + " Cr" : (c.liabilities / 100000).toFixed(1) + " L"}`);
+      }
+      lines.push(parts.join(" · ") + ".");
+    }
+
+    // Line 4: Criminal record
+    const cases = c.criminal_cases_declared ?? 0;
+    if (cases === 0) {
+      lines.push("Has declared no pending criminal cases in the affidavit filed with the Election Commission.");
+    } else {
+      const sections = (c as CandidateExtended & { sections?: string }).sections;
+      const sectionPart = sections ? ` under IPC/BNS sections ${sections.split(",").slice(0, 5).join(", ")}${sections.split(",").length > 5 ? " and others" : ""}` : "";
+      lines.push(`Declared ${cases} pending criminal case${cases > 1 ? "s" : ""}${sectionPart} in the Election Commission affidavit.`);
+      if (c.criminal_mismatch) {
+        lines.push("⚠️ A mismatch was detected between self-declared cases and eCourts records — the actual number of cases may differ.");
+      }
+    }
+
+    // Line 5: Past performance (for non-2026)
+    if (!isContesting && c.votes_received) {
+      const vsPart = c.vote_share ? ` (${c.vote_share.toFixed(1)}% vote share)` : "";
+      const marginPart = c.margin && c.is_winner ? ` with a margin of ${fmt(c.margin)} votes` : c.margin ? ` losing by ${fmt(Math.abs(c.margin))} votes` : "";
+      lines.push(`Received ${fmt(c.votes_received)} votes${vsPart}${marginPart} in the ${yr} election.`);
+    }
+
+    return lines;
   }
 
   // Fetch allegations from backend
@@ -1404,46 +1465,51 @@ export default function CandidatePage() {
             </div>
           )}
 
-          {/* ── AI Summary with Sources (4.5) — auto-loads ── */}
+          {/* ── Candidate Summary (4.5) — data-driven, AI-enhanced when available ── */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 md:col-span-2">
             <div className="flex items-center justify-between mb-3">
               <div>
                 <h2 className="font-bold text-gray-900 text-sm">
-                  AI Summary / சுருக்கம்
+                  Candidate Summary
                 </h2>
-                <p className="text-[10px] text-gray-400 mt-0.5">Sources: Election Commission, MyNeta, The Hindu, TNM</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">From Election Commission affidavit data</p>
               </div>
-              <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium">
-                AI-powered
-              </span>
+              {aiSummary && !summaryLoading && (
+                <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium">
+                  AI-enhanced
+                </span>
+              )}
             </div>
-            {summaryLoading ? (
-              <div className="space-y-2 animate-pulse py-4">
-                {[90, 75, 85, 70, 80].map((w, i) => (
+
+            {/* Always show data summary first */}
+            {candidate && constituency && (
+              <div className="space-y-2 mb-3">
+                {buildDataSummary(candidate as CandidateExtended, constituency.name).map((line, i) => (
                   <div key={i} className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-gray-300 mt-1.5 flex-shrink-0" />
-                    <div className="h-4 bg-gray-200 rounded" style={{ width: `${w}%` }} />
+                    <span className="text-terracotta mt-1 flex-shrink-0 text-xs">•</span>
+                    <p className="text-sm text-gray-700 leading-relaxed">{line}</p>
                   </div>
                 ))}
-                <p className="text-xs text-gray-400 mt-2 text-center">Generating summary with sources...</p>
               </div>
-            ) : aiSummary === "__credits_unavailable__" ? (
-              <p className="text-sm text-gray-400 text-center py-4">
-                AI summary will be available shortly. Check back after April 6.
-              </p>
-            ) : aiSummary ? (
-              <div className="space-y-2">
+            )}
+
+            {/* AI enhancement — only if backend returned something */}
+            {summaryLoading && (
+              <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-50">
+                <div className="w-3 h-3 rounded-full border-2 border-blue-400 border-t-transparent animate-spin flex-shrink-0" />
+                <p className="text-xs text-gray-400">Checking for additional context...</p>
+              </div>
+            )}
+            {!summaryLoading && aiSummary && aiSummary !== "__credits_unavailable__" && (
+              <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Additional context</p>
                 {aiSummary.split("\n").filter(Boolean).map((line, i) => (
                   <div key={i} className="flex items-start gap-2">
-                    <span className="text-terracotta mt-0.5 flex-shrink-0">•</span>
-                    <p className="text-sm text-gray-700 leading-relaxed">{line.replace(/^[-•]\s*/, "")}</p>
+                    <span className="text-blue-400 mt-1 flex-shrink-0 text-xs">→</span>
+                    <p className="text-sm text-gray-600 leading-relaxed">{line.replace(/^[-•]\s*/, "")}</p>
                   </div>
                 ))}
               </div>
-            ) : (
-              <p className="text-sm text-gray-400 text-center py-4">
-                Summary will appear here once the AI service is available.
-              </p>
             )}
           </div>
 
