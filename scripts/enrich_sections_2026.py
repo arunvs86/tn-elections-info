@@ -43,7 +43,7 @@ def sb_patch(table, match_params, payload):
     r.raise_for_status()
 
 # ── Parse IPC/BNS sections from MyNeta page ───────────
-def fetch_sections(affidavit_url: str) -> str | None:
+def fetch_sections(affidavit_url: str):
     """
     Returns comma-separated section codes e.g. "420,406,307,143"
     or None if no sections found or page fails.
