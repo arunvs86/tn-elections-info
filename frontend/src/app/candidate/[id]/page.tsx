@@ -900,11 +900,15 @@ export default function CandidatePage() {
                 <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900">
                   {candidate.name}
                 </h1>
-                {candidate.is_winner && (
+                {candidate.election_year === 2026 ? (
+                  <span className="text-xs font-bold px-3 py-1 rounded-full text-white" style={{ background: "#1d4ed8" }}>
+                    Contesting 2026
+                  </span>
+                ) : candidate.is_winner ? (
                   <span className="text-xs font-bold px-3 py-1 rounded-full text-white" style={{ background: color }}>
                     Won {candidate.election_year}
                   </span>
-                )}
+                ) : null}
                 {candidate.is_incumbent && (
                   <span className="text-xs bg-blue-50 text-blue-600 font-semibold px-2.5 py-1 rounded-full">
                     Incumbent
@@ -1003,48 +1007,65 @@ export default function CandidatePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* ── Election performance ── */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            {/* Result banner */}
-            <div
-              className="px-5 py-3 flex items-center justify-between"
-              style={{ background: candidate.is_winner ? "#f0fdf4" : "#fef2f2", borderBottom: `2px solid ${candidate.is_winner ? "#bbf7d0" : "#fecaca"}` }}
-            >
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: candidate.is_winner ? "#166534" : "#991b1b" }}>
-                  Election Performance · {candidate.election_year}
+            {candidate.election_year === 2026 ? (
+              /* 2026 — election hasn't happened yet */
+              <div className="px-5 py-4" style={{ background: "#eff6ff", borderBottom: "2px solid #bfdbfe" }}>
+                <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#1e40af" }}>
+                  Tamil Nadu Election 2026 · Candidate
                 </p>
-                <p className="text-2xl font-extrabold mt-0.5" style={{ color: candidate.is_winner ? "#15803d" : "#dc2626" }}>
-                  {candidate.is_winner ? "Won" : "Lost"}
+                <p className="text-xl font-extrabold" style={{ color: "#1d4ed8" }}>
+                  Contesting
+                </p>
+                <p className="text-xs mt-1" style={{ color: "#3b82f6" }}>
+                  Election results pending — voting day is April 23, 2026
                 </p>
               </div>
-              {candidate.votes_received != null && (
-                <div className="text-right">
-                  <p className="text-2xl font-extrabold text-gray-900">{fmt(candidate.votes_received)}</p>
-                  <p className="text-xs text-gray-500">votes received</p>
+            ) : (
+              <>
+                {/* Result banner */}
+                <div
+                  className="px-5 py-3 flex items-center justify-between"
+                  style={{ background: candidate.is_winner ? "#f0fdf4" : "#fef2f2", borderBottom: `2px solid ${candidate.is_winner ? "#bbf7d0" : "#fecaca"}` }}
+                >
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: candidate.is_winner ? "#166534" : "#991b1b" }}>
+                      Election Performance · {candidate.election_year}
+                    </p>
+                    <p className="text-2xl font-extrabold mt-0.5" style={{ color: candidate.is_winner ? "#15803d" : "#dc2626" }}>
+                      {candidate.is_winner ? "Won" : "Lost"}
+                    </p>
+                  </div>
+                  {candidate.votes_received != null && (
+                    <div className="text-right">
+                      <p className="text-2xl font-extrabold text-gray-900">{fmt(candidate.votes_received)}</p>
+                      <p className="text-xs text-gray-500">votes received</p>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-            {/* Stats row */}
-            <div className="grid grid-cols-2 gap-px bg-gray-100">
-              <div className="bg-white px-4 py-3 text-center">
-                <p className="text-lg font-bold text-gray-900">
-                  {candidate.vote_share != null ? `${candidate.vote_share.toFixed(1)}%` : "—"}
-                </p>
-                <p className="text-[11px] text-gray-500 mt-0.5">Vote Share</p>
-              </div>
-              <div className="bg-white px-4 py-3 text-center">
-                <p className="text-lg font-bold" style={{ color: candidate.is_winner ? "#15803d" : "#dc2626" }}>
-                  {fmt(candidate.margin) || "—"}
-                </p>
-                <p className="text-[11px] text-gray-500 mt-0.5">Margin</p>
-              </div>
-            </div>
-            {/* Position among candidates */}
-            {totalCandidates > 1 && (
-              <div className="px-5 py-2.5 bg-gray-50 border-t border-gray-100">
-                <p className="text-xs text-gray-500">
-                  Finished <strong className="text-gray-800">{ordinal(position)} of {totalCandidates}</strong> candidates in {constituency?.name}
-                </p>
-              </div>
+                {/* Stats row */}
+                <div className="grid grid-cols-2 gap-px bg-gray-100">
+                  <div className="bg-white px-4 py-3 text-center">
+                    <p className="text-lg font-bold text-gray-900">
+                      {candidate.vote_share != null ? `${candidate.vote_share.toFixed(1)}%` : "—"}
+                    </p>
+                    <p className="text-[11px] text-gray-500 mt-0.5">Vote Share</p>
+                  </div>
+                  <div className="bg-white px-4 py-3 text-center">
+                    <p className="text-lg font-bold" style={{ color: candidate.is_winner ? "#15803d" : "#dc2626" }}>
+                      {fmt(candidate.margin) || "—"}
+                    </p>
+                    <p className="text-[11px] text-gray-500 mt-0.5">Margin</p>
+                  </div>
+                </div>
+                {/* Position among candidates */}
+                {totalCandidates > 1 && (
+                  <div className="px-5 py-2.5 bg-gray-50 border-t border-gray-100">
+                    <p className="text-xs text-gray-500">
+                      Finished <strong className="text-gray-800">{ordinal(position)} of {totalCandidates}</strong> candidates in {constituency?.name}
+                    </p>
+                  </div>
+                )}
+              </>
             )}
           </div>
 
@@ -1620,9 +1641,10 @@ export default function CandidatePage() {
             href={`https://wa.me/?text=${encodeURIComponent(
               `🗳️ *${candidate.name}* (${candidate.party})\n` +
               `📍 ${constituency?.name || ""} constituency, ${constituency?.district || ""}\n\n` +
-              `📊 *2021 Results:*\n` +
-              `   Votes: ${candidate.votes_received?.toLocaleString("en-IN") || "N/A"} (${candidate.vote_share?.toFixed(1) || "?"}%)\n` +
-              `   ${candidate.is_winner ? "✅ Won" : "❌ Lost"}\n\n` +
+              `📊 *${candidate.election_year === 2026 ? "2026 Election (Pending)" : `${candidate.election_year} Results`}:*\n` +
+              (candidate.election_year === 2026
+                ? `   🗳️ Contesting — results on April 23, 2026\n\n`
+                : `   Votes: ${candidate.votes_received?.toLocaleString("en-IN") || "N/A"} (${candidate.vote_share?.toFixed(1) || "?"}%)\n   ${candidate.is_winner ? "✅ Won" : "❌ Lost"}\n\n`) +
               `💰 *Declared Wealth:*\n` +
               `   Net Worth: ${candidate.net_worth ? (candidate.net_worth >= 10000000 ? `₹${(candidate.net_worth / 10000000).toFixed(1)} Crore` : `₹${(candidate.net_worth / 100000).toFixed(1)} Lakh`) : "N/A"}\n` +
               (candidate.assets_movable ? `   Movable: ₹${candidate.assets_movable >= 10000000 ? (candidate.assets_movable / 10000000).toFixed(1) + "Cr" : (candidate.assets_movable / 100000).toFixed(1) + "L"}\n` : "") +

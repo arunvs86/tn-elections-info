@@ -365,6 +365,9 @@ def phase2_import():
         'MADURAI (EAST)': 'MADURAI EAST', 'MADURAI (NORTH)': 'MADURAI NORTH',
         'MADURAI (SOUTH)': 'MADURAI SOUTH', 'MADURAI (WEST)': 'MADURAI WEST',
         'MADURAI (CENTRAL)': 'MADURAI CENTRAL',
+        # Hyphenated names from MyNeta that DB stores differently
+        'CHEPAUK-THIRUVALLIKENI': 'CHEPAUK',
+        'THIRU-VI-KA-NAGAR': 'THIRUVIKANAGAR',
     }
 
     def resolve_const(name):
